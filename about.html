@@ -211,46 +211,34 @@ canvas#gl {
   height: calc(100% + 80px);
   pointer-events: none;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Page transition — replaces the old video loader. A plain veil in
+   the page's own background tone that's already covering the screen
+   on arrival and simply dissolves once the hero is ready, instead of
+   holding on a loading screen — so opening the page reads as "still
+   scrolling the same story" rather than "a new page loaded". The same
+   veil closes over the screen before any internal link navigates away,
+   so leaving the page reads the same way in reverse.
+   ══════════════════════════════════════════════════════════════ */
+#page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #030208;
+  pointer-events: none;
+}
+#page-transition::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
+}
 </style>
 </head>
 
 <body class="page-about">
-<div id="page-loader">
-  <video id="loader-video" autoplay loop muted playsinline webkit-playsinline preload="auto"
-    disablepictureinpicture x5-playsinline x5-video-player-type="h5" width="200px">
-    <source src="media/loader2.mp4" type="video/mp4">
-  </video>
-</div>
-<script>
-
-  (function () {
-    var v = document.getElementById('loader-video');
-    if (!v) return;
-    v.muted = true;
-    v.defaultMuted = true;
-    v.setAttribute('muted', '');
-    function tryPlay() {
-      var p = v.play();
-      if (p && typeof p.catch === 'function') {
-        p.catch(function () {
-          var resume = function () {
-            v.play();
-            document.removeEventListener('touchstart', resume);
-            document.removeEventListener('click', resume);
-          };
-          document.addEventListener('touchstart', resume, { once: true });
-          document.addEventListener('click', resume, { once: true });
-        });
-      }
-    }
-    if (v.readyState >= 2) {
-      tryPlay();
-    } else {
-      v.addEventListener('loadeddata', tryPlay, { once: true });
-      v.addEventListener('canplay', tryPlay, { once: true });
-    }
-  })();
-</script>
+<div id="page-transition"></div>
 
 <div class="stage">
   <canvas id="gl"></canvas>
@@ -268,7 +256,7 @@ canvas#gl {
    per same-z-index stacking order it paints in front of the stars.
    Entrance ("opening dive": particles converge from a scatter + camera
    pulls back) fires via window.__playOpeningDive(), called from
-   playHeaderIn() below once the page loader dismisses.
+   playHeaderIn() below as soon as the page-transition veil starts to lift.
    ══════════════════════════════════════════════════════════════ */
 (function () {
   const canvas   = document.getElementById('bg-canvas');
@@ -995,28 +983,31 @@ gsap.ticker.lagSmoothing(1000, 16);
 ScrollTrigger.normalizeScroll(true);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-/* ── Header entrance (matches 100K-Challenge.html, timed after page loader) ── */
+/* ── Header entrance + page-transition dissolve (replaces the old
+   video-loader gate) — #page-transition is already covering the screen
+   on arrival (see CSS); this fades it away in sync with the header
+   slide-in and the wave-terrain's opening dive, instead of waiting on a
+   loading screen, so opening the page reads as a continuation rather
+   than a fresh load. ── */
 gsap.set('.main-header', { y: -80, autoAlpha: 0 });
-(function waitForLoader() {
-  var loader = document.getElementById('page-loader');
-  function playHeaderIn() {
-    gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out' });
-    if (typeof window.__playOpeningDive === 'function') window.__playOpeningDive();
+document.documentElement.classList.add('loader-active');
+document.body.classList.add('loader-active');
+(function playHeaderIn() {
+  gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out' });
+  if (typeof window.__playOpeningDive === 'function') window.__playOpeningDive();
+  var veil = document.getElementById('page-transition');
+  function releaseScroll() {
+    document.documentElement.classList.remove('loader-active');
+    document.body.classList.remove('loader-active');
   }
-  if (!loader) { playHeaderIn(); return; }
-  var played = false;
-  var observer = new MutationObserver(function () {
-    if (loader.classList.contains('hidden') && !played) {
-      played = true;
-      observer.disconnect();
-      playHeaderIn();
-    }
-  });
-  observer.observe(loader, { attributes: true, attributeFilter: ['class'] });
-  // Fallback in case loader never dismisses (e.g. element missing later)
-  setTimeout(function () {
-    if (!played) { played = true; observer.disconnect(); playHeaderIn(); }
-  }, 2500);
+  if (veil) {
+    gsap.to(veil, {
+      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
+      onComplete: function () { veil.style.display = 'none'; releaseScroll(); }
+    });
+  } else {
+    releaseScroll();
+  }
 })();
 
 /* ── Nav link letter-wave hover (ported from index.html) — each letter is
@@ -2166,29 +2157,40 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
 </body>
 
 <script>
-  (function () {
+/* ── Exit transition — closes the same veil over the screen before any
+   internal link navigates away, so leaving the page feels like a
+   continuation into the next scroll rather than a hard page-load cut.
+   One delegated click listener catches every same-site link on the page
+   (nav, mobile menu, footer, CTA buttons, logo) without needing to touch
+   each one individually. External links, anchors, new-tab/modified
+   clicks, mailto/tel, and downloads are left alone. ── */
+(function () {
+  var veil = document.getElementById('page-transition');
+  if (!veil) return;
 
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+
+    var url;
+    try { url = new URL(href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin) return;
+    if (url.href === window.location.href) return;
+
+    e.preventDefault();
+    veil.style.display = 'block';
     document.documentElement.classList.add('loader-active');
     document.body.classList.add('loader-active');
-
-    function dismissLoader() {
-      var loader = document.getElementById('page-loader');
-      if (loader) {
-
-        window.scrollTo(0, 0);
-        loader.classList.add('hidden');
-
-        setTimeout(function () {
-          document.documentElement.classList.remove('loader-active');
-          document.body.classList.remove('loader-active');
-        }, 950);
-      }
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function () { setTimeout(dismissLoader, 50); });
-    } else {
-      setTimeout(dismissLoader, 50);
-    }
-  })();
+    gsap.to(veil, {
+      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
+      onComplete: function () { window.location.href = url.href; }
+    });
+  });
+})();
 </script>
 </html>

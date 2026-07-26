@@ -88,6 +88,19 @@ window.scrollTo(0, 0);
   body:not(.is-loading) > *{ opacity:1; transition:opacity .8s ease; }
   ::selection{ background:rgba(238,240,255,0.25); }
 
+  /* ── Page-transition veil — invisible by default; only used as an exit
+     transition when a link off this page is clicked (see the click-
+     intercept script near the end of body), so leaving for another page
+     (e.g. About) reads as a continuous cut rather than a hard page-load. ── */
+  #page-transition{
+    position:fixed; inset:0; z-index:9999;
+    background:#030208; opacity:0; visibility:hidden; pointer-events:none;
+  }
+  #page-transition::before{
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
+  }
+
   .scroll-track{ width:100%; position:relative; }
 
   .stage{ position:fixed; inset:0; overflow:hidden; width:100vw; height:100vh; height:100dvh; }
@@ -1058,6 +1071,7 @@ window.scrollTo(0, 0);
 </style>
 </head>
 <body class="is-loading">
+<div id="page-transition"></div>
 
 <!-- ═══ Revacity main-header (ported from home.html) ═══ -->
 <header class="main-header">
@@ -6309,6 +6323,41 @@ requestAnimationFrame(render);
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
+})();
+</script>
+
+<script>
+/* ── Exit transition — closes a plain veil over the screen before any
+   internal link navigates away (About, Compare, Blog, etc.), so leaving
+   this page reads as a continuation into the next scroll rather than a
+   hard page-load cut. One delegated click listener catches every
+   same-site link on the page without needing to touch each one
+   individually. External links, in-page anchors, new-tab/modified
+   clicks, mailto/tel, and downloads are left alone. ── */
+(function () {
+  var veil = document.getElementById('page-transition');
+  if (!veil || typeof gsap === 'undefined') return;
+
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+
+    var url;
+    try { url = new URL(href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin) return;
+    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+    e.preventDefault();
+    gsap.to(veil, {
+      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
+      onComplete: function () { window.location.href = url.href; }
+    });
+  });
 })();
 </script>
 
