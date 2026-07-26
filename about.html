@@ -118,47 +118,6 @@ body.page-about .hf-label {
   text-shadow: 0 0 16px currentColor;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Constellation nav — ported from index.html: a small vertical row
-   of dots on the right edge, one per section, the current one lit up
-   and glowing in the page's own accent purple; click any dot to jump.
-   ══════════════════════════════════════════════════════════════ */
-.constellation-nav {
-  position: fixed;
-  right: 22px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  z-index: 150;
-}
-.constellation-node {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  padding: 0;
-  border: 1.5px solid rgba(255,255,255,0.35);
-  background: transparent;
-  cursor: pointer;
-  flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-  transition: border-color .35s ease, background-color .35s ease, box-shadow .35s ease, transform .35s ease;
-}
-.constellation-node:hover {
-  border-color: #9b5de5;
-  transform: scale(1.3);
-}
-.constellation-node.is-active {
-  background: #9b5de5;
-  border-color: #9b5de5;
-  transform: scale(1.4);
-  box-shadow: 0 0 10px #9b5de5, 0 0 20px rgba(155,93,229,0.45);
-}
-@media (max-width: 900px) {
-  .constellation-nav { display: none; }
-}
 
 #bg-canvas {
   transition: opacity 0.25s ease-out;
@@ -409,8 +368,6 @@ body.page-about .hf-label {
     </div>
   </div>
 </div>
-
-<nav class="constellation-nav" id="constellation-nav"></nav>
 
 <div id="pin-wrapper">
   <div id="track">
@@ -1144,45 +1101,6 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
       scrollTo: { y: window.innerHeight },
       duration: 1.4,
       ease: 'expo.inOut'
-    });
-  });
-})();
-
-/* ── Constellation nav (ported from index.html) — one dot per section,
-   built in JS same as index.html does, current section lit + glowing,
-   click any dot to jump there. ── */
-(function () {
-  const nav = document.getElementById('constellation-nav');
-  if (!nav) return;
-
-  const sections = [
-    { sel: '#hero', label: 'Hero' },
-    { sel: '#timeline-section', label: 'Timeline' },
-    { sel: '#outro', label: 'Outro' },
-    { sel: '#manifesto-section', label: 'Manifesto' },
-    { sel: '#methodology-section', label: 'Methodology' },
-    { sel: '#stackless-section', label: 'Stackless' },
-    { sel: '#human-first-section', label: 'Human First' }
-  ].map(s => ({ ...s, el: document.querySelector(s.sel) })).filter(s => s.el);
-
-  const nodes = sections.map(s => {
-    const dot = document.createElement('button');
-    dot.type = 'button';
-    dot.className = 'constellation-node';
-    dot.setAttribute('aria-label', 'Go to ' + s.label);
-    dot.addEventListener('click', () => {
-      gsap.to(window, { scrollTo: { y: s.el, offsetY: 70 }, duration: 1.2, ease: 'power2.inOut' });
-    });
-    nav.appendChild(dot);
-    return dot;
-  });
-
-  sections.forEach((s, i) => {
-    ScrollTrigger.create({
-      trigger: s.el,
-      start: 'top center',
-      end: 'bottom center',
-      onToggle: self => { if (self.isActive) nodes.forEach((n, j) => n.classList.toggle('is-active', j === i)); }
     });
   });
 })();
