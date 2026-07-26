@@ -16,7 +16,7 @@
 /* ══════════════════════════════════════════════════════════════
    Base tone — ported from index.html's near-black #030208 (was the
    site-wide #0a0315 purple-black). Scoped to this page only: this is
-   about.html's own inline stylesheet, so it doesn't touch style.css
+   about2.html's own inline stylesheet, so it doesn't touch style.css
    or any other page.
    ══════════════════════════════════════════════════════════════ */
 body.page-about {
@@ -24,6 +24,12 @@ body.page-about {
 }
 body.page-about .mobile-slide-menu {
   background: #030208;
+}
+/* The site-wide #bg-canvas rule (style.css) paints a solid #0a0315 fill —
+   override to transparent here so the foreground wave-terrain canvas lets
+   the #gl star/skybox canvas behind it show through in its gaps/sky. */
+body.page-about #bg-canvas {
+  background-color: transparent;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -118,7 +124,6 @@ body.page-about .hf-label {
   text-shadow: 0 0 16px currentColor;
 }
 
-
 #bg-canvas {
   transition: opacity 0.25s ease-out;
 }
@@ -135,17 +140,37 @@ body.page-about .hf-label {
 #dna-canvas, #circuit-canvas { display: block; }
 
 /* ══════════════════════════════════════════════════════════════
-   Ambient dust — a second, much subtler generative layer (independent
-   of the big bg-canvas terrain and the dna-canvas helix) that fades in
-   specifically behind the methodology / stackless / veracity sections,
-   so the flat text sections still feel alive without touching their
-   existing content or layout.
+   Real background — the same skybox + near/far star-point fields
+   as index.html, rendered on their own persistent fixed canvas
+   (#gl inside .stage), the same architecture index.html itself
+   uses. This replaces this page's earlier from-scratch background
+   attempts entirely.
    ══════════════════════════════════════════════════════════════ */
-#starfield-bg {
+.stage {
   position: fixed;
   inset: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   z-index: 0;
   pointer-events: none;
+}
+canvas#gl {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(3,2,8,0) 35%, rgba(3,2,8,0.6) 100%),
+    linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
+  z-index: 5;
 }
 
 #ambient-dust-canvas {
@@ -227,88 +252,302 @@ body.page-about .hf-label {
   })();
 </script>
 
+<div class="stage">
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+</div>
 <canvas id="bg-canvas"></canvas>
-<canvas id="starfield-bg"></canvas>
 <canvas id="ambient-dust-canvas"></canvas>
 <script>
 /* ══════════════════════════════════════════════════════════════
-   Starfield backdrop — the same light-dot field as index.html's
-   background, drawn on a plain 2D canvas instead of a 3D scene.
-   Placed directly after #bg-canvas in the DOM at the same z-index,
-   so it paints on top of it regardless of the terrain canvas's own
-   opacity — a fixed pixel canvas, no camera/perspective math, so
-   every dot lands exactly where it's drawn and stays visible.
+   Foreground wave-dot terrain — about.html's own shader particle
+   field, ported verbatim onto #bg-canvas. Rendered with a transparent
+   clear color (alpha:true, no setClearColor fill) and no scene.background,
+   so the real index.html skybox + star field on #gl shows through in the
+   sky/gaps behind it — #bg-canvas sits later in the DOM than .stage, so
+   per same-z-index stacking order it paints in front of the stars.
+   Entrance ("opening dive": particles converge from a scatter + camera
+   pulls back) fires via window.__playOpeningDive(), called from
+   playHeaderIn() below once the page loader dismisses.
    ══════════════════════════════════════════════════════════════ */
 (function () {
-  const canvas = document.getElementById('starfield-bg');
+  const canvas   = document.getElementById('bg-canvas');
   if (!canvas) return;
-  const ctx = canvas.getContext('2d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.setSize(innerWidth, innerHeight);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 300);
+  const CAM_REST = { x: 0, y: 3.5, z: 12 };
+  camera.position.set(0, 1.1, 6.2);
+  camera.lookAt(0, -2, 0);
+
+  const COLS = 420; const ROWS = 180; const W = 42; const D = 22;
+  const total = COLS * ROWS;
+  const positions = new Float32Array(total * 3);
+  const uvData = new Float32Array(total * 2);
+  const randoms = new Float32Array(total);
+  const scatter = new Float32Array(total * 3);
+
+  let idx = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      positions[idx * 3]     = (c / (COLS - 1) - 0.5) * W;
+      positions[idx * 3 + 1] = 0;
+      positions[idx * 3 + 2] = (r / (ROWS - 1)) * D;
+      uvData[idx * 2]     = c / (COLS - 1);
+      uvData[idx * 2 + 1] = r / (ROWS - 1);
+      randoms[idx]        = Math.random();
+      scatter[idx * 3]     = (Math.random() - 0.5) * 30;
+      scatter[idx * 3 + 1] = (Math.random() - 0.5) * 3 + 8 + Math.random() * 10;
+      scatter[idx * 3 + 2] = (Math.random() - 0.5) * 30;
+      idx++;
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('uv',       new THREE.BufferAttribute(uvData, 2));
+  geo.setAttribute('aRnd',     new THREE.BufferAttribute(randoms, 1));
+  geo.setAttribute('aScatter', new THREE.BufferAttribute(scatter, 3));
+
+  const vert = `
+    uniform float uTime; uniform float uSettle;
+    attribute float aRnd; attribute vec3 aScatter;
+    varying float vH; varying float vDepth; varying float vSettle;
+    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float vnoise(vec2 p){
+      vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
+    }
+    void main(){
+      vDepth = uv.y; float t = uTime * 0.45; float x = position.x; float z = position.z;
+      float h = 0.0;
+      h += sin(x*0.50 + t*1.20) * 1.40; h += sin(x*1.10 - t*0.85) * 0.75;
+      h += cos(z*0.38 + t*0.90) * 0.90; h += vnoise(vec2(x*0.20+t*0.16, z*0.20-t*0.13)) * 1.60;
+      h *= smoothstep(0.0, 0.30, vDepth) * smoothstep(1.0, 0.45, vDepth) * 1.25;
+      h -= 4.2; vH = clamp((h + 4.2) / 6.5, 0.0, 1.0);
+      vSettle = uSettle;
+      vec3 pos = position; pos.y = h;
+      pos += aScatter * (1.0 - uSettle);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = mix(2.2, 7.5, vDepth) * (0.70 + aRnd * 0.65) * (1.0 + vH * 0.65) * mix(0.35, 1.0, uSettle);
+    }
+  `;
+
+  const frag = `
+    varying float vH; varying float vDepth; varying float vSettle;
+    void main(){
+      vec2 uv = gl_PointCoord - 0.5; if(length(uv) > 0.5) discard;
+      float core = smoothstep(0.12, 0.0, length(uv));
+      float mid = smoothstep(0.30, 0.05, length(uv)) * 0.85;
+      float halo = smoothstep(0.50, 0.08, length(uv)) * 0.55;
+      vec3 col = mix(mix(mix(vec3(0.48, 0.06, 0.92), vec3(0.72, 0.25, 1.00), smoothstep(0.0, 0.40, vH)), vec3(0.90, 0.55, 1.00), smoothstep(0.40, 0.72, vH)), vec3(1.00, 0.95, 1.00), smoothstep(0.72, 1.00, vH));
+      gl_FragColor = vec4(clamp(col + vec3(0.70, 0.45, 1.00) * core * 0.90 + vec3(0.40, 0.10, 0.75) * mid * 0.45, 0.0, 1.0), (core + mid + halo) * mix(0.55, 1.0, vDepth) * smoothstep(0.0, 0.42, vDepth) * mix(0.3, 1.0, vSettle));
+    }
+  `;
+
+  const mat = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uSettle: { value: 0 } }, vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const wave = new THREE.Points(geo, mat); wave.position.set(0, -2.6, -3); scene.add(wave);
+
+  window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+  const clock = new THREE.Clock();
+  let camDiveActive = true;
+  (function loop() {
+    requestAnimationFrame(loop);
+    mat.uniforms.uTime.value = clock.getElapsedTime();
+    const bob = Math.sin(clock.getElapsedTime() * 0.18) * 0.12;
+    if (!camDiveActive) camera.position.y = CAM_REST.y + bob;
+    renderer.render(scene, camera);
+  })();
+
+  window.__playOpeningDive = function () {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { mat.uniforms.uSettle.value = 1; camera.position.set(CAM_REST.x, CAM_REST.y, CAM_REST.z); camDiveActive = false; return; }
+    gsap.to(mat.uniforms.uSettle, { value: 1, duration: 2.4, ease: 'power2.out', delay: 0.1 });
+    gsap.to(camera.position, {
+      x: CAM_REST.x, y: CAM_REST.y, z: CAM_REST.z, duration: 2.6, ease: 'power3.out', delay: 0.1,
+      onComplete: () => { camDiveActive = false; }
+    });
+  };
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Background + stars — the same skybox and near/far star-point
+   fields as index.html, at the same camera scale they were built
+   for (camera far out at z≈40, looking back toward the origin),
+   which is why the exact same size/opacity numbers read correctly
+   here. Rendered on its own canvas (#gl) so it's fully independent
+   of #bg-canvas (kept only as an inert element further down's
+   opacity toggles still target harmlessly) and #ambient-dust-canvas.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('gl');
+  if (!canvas) return;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#030208');
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 700);
+  const CAM_BASE = { x: 0, y: 0, z: 40 };
+  camera.position.set(CAM_BASE.x, CAM_BASE.y, CAM_BASE.z);
+  camera.lookAt(0, 0, 24);
+
+  const fog = new THREE.FogExp2(new THREE.Color('#030208').getHex(), 0.0055);
+  scene.fog = fog;
+
+  function resizeGL() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeGL);
+  resizeGL();
+
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let w = 0, h = 0;
-  let stars = [];
 
-  function buildStars() {
-    // Density scaled to screen area so it reads the same on any size.
-    // Three size/brightness tiers — mostly small dim dots, some medium,
-    // a rare few bright ones — same mix index.html's near/far star
-    // layers produce.
-    const count = Math.round((w * h) / 4500);
-    stars = [];
+  /* ---- Galaxy skybox (ported verbatim from index.html) ---- */
+  const SKY_BASE = '#030208';
+  function skyLightFrom(hex, peak, whiten) {
+    const r = parseInt(hex.substr(1, 2), 16),
+          g = parseInt(hex.substr(3, 2), 16),
+          b = parseInt(hex.substr(5, 2), 16);
+    const k = peak / (Math.max(r, g, b) || 1);
+    const mix = (v) => Math.round(v * k + (255 - v * k) * whiten);
+    return mix(r) + ',' + mix(g) + ',' + mix(b);
+  }
+  const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
+  const SKY_MONOCHROME = true;
+  const SKY_GLOW = 0.30;
+
+  function buildGalaxySkyTexture() {
+    const W = 1600, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = SKY_MONOCHROME ? SKY_BASE : '#050208';
+    ctx.fillRect(0, 0, W, H);
+
+    const bandRGB = SKY_MONOCHROME ? SKY_LIGHT : '150,90,200';
+    const bandA = 0.045 * (SKY_MONOCHROME ? SKY_GLOW : 1);
+    const band = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.72);
+    band.addColorStop(0, 'rgba(' + bandRGB + ',0)');
+    band.addColorStop(0.5, 'rgba(' + bandRGB + ',' + bandA + ')');
+    band.addColorStop(1, 'rgba(' + bandRGB + ',0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, H * 0.26, W, H * 0.48);
+
+    const blobDefs = [
+      { x: 0.12, y: 0.40, r: 220, rgb: '200,90,220', a: 0.07 },
+      { x: 0.32, y: 0.60, r: 190, rgb: '110,90,235', a: 0.06 },
+      { x: 0.58, y: 0.34, r: 260, rgb: '150,80,255', a: 0.065 },
+      { x: 0.80, y: 0.56, r: 190, rgb: '230,110,200', a: 0.05 },
+      { x: 0.46, y: 0.20, r: 160, rgb: '180,150,255', a: 0.03 },
+      { x: 0.94, y: 0.30, r: 140, rgb: '90,110,255', a: 0.045 },
+    ];
+    const blobs = blobDefs.map(function (b) {
+      const rgb = SKY_MONOCHROME ? SKY_LIGHT : b.rgb;
+      const a = b.a * (SKY_MONOCHROME ? SKY_GLOW : 1);
+      return { x: b.x, y: b.y, r: b.r, c: 'rgba(' + rgb + ',' + a + ')' };
+    });
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(b => {
+      const g = ctx.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+
+    for (let i = 0; i < 1200; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const inBand = y > H * 0.28 && y < H * 0.72;
+      const r = Math.random() * (inBand ? 1.7 : 1.1) + 0.2;
+      const a = Math.random() * 0.8 + 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const skyGeo = new THREE.SphereGeometry(320, 40, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: buildGalaxySkyTexture(), side: THREE.BackSide, fog: false });
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  scene.add(skyMesh);
+
+  /* ---- Star point-fields (ported verbatim from index.html) ---- */
+  function starTexture() {
+    const s = 128;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.12, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const STAR_TEX = starTexture();
+
+  function buildStars(count, radius, zSpan, size, opacity) {
+    const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const roll = Math.random();
-      let r, base;
-      if (roll < 0.04)      { r = 2.4 + Math.random() * 1.4; base = 0.75 + Math.random() * 0.25; }
-      else if (roll < 0.24) { r = 1.2 + Math.random() * 0.8; base = 0.42 + Math.random() * 0.25; }
-      else                  { r = 0.5 + Math.random() * 0.6; base = 0.18 + Math.random() * 0.22; }
-      stars.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r, base,
-        phase: Math.random() * Math.PI * 2,
-        speed: 0.4 + Math.random() * 0.8
+      positions[i * 3]     = (Math.random() - 0.5) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.6;
+      positions[i * 3 + 2] = 45 - Math.random() * zSpan;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size, map: STAR_TEX, color: 0xffffff, transparent: true, opacity,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+  function makeStarField(layers, countEach, radius, zSpan, size, baseOpacity) {
+    const group = new THREE.Group();
+    const list = [];
+    for (let i = 0; i < layers; i++) {
+      const mesh = buildStars(countEach, radius, zSpan, size, baseOpacity);
+      group.add(mesh);
+      list.push({ mesh, baseOpacity, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.9 });
+    }
+    scene.add(group);
+    return { group, layers: list };
+  }
+  const nearStarField = makeStarField(4, 163, 34, 150, 0.055, 0.85);
+  const farStarField  = makeStarField(3, 133, 130, 220, 0.045, 0.4);
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const elapsed = clock.getElapsedTime();
+    if (!reducedMotion) {
+      [...nearStarField.layers, ...farStarField.layers].forEach((l) => {
+        const twinkle = 0.78 + 0.22 * Math.sin(elapsed * l.speed + l.phase);
+        l.mesh.material.opacity = l.baseOpacity * twinkle;
       });
+      nearStarField.group.rotation.z = elapsed * 0.003;
+      farStarField.group.rotation.z = -elapsed * 0.0015;
+      skyMesh.rotation.y = elapsed * 0.004;
+      // Idle camera breathing — a slow, small drift so the background
+      // feels alive even while the page itself sits still.
+      camera.position.x = CAM_BASE.x + Math.sin(elapsed * 0.05) * 1.4;
+      camera.position.y = CAM_BASE.y + Math.sin(elapsed * 0.037) * 0.8;
+      camera.lookAt(0, 0, 24);
     }
-  }
-
-  function resize() {
-    w = window.innerWidth; h = window.innerHeight;
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buildStars();
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  // Same tight bright-core falloff as index.html's own star sprite
-  // (starTexture(): stops at 0/0.12/0.3/1) — a sharp point with a short
-  // soft edge, not a big diffuse blur.
-  function drawFrame(elapsed) {
-    ctx.clearRect(0, 0, w, h);
-    for (let i = 0; i < stars.length; i++) {
-      const s = stars[i];
-      const twinkle = reducedMotion ? 1 : 0.75 + 0.25 * Math.sin(elapsed * s.speed + s.phase);
-      const a = s.base * twinkle;
-      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
-      grad.addColorStop(0,    'rgba(255,255,255,' + a + ')');
-      grad.addColorStop(0.12, 'rgba(255,255,255,' + (a * 0.85) + ')');
-      grad.addColorStop(0.3,  'rgba(255,255,255,' + (a * 0.12) + ')');
-      grad.addColorStop(1,    'rgba(255,255,255,0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-
-  if (reducedMotion) {
-    drawFrame(0);
-  } else {
-    const t0 = performance.now();
-    (function tick() {
-      requestAnimationFrame(tick);
-      drawFrame((performance.now() - t0) / 1000);
-    })();
-  }
+    renderer.render(scene, camera);
+  })();
 })();
 </script>
 
@@ -749,119 +988,6 @@ body.page-about .hf-label {
 
 <script>
 
-(function () {
-  const canvas   = document.getElementById('bg-canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setClearColor(0x030208, 1);
-  renderer.setSize(innerWidth, innerHeight);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 300);
-  // Opening dive: camera starts pulled-in close/low, then eases back to its
-  // resting position as the page reveals — the "camera push-back" half of the
-  // cinematic open. See gsap.to(camera.position, ...) below, fired in sync
-  // with the header/hero text entrance.
-  const CAM_REST = { x: 0, y: 3.5, z: 12 };
-  camera.position.set(0, 1.1, 6.2);
-  camera.lookAt(0, -2, 0);
-
-  const COLS = 420; const ROWS = 180; const W = 42; const D = 22;
-  const total = COLS * ROWS;
-  const positions = new Float32Array(total * 3);
-  const uvData = new Float32Array(total * 2);
-  const randoms = new Float32Array(total);
-  // Per-point scatter offset: each point starts flung away from its resting
-  // grid position, then converges home as uSettle animates 0→1 — dust
-  // gathering itself into the terrain, the other half of the cinematic open.
-  const scatter = new Float32Array(total * 3);
-
-  let idx = 0;
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      positions[idx * 3]     = (c / (COLS - 1) - 0.5) * W;
-      positions[idx * 3 + 1] = 0;
-      positions[idx * 3 + 2] = (r / (ROWS - 1)) * D;
-      uvData[idx * 2]     = c / (COLS - 1);
-      uvData[idx * 2 + 1] = r / (ROWS - 1);
-      randoms[idx]        = Math.random();
-      scatter[idx * 3]     = (Math.random() - 0.5) * 30;
-      scatter[idx * 3 + 1] = (Math.random() - 0.5) * 3 + 8 + Math.random() * 10;
-      scatter[idx * 3 + 2] = (Math.random() - 0.5) * 30;
-      idx++;
-    }
-  }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('uv',       new THREE.BufferAttribute(uvData, 2));
-  geo.setAttribute('aRnd',     new THREE.BufferAttribute(randoms, 1));
-  geo.setAttribute('aScatter', new THREE.BufferAttribute(scatter, 3));
-
-  const vert = `
-    uniform float uTime; uniform float uSettle;
-    attribute float aRnd; attribute vec3 aScatter;
-    varying float vH; varying float vDepth; varying float vSettle;
-    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-    float vnoise(vec2 p){
-      vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
-      return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
-    }
-    void main(){
-      vDepth = uv.y; float t = uTime * 0.45; float x = position.x; float z = position.z;
-      float h = 0.0;
-      h += sin(x*0.50 + t*1.20) * 1.40; h += sin(x*1.10 - t*0.85) * 0.75;
-      h += cos(z*0.38 + t*0.90) * 0.90; h += vnoise(vec2(x*0.20+t*0.16, z*0.20-t*0.13)) * 1.60;
-      h *= smoothstep(0.0, 0.30, vDepth) * smoothstep(1.0, 0.45, vDepth) * 1.25;
-      h -= 4.2; vH = clamp((h + 4.2) / 6.5, 0.0, 1.0);
-      vSettle = uSettle;
-      vec3 pos = position; pos.y = h;
-      pos += aScatter * (1.0 - uSettle);
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = mix(2.2, 7.5, vDepth) * (0.70 + aRnd * 0.65) * (1.0 + vH * 0.65) * mix(0.35, 1.0, uSettle);
-    }
-  `;
-
-  const frag = `
-    varying float vH; varying float vDepth; varying float vSettle;
-    void main(){
-      vec2 uv = gl_PointCoord - 0.5; if(length(uv) > 0.5) discard;
-      float core = smoothstep(0.12, 0.0, length(uv));
-      float mid = smoothstep(0.30, 0.05, length(uv)) * 0.85;
-      float halo = smoothstep(0.50, 0.08, length(uv)) * 0.55;
-      vec3 col = mix(mix(mix(vec3(0.48, 0.06, 0.92), vec3(0.72, 0.25, 1.00), smoothstep(0.0, 0.40, vH)), vec3(0.90, 0.55, 1.00), smoothstep(0.40, 0.72, vH)), vec3(1.00, 0.95, 1.00), smoothstep(0.72, 1.00, vH));
-      gl_FragColor = vec4(clamp(col + vec3(0.70, 0.45, 1.00) * core * 0.90 + vec3(0.40, 0.10, 0.75) * mid * 0.45, 0.0, 1.0), (core + mid + halo) * mix(0.55, 1.0, vDepth) * smoothstep(0.0, 0.42, vDepth) * mix(0.3, 1.0, vSettle));
-    }
-  `;
-
-  const mat = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uSettle: { value: 0 } }, vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
-  const wave = new THREE.Points(geo, mat); wave.position.set(0, -2.6, -3); scene.add(wave);
-
-  window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
-  const clock = new THREE.Clock();
-  let camDiveActive = true;
-  (function loop() {
-    requestAnimationFrame(loop);
-    mat.uniforms.uTime.value = clock.getElapsedTime();
-    const bob = Math.sin(clock.getElapsedTime() * 0.18) * 0.12;
-    if (!camDiveActive) camera.position.y = CAM_REST.y + bob;
-    renderer.render(scene, camera);
-  })();
-
-  // Fired once the page loader dismisses (see waitForLoader/playHeaderIn
-  // below) so the dust-settle + camera pull-back play in sync with the hero
-  // text reveal instead of racing it on page load.
-  window.__playOpeningDive = function () {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) { mat.uniforms.uSettle.value = 1; camera.position.set(CAM_REST.x, CAM_REST.y, CAM_REST.z); camDiveActive = false; return; }
-    gsap.to(mat.uniforms.uSettle, { value: 1, duration: 2.4, ease: 'power2.out', delay: 0.1 });
-    gsap.to(camera.position, {
-      x: CAM_REST.x, y: CAM_REST.y, z: CAM_REST.z, duration: 2.6, ease: 'power3.out', delay: 0.1,
-      onComplete: () => { camDiveActive = false; }
-    });
-  };
-})();
-
 gsap.registerPlugin(ScrollTrigger);
 
 /* ── Global smooth-scroll tuning ── */
@@ -1160,19 +1286,6 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
 
 (function () {
 
-  ScrollTrigger.create({
-    trigger: '#manifesto-section',
-    start: 'top 120%',
-    end: 'top 60%',
-    scrub: 0.8,
-    onUpdate: self => {
-      document.getElementById('bg-canvas').style.opacity = 1 - self.progress;
-    },
-    onLeaveBack: () => {
-      document.getElementById('bg-canvas').style.opacity = 1;
-    }
-  });
-
   const tl = gsap.timeline({
     scrollTrigger: {
       trigger: '#manifesto-section',
@@ -1220,19 +1333,6 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
        ease: 'power2.out'
      }, '-=0.1');
 
-  ScrollTrigger.create({
-    trigger: '#methodology-section',
-    start: 'top 80%',
-    endTrigger: '#stackless-section',
-    end: 'bottom top',
-    scrub: 0.8,
-    onUpdate: self => {
-      document.getElementById('bg-canvas').style.opacity = Math.min(self.progress * 2, 1);
-    },
-    onLeaveBack: () => {
-      document.getElementById('bg-canvas').style.opacity = 0;
-    }
-  });
 })();
 
 (function () {
@@ -1405,8 +1505,8 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
 
 /* ══════════════════════════════════════════════════════════════
    Ambient dust — a second, much subtler generative particle layer,
-   independent of the big bg-canvas terrain and the dna-canvas helix.
-   Fades in specifically while scrolling through the veracity /
+   independent of the real background/star canvas and the dna-canvas
+   helix. Fades in specifically while scrolling through the veracity /
    methodology / stackless sections so those flat text sections still
    feel alive, without touching any existing content or layout.
    ══════════════════════════════════════════════════════════════ */
@@ -1973,16 +2073,6 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
 <script>
 
 (function () {
-
-  ScrollTrigger.create({
-    trigger: '#site-footer',
-    start: 'top 90%',
-    end: 'top 40%',
-    scrub: 0.8,
-    onUpdate: self => {
-      document.getElementById('bg-canvas').style.opacity = Math.max(0, 1 - self.progress * 2);
-    }
-  });
 
   gsap.to('.creative-footer-reveal-container', {
     scrollTrigger: {
