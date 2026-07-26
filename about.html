@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVacity | About</title>
+<link rel="icon" type="image/png" href="media/icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   Base tone — ported from index.html's near-black #030208 (was the
+   site-wide #0a0315 purple-black). Scoped to this page only: this is
+   about.html's own inline stylesheet, so it doesn't touch style.css
+   or any other page.
+   ══════════════════════════════════════════════════════════════ */
+body.page-about {
+  background: #030208;
+}
+body.page-about .mobile-slide-menu {
+  background: #030208;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Header theme — ported from index.html's "chrome" header: a
+   continuously-sweeping gradient underline, a slow pulsing glow on
+   the logo, and a per-letter wave on nav-link hover. All additive on
+   top of style.css's existing header (same underline/lift/flare
+   hover it already had stays; this layers the extra motion in).
+   ══════════════════════════════════════════════════════════════ */
+body.page-about .main-header::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,127,255,0.95), rgba(244,161,53,0.5), transparent);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: aboutHeaderSweep 7s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.8;
+}
+@keyframes aboutHeaderSweep {
+  0%   { background-position: -60% 0; }
+  50%  { background-position: 130% 0; }
+  100% { background-position: -60% 0; }
+}
+body.page-about .main-header .logo img {
+  animation: aboutLogoGlowPulse 4.5s ease-in-out infinite;
+}
+@keyframes aboutLogoGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(168,85,247,0.4)); }
+  50%      { filter: drop-shadow(0 0 26px rgba(216,127,255,0.8)); }
+}
+body.page-about .nav-center a .ltr {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), color 0.35s ease, text-shadow 0.35s ease;
+}
+body.page-about .nav-center a:hover .ltr {
+  animation: aboutNavLetterWave 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation-delay: calc(var(--i) * 28ms);
+}
+@keyframes aboutNavLetterWave {
+  0%   { transform: translateY(0); color: #fff; text-shadow: none; }
+  45%  { transform: translateY(-7px); color: #f4a135; text-shadow: 0 0 10px rgba(244,161,53,0.8); }
+  100% { transform: translateY(0); color: #9b5de5; text-shadow: 0 0 8px rgba(155,93,229,0.5); }
+}
+
+/* Button gradients — ported from index.html's violet/gold semantic pair
+   (warrant = cool violet, reward = gold), replacing style.css's default
+   magenta/green pair for this page only. */
+body.page-about .btn-warrant {
+  background: linear-gradient(135deg, #6f8fff 0%, #9d6fff 50%, #c96fe0 100%);
+  box-shadow: none;
+}
+body.page-about .btn-warrant:hover {
+  background: linear-gradient(135deg, #86a2ff 0%, #b088ff 50%, #db8bec 100%);
+  box-shadow: 0 0 20px rgba(157,111,255,0.5);
+}
+body.page-about .btn-reward {
+  background: linear-gradient(135deg, #ffc857 0%, #ffdb8a 50%, #ffe9b8 100%);
+  color: #1a1420;
+  box-shadow: none;
+}
+body.page-about .btn-reward:hover {
+  background: linear-gradient(135deg, #ffb92e 0%, #ffcf70 50%, #ffe08a 100%);
+  box-shadow: 0 0 20px rgba(255,200,87,0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Title styles — ported from index.html's chapter-heading treatment
+   (Space Grotesk, weight 700, tight letter-spacing) for every major
+   heading, and its eyebrow treatment (uppercase, wide tracking, soft
+   glow in the label's own color) for the small labels above them.
+   ══════════════════════════════════════════════════════════════ */
+body.page-about .hero-title,
+body.page-about .era-name,
+body.page-about .manifesto-title,
+body.page-about .methodology-heading,
+body.page-about .stackless-title,
+body.page-about .veracity-title,
+body.page-about .three-tier-heading,
+body.page-about .outro-heading,
+body.page-about .hf-title {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+body.page-about .origin-label,
+body.page-about .era-dates,
+body.page-about .methodology-label,
+body.page-about .three-tier-label,
+body.page-about .hf-label {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  text-shadow: 0 0 16px currentColor;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Constellation nav — ported from index.html: a small vertical row
+   of dots on the right edge, one per section, the current one lit up
+   and glowing in the page's own accent purple; click any dot to jump.
+   ══════════════════════════════════════════════════════════════ */
+.constellation-nav {
+  position: fixed;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 150;
+}
+.constellation-node {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  padding: 0;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color .35s ease, background-color .35s ease, box-shadow .35s ease, transform .35s ease;
+}
+.constellation-node:hover {
+  border-color: #9b5de5;
+  transform: scale(1.3);
+}
+.constellation-node.is-active {
+  background: #9b5de5;
+  border-color: #9b5de5;
+  transform: scale(1.4);
+  box-shadow: 0 0 10px #9b5de5, 0 0 20px rgba(155,93,229,0.45);
+}
+@media (max-width: 900px) {
+  .constellation-nav { display: none; }
+}
+
+#bg-canvas {
+  transition: opacity 0.25s ease-out;
+}
+.electrical-node, .connector-line {
+  transition: opacity 0.35s ease-out, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#wire-animated, #plasma-1, #plasma-2 {
+  transition: stroke-dashoffset 0.05s linear;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WebGL canvases replacing the old flat 2D canvas art
+   ══════════════════════════════════════════════════════════════ */
+#dna-canvas, #circuit-canvas { display: block; }
+
+/* ══════════════════════════════════════════════════════════════
+   Ambient dust — a second, much subtler generative layer (independent
+   of the big bg-canvas terrain and the dna-canvas helix) that fades in
+   specifically behind the methodology / stackless / veracity sections,
+   so the flat text sections still feel alive without touching their
+   existing content or layout.
+   ══════════════════════════════════════════════════════════════ */
+#starfield-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#ambient-dust-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Scroll-linked 3D card depth — perspective on the existing card
+   grids so .stackless-card / .three-tier-card / .veracity-row can
+   tilt in real 3D as they cross the viewport (driven from JS below),
+   instead of only fading in flat.
+   ══════════════════════════════════════════════════════════════ */
+.stackless-grid, .three-tier-cards, .veracity-table {
+  perspective: 1400px;
+}
+.stackless-card, .three-tier-card, .veracity-row {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Footer bookend — a one-shot particle convergence around the footer
+   logo, mirroring the hero's opening dust-settle, so the page closes
+   with the same motion language it opened with.
+   ══════════════════════════════════════════════════════════════ */
+.footer-logo-wrap {
+  position: relative;
+  display: inline-block;
+}
+#footer-logo-canvas {
+  position: absolute;
+  inset: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  pointer-events: none;
+}
+</style>
+</head>
+
+<body class="page-about">
+<div id="page-loader">
+  <video id="loader-video" autoplay loop muted playsinline webkit-playsinline preload="auto"
+    disablepictureinpicture x5-playsinline x5-video-player-type="h5" width="200px">
+    <source src="media/loader2.mp4" type="video/mp4">
+  </video>
+</div>
+<script>
+
+  (function () {
+    var v = document.getElementById('loader-video');
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute('muted', '');
+    function tryPlay() {
+      var p = v.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(function () {
+          var resume = function () {
+            v.play();
+            document.removeEventListener('touchstart', resume);
+            document.removeEventListener('click', resume);
+          };
+          document.addEventListener('touchstart', resume, { once: true });
+          document.addEventListener('click', resume, { once: true });
+        });
+      }
+    }
+    if (v.readyState >= 2) {
+      tryPlay();
+    } else {
+      v.addEventListener('loadeddata', tryPlay, { once: true });
+      v.addEventListener('canplay', tryPlay, { once: true });
+    }
+  })();
+</script>
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="starfield-bg"></canvas>
+<canvas id="ambient-dust-canvas"></canvas>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Starfield backdrop — the same light-dot field as index.html's
+   background, drawn on a plain 2D canvas instead of a 3D scene.
+   Placed directly after #bg-canvas in the DOM at the same z-index,
+   so it paints on top of it regardless of the terrain canvas's own
+   opacity — a fixed pixel canvas, no camera/perspective math, so
+   every dot lands exactly where it's drawn and stays visible.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('starfield-bg');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let w = 0, h = 0;
+  let stars = [];
+
+  function buildStars() {
+    // Density scaled to screen area so it reads the same on any size.
+    // Three size/brightness tiers — mostly small dim dots, some medium,
+    // a rare few bright ones — same mix index.html's near/far star
+    // layers produce.
+    const count = Math.round((w * h) / 4500);
+    stars = [];
+    for (let i = 0; i < count; i++) {
+      const roll = Math.random();
+      let r, base;
+      if (roll < 0.04)      { r = 2.4 + Math.random() * 1.4; base = 0.75 + Math.random() * 0.25; }
+      else if (roll < 0.24) { r = 1.2 + Math.random() * 0.8; base = 0.42 + Math.random() * 0.25; }
+      else                  { r = 0.5 + Math.random() * 0.6; base = 0.18 + Math.random() * 0.22; }
+      stars.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r, base,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 0.8
+      });
+    }
+  }
+
+  function resize() {
+    w = window.innerWidth; h = window.innerHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildStars();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Same tight bright-core falloff as index.html's own star sprite
+  // (starTexture(): stops at 0/0.12/0.3/1) — a sharp point with a short
+  // soft edge, not a big diffuse blur.
+  function drawFrame(elapsed) {
+    ctx.clearRect(0, 0, w, h);
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const twinkle = reducedMotion ? 1 : 0.75 + 0.25 * Math.sin(elapsed * s.speed + s.phase);
+      const a = s.base * twinkle;
+      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
+      grad.addColorStop(0,    'rgba(255,255,255,' + a + ')');
+      grad.addColorStop(0.12, 'rgba(255,255,255,' + (a * 0.85) + ')');
+      grad.addColorStop(0.3,  'rgba(255,255,255,' + (a * 0.12) + ')');
+      grad.addColorStop(1,    'rgba(255,255,255,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  if (reducedMotion) {
+    drawFrame(0);
+  } else {
+    const t0 = performance.now();
+    (function tick() {
+      requestAnimationFrame(tick);
+      drawFrame((performance.now() - t0) / 1000);
+    })();
+  }
+})();
+</script>
+
+<header class="main-header">
+  <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+  <nav class="nav-center">
+      <a href="index.html" data-text="The Collapse">The Collapse</a>
+      <a href="about.html" data-text="About Us">About Us</a>
+      <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+      <a href="compare.html" data-text="Compare">Compare</a>
+      <a href="blog.html" data-text="Blog">Blog</a>
+  </nav>
+
+  <div style="display: flex; align-items: center; gap: 20px;">
+
+      <div class="header-buttons">
+          <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+              <span>Start a Warrant</span>
+          </a>
+          <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+              <span>$100k Reward</span>
+          </a>
+      </div>
+      <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+      </div>
+  </div>
+</header>
+<div class="mobile-slide-menu" id="mobile-menu">
+    <div class="close-menu" id="close-menu">
+        <span></span>
+        <span></span>
+    </div>
+
+    <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+    <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+    <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+    <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+    <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+    <div class="mobile-menu-cta" style="--i: 6;">
+        <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+        <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+    </div>
+</div>
+
+<div id="scroll-indicator">
+  <div class="scroll-pill">
+    <div class="scroll-arrow-inner">
+      <svg viewBox="0 0 14 18" xmlns="http://www.w3.org/2000/svg">
+        <line x1="7" y1="1" x2="7" y2="14" />
+        <polyline points="3,10 7,15 11,10" />
+      </svg>
+    </div>
+  </div>
+</div>
+
+<nav class="constellation-nav" id="constellation-nav"></nav>
+
+<div id="pin-wrapper">
+  <div id="track">
+
+    <section id="hero">
+      <p class="origin-label">The Origin</p>
+      <h1 class="hero-title">How We Got Here.</h1>
+      <p class="hero-subtitle">Living, human-first, Zero-legacy, Dynamic knowledge graph, Stackless stack (JIT learning), Metacognition agency, following stateless outcome engineering practice specialized in marketing and Ai intelligence</p>
+
+    </section>
+
+    <section id="timeline-section">
+      <svg class="svg-timeline-container" id="timeline-svg">
+        <defs>
+          <linearGradient id="stream-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ff1e3d" />
+            <stop offset="28%" stop-color="#fbaec1" />
+            <stop offset="50%" stop-color="#ffffff" />
+            <stop offset="72%" stop-color="#9d4eff" />
+            <stop offset="100%" stop-color="#ffea00" />
+          </linearGradient>
+        </defs>
+        <path class="electricity-back" d="" id="wire-back" />
+        <path class="plasma-aura" d="" id="plasma-1" />
+        <path class="plasma-aura" d="" id="plasma-2" />
+        <path class="electricity-wire" d="" id="wire-animated" />
+      </svg>
+
+      <div class="electrical-node era-1-node" id="node-1"></div>
+      <div class="electrical-node era-2-node" id="node-2"></div>
+      <div class="electrical-node era-3-node" id="node-3"></div>
+      <div class="electrical-node era-4-node" id="node-4"></div>
+
+      <div class="pulse-ring era-1-node" id="pulse-1"></div>
+      <div class="pulse-ring era-2-node" id="pulse-2"></div>
+      <div class="pulse-ring era-3-node" id="pulse-3"></div>
+      <div class="pulse-ring era-4-node" id="pulse-4"></div>
+
+      <div class="era-card era-1" id="card-1">
+        <p class="era-dates">2007–2015</p>
+        <h2 class="era-name">The Foundation</h2>
+        <p class="era-body">Eighteen years in the trenches. Not in agencies — in the businesses themselves. Retail, e-commerce, FMCG, hospitality.</p>
+        <div class="connector-line"></div>
+      </div>
+
+      <div class="era-card era-2" id="card-2">
+        <div class="connector-line"></div>
+        <p class="era-dates">2015–2023</p>
+        <h2 class="era-name">The Realization</h2>
+        <p class="era-body">The industry kept getting louder and less useful. More tools, more platforms, more acronyms — and less revenue.</p>
+      </div>
+
+      <div class="era-card era-3" id="card-3">
+        <p class="era-dates">2023–2024</p>
+        <h2 class="era-name">The Frontier</h2>
+        <p class="era-body">AI changed the game — not because it replaced humans, but because it amplified the gap between good and bad operators.</p>
+        <div class="connector-line"></div>
+      </div>
+
+      <div class="era-card era-4" id="card-4">
+        <div class="connector-line"></div>
+        <p class="era-dates">2024–Now</p>
+        <h2 class="era-name">REVacity</h2>
+        <p class="era-body">Built from Aqaba, Jordan. Revenue Warrants instead of contracts. Sovereign Architects instead of account managers.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="outro">
+  <div class="outro-inner-wrap">
+    <img src="media/REVacity.png" alt="REVacity" class="outro-logo" />
+    <div class="outro-blocks">
+      <div class="outro-block outro-block--left">
+        <h2 class="outro-heading">Frontier Revenue &amp; Growth<br>Engineering Practice</h2>
+        <p class="outro-body">REVacity is a living, human-first agency that has fully embraced and converged with Modern, Hyper, and Intelligence marketing — specialized in Marketing 7.0 — integrated with the latest AI practices. We harness AI for collective human intelligence and metacognition, embedded across every node of the commercial stack to generate beyond-ordinary outcomes and guaranteed results.</p>
+      </div>
+      <div class="outro-block outro-block--right">
+        <h2 class="outro-heading outro-heading--accent">A gifted Revenue and Growth <br /> Intelligence agency.</h2>
+        <p class="outro-body outro-body--bold">We harness the power of AI for Collective Human Intelligence and Metacognition (AI-Co-pilot Mastery), embedding it across every node of the commercial stack Generated Beyond ordinary Outcomes.</p>
+      </div>
+    </div>
+
+
+    <div class="stateless-banner">
+      <div class="stateless-left">
+        <canvas class="stateless-left-canvas" id="stateless-canvas"></canvas>
+        <p class="stateless-left-label">Philosophy /</p>
+        <h2 class="stateless-left-heading">
+          WE ARE <span class="hl-orange">NOT AN AGENCY.</span><br>
+          WE ARE A STATELESS<br>
+          OUTCOME ENGINEERING
+          PRACTICE.
+        </h2>
+      </div>
+      <div class="stateless-right">
+        <p class="stateless-right-text">No frameworks. No templates. No pre-packaged solutions. Every engagement is a first-time build — because your reality hasn't been engineered yet.</p>
+      </div>
+    </div>
+    <div class="veracity-section">
+
+      <div class="veracity-left">
+        <h2 class="veracity-title">REVacity Is Veracity, Rotated.</h2>
+        <p class="veracity-intro">We took the oldest word in business — truth — and turned its first three letters into Rev: revenue, the engine revving, the revolution against legacy. What's left is a name that carries its philosophy in its spelling.</p>
+        <div class="veracity-table">
+          <div class="veracity-row">
+            <span class="vr-term">Rev</span>
+            <span class="vr-arrow">&#8594;</span>
+            <span class="vr-def">Revenue, acceleration, engine, commercial output</span>
+          </div>
+          <div class="veracity-row">
+            <span class="vr-term">Veracity</span>
+            <span class="vr-arrow">&#8594;</span>
+            <span class="vr-def">Truth, proof, accuracy, authenticity</span>
+          </div>
+          <div class="veracity-row">
+            <span class="vr-term">-acity</span>
+            <span class="vr-arrow">&#8594;</span>
+            <span class="vr-def">Capacity, audacity, velocity, adaptability</span>
+          </div>
+          <div class="veracity-row veracity-row--highlight">
+            <span class="vr-term vr-term--highlight">REVacity</span>
+            <span class="vr-arrow vr-arrow--highlight">&#8594;</span>
+            <span class="vr-def vr-def--highlight">The capacity to engineer revenue from truth</span>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="veracity-right">
+        <p class="vr2-headline">We are not just another "digital marketing agency."</p>
+        <p class="vr2-subheading">We Know The market is flooded with execution-only shops.</p>
+        <ul class="vr2-list">
+          <li><strong>Human-First Marketing:</strong> Because AI makes everything look similar, the key to success is authentic, real stories from employees and customers to build trust.</li>
+          <li><strong>Data-Driven, Not Just Data-Rich:</strong> Marketing must move from vanity metrics to "systemized, strategy-first" execution, leveraging first-party data for personalization without being "creepy".</li>
+          <li><strong>High-Intent Consolidation:</strong> High-performing teams are cutting numerous, low-performing channels and consolidating funds into high-intent environments.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<section id="manifesto-section">
+  <canvas id="dna-canvas"></canvas>
+  <div class="manifesto-layout">
+
+
+    <div class="manifesto-left manifesto-inner">
+      <h2 class="manifesto-title">Our Manifesto</h2>
+      <div class="manifesto-body">
+        <p>The AI scene today is overwhelming everyone with daily if not hourly hype trains, each with its own set of new concepts and updated terminology.</p>
+        <p>It is hard to tell apart real signals from the misleading noise. Enterprises are selling fluff with the goal of looking trendy instead of truthful, and are spending more effort attracting instead of solving problems. Clients chase these buzzwords, and ignore the fact that they were sold "trends" with no actual truth to them.</p>
+        <p>Narrowing your pains or goals to fit one of the pre-packaged common, trendy terms is not just lazy—it's malpractice. We believe that clients are looking for clear outputs, specifically one of two things: increasing revenue or customer acquisition. We also believe there is no one-size-fits-all solution for everyone.</p>
+      </div>
+      <blockquote class="manifesto-quote">
+        If its Generative, if its intelligence, Curated and engineered only for you....How come it have a name !!?
+      </blockquote>
+
+      <p class="manifesto-revenue">
+        We are revenue oriented and output driven - the only numbers both we and our clients like to check are our bank accounts.
+      </p>
+
+      <p class="manifesto-unfair">
+        <span class="uf-gold">WE ARE THE UNFAIR</span> <span class="uf-purple">CHOICE FOR YOUR COMPETITORS</span>
+      </p>
+    </div>
+
+
+    <div class="manifesto-right">
+      <div class="vm-block">
+        <h3 class="vm-title">Our vision:</h3>
+        <ul class="vm-list">
+          <li>Elevating business from "Managing Complexity" to "Architected Intelligence", transforming market noise into the clarity of Guranteed Revenue&amp; Growth through a self-evolving Cognitive-Contextual-Aware-Engineered Ecosystem, We look to Act as Ai, Modern marketing Boutique.</li>
+        </ul>
+      </div>
+      <div class="vm-block">
+        <h3 class="vm-title">Our Mission:</h3>
+        <ul class="vm-list">
+          <li>The Differentiation: They manage "Traffic" and "Funnels"; We engineer "Cognition" and "Novel Outcomes". We operationalize Human-Machine Teaming For ROI Elevation Not only Optimization, fusing Predictive Intelligence with Data-Profit Driven Creativity to ensure every interaction is a verified step toward Revenue, Acquisition, Activation, and Retention (RAAR)</li>
+          <li>Our Industry is dynamic; So we are, We are driven by the desired and targeted outcomes and Values, Not based on our capabilities or prior skills or even the massive experience. Same As we are not a Development House, or Agents market place, we are Not Digital marketing and content Generation agency, If there is a tool or a solution for it, Does not converge with (Value-Time-Budget) Its clear stupidity to build it. that's why we are Human-First Ai agency, Moving From Hand to Mind (Click become Intent), and we are here to make it action</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="methodology-section">
+  <div class="methodology-section">
+    <div class="methodology-cols">
+
+
+      <div class="methodology-left">
+        <p class="methodology-label">The Methodology</p>
+        <h2 class="methodology-heading">How We Think</h2>
+        <div class="methodology-list">
+          <div class="methodology-item">
+            <span class="methodology-num">1.</span>
+            <div class="methodology-content">
+              <span class="methodology-item-title">Truth over Trends</span>
+              <span class="methodology-item-body">Every solution must be Novel, Modular, and Native. Off-the-shelf is rejected on principle.</span>
+            </div>
+          </div>
+          <div class="methodology-item">
+            <span class="methodology-num">2.</span>
+            <div class="methodology-content">
+              <span class="methodology-item-title">Surgical Liberation</span>
+              <span class="methodology-item-body">The first move is to identify what to delete, not what to build.</span>
+            </div>
+          </div>
+          <div class="methodology-item">
+            <span class="methodology-num">3.</span>
+            <div class="methodology-content">
+              <span class="methodology-item-title">Meaning over Measurement</span>
+              <span class="methodology-item-body">We compute how fast meaning is changing and in what direction. Vanity metrics are abandoned at the perimeter.</span>
+            </div>
+          </div>
+          <div class="methodology-item">
+            <span class="methodology-num">4.</span>
+            <div class="methodology-content">
+              <span class="methodology-item-title">Contextual Engineering</span>
+              <span class="methodology-item-body">We solve for Zero or Messy Data by default. Data Fabrication closes the gap.</span>
+            </div>
+          </div>
+          <div class="methodology-item">
+            <span class="methodology-num">5.</span>
+            <div class="methodology-content">
+              <span class="methodology-item-title">Capability Bias Doctrine (JIT Learning)</span>
+              <span class="methodology-item-body">We acquire capabilities when needed, not before. No mastery trap, no model bias, no platform allegiance.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="three-tier-panel">
+        <p class="three-tier-label">Quality Architecture</p>
+        <h2 class="three-tier-heading">THREE-TIER<br>EVALUATION.</h2>
+        <p class="three-tier-sub">Every output passes three gates before it earns the Revacity seal.</p>
+        <div class="three-tier-cards">
+          <div class="three-tier-card">
+            <div class="three-tier-card-num">01</div>
+            <div class="three-tier-card-title">Contextual Fidelity</div>
+            <div class="three-tier-card-body">Does this output maintain meaning within the client's specific context? Generic answers fall here. Every output must be contextually bound to the client's reality.</div>
+          </div>
+          <div class="three-tier-card">
+            <div class="three-tier-card-num">02</div>
+            <div class="three-tier-card-title">Semantic Leverage</div>
+            <div class="three-tier-card-body">Does this output create disproportionate impact relative to its complexity? We optimize for semantic leverage — small precise changes that shift entire meaning systems.</div>
+          </div>
+          <div class="three-tier-card">
+            <div class="three-tier-card-num">03</div>
+            <div class="three-tier-card-title">Warrant Integrity</div>
+            <div class="three-tier-card-body">Can we stand behind this output with a Revenue Warrant? If the answer is no, the output doesn't ship. Warrant integrity is the ultimate filter.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="stackless-section">
+  <div class="stackless-inner">
+
+    <div class="stackless-header">
+      <h2 class="stackless-title">The <span class="hl-orange">Stackless</span> Stack</h2>
+    </div>
+
+    <div class="stackless-subtitle-row">
+      <span class="stackless-subtitle-item">
+        <span class="stackless-dot stackless-dot--white"></span>
+        <strong>The Human Stack</strong> — Sovereign Architects (own intent)
+      </span>
+      <span class="stackless-subtitle-item">
+        <span class="stackless-dot stackless-dot--red"></span>
+        <strong>The Agentic Workforce</strong> — Meta-Configurable Swarms (own scale)
+      </span>
+    </div>
+
+    <p class="stackless-bridge">The DKG is the bridge.</p>
+
+    <div class="stackless-divider"></div>
+
+    <div class="stackless-grid">
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">1.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Authenticity over AI —<br>Human First.</div>
+          <div class="stackless-card-body">AI amplifies human brilliance; it does not replace human judgment.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">2.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Meaning over Measurements.</div>
+          <div class="stackless-card-body">We don't count clicks; we measure Velocity of Trust.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">3.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Truth, not Trend.</div>
+          <div class="stackless-card-body">Off-the-shelf is rejected on principle, not on style.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">4.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">High-value Specialists, not Generalists.</div>
+          <div class="stackless-card-body">Sovereign Architects, not account managers.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">5.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Revenue Warrants, not<br>Service Contracts.</div>
+          <div class="stackless-card-body">We sign behind outcomes, not timesheets.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">6.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Zero Legacy — Living Engine.</div>
+          <div class="stackless-card-body">No inherited frameworks, no unexamined patterns.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card stackless-card2">
+        <div class="stackless-card-num">7.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Engineering High, not Defints.</div>
+          <div class="stackless-card-body">We sell results, not reports. Truths, not trends.</div>
+        </div>
+      </div>
+
+      <div class="stackless-card">
+        <div class="stackless-card-num">7.</div>
+        <div class="stackless-card-content">
+          <div class="stackless-card-title">Engineering Reality for a Better Future.</div>
+          <div class="stackless-card-body">We sell results, not reports. Truths, not trends.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="human-first-section">
+  <div class="hf-inner">
+
+
+    <div class="hf-left">
+      <p class="hf-label">Human First</p>
+      <h2 class="hf-title">Authenticity Beats<br /> AI Hype.</h2>
+      <div class="hf-body">
+        <p>We use AI. We're not Luddites. But we use it as a tool, not a replacement for thinking. Our stack is neuro-symbolic: deterministic models where precision matters, non-deterministic models where creativity matters. The human is always in the loop. The human makes the call. The human owns the outcome.</p>
+        <p>Every "AI agency" is selling you the dream of doing less. We're selling you the reality of achieving more. There's a difference, and it's measured in revenue.</p>
+      </div>
+      <p class="hf-quote">The only AI we trust is the one that makes us more human, not less.</p>
+    </div>
+
+
+    <div class="hf-right">
+      <canvas id="circuit-canvas"></canvas>
+    </div>
+
+  </div>
+</section>
+
+<script>
+
+(function () {
+  const canvas   = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0x030208, 1);
+  renderer.setSize(innerWidth, innerHeight);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 300);
+  // Opening dive: camera starts pulled-in close/low, then eases back to its
+  // resting position as the page reveals — the "camera push-back" half of the
+  // cinematic open. See gsap.to(camera.position, ...) below, fired in sync
+  // with the header/hero text entrance.
+  const CAM_REST = { x: 0, y: 3.5, z: 12 };
+  camera.position.set(0, 1.1, 6.2);
+  camera.lookAt(0, -2, 0);
+
+  const COLS = 420; const ROWS = 180; const W = 42; const D = 22;
+  const total = COLS * ROWS;
+  const positions = new Float32Array(total * 3);
+  const uvData = new Float32Array(total * 2);
+  const randoms = new Float32Array(total);
+  // Per-point scatter offset: each point starts flung away from its resting
+  // grid position, then converges home as uSettle animates 0→1 — dust
+  // gathering itself into the terrain, the other half of the cinematic open.
+  const scatter = new Float32Array(total * 3);
+
+  let idx = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      positions[idx * 3]     = (c / (COLS - 1) - 0.5) * W;
+      positions[idx * 3 + 1] = 0;
+      positions[idx * 3 + 2] = (r / (ROWS - 1)) * D;
+      uvData[idx * 2]     = c / (COLS - 1);
+      uvData[idx * 2 + 1] = r / (ROWS - 1);
+      randoms[idx]        = Math.random();
+      scatter[idx * 3]     = (Math.random() - 0.5) * 30;
+      scatter[idx * 3 + 1] = (Math.random() - 0.5) * 3 + 8 + Math.random() * 10;
+      scatter[idx * 3 + 2] = (Math.random() - 0.5) * 30;
+      idx++;
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('uv',       new THREE.BufferAttribute(uvData, 2));
+  geo.setAttribute('aRnd',     new THREE.BufferAttribute(randoms, 1));
+  geo.setAttribute('aScatter', new THREE.BufferAttribute(scatter, 3));
+
+  const vert = `
+    uniform float uTime; uniform float uSettle;
+    attribute float aRnd; attribute vec3 aScatter;
+    varying float vH; varying float vDepth; varying float vSettle;
+    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float vnoise(vec2 p){
+      vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
+    }
+    void main(){
+      vDepth = uv.y; float t = uTime * 0.45; float x = position.x; float z = position.z;
+      float h = 0.0;
+      h += sin(x*0.50 + t*1.20) * 1.40; h += sin(x*1.10 - t*0.85) * 0.75;
+      h += cos(z*0.38 + t*0.90) * 0.90; h += vnoise(vec2(x*0.20+t*0.16, z*0.20-t*0.13)) * 1.60;
+      h *= smoothstep(0.0, 0.30, vDepth) * smoothstep(1.0, 0.45, vDepth) * 1.25;
+      h -= 4.2; vH = clamp((h + 4.2) / 6.5, 0.0, 1.0);
+      vSettle = uSettle;
+      vec3 pos = position; pos.y = h;
+      pos += aScatter * (1.0 - uSettle);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = mix(2.2, 7.5, vDepth) * (0.70 + aRnd * 0.65) * (1.0 + vH * 0.65) * mix(0.35, 1.0, uSettle);
+    }
+  `;
+
+  const frag = `
+    varying float vH; varying float vDepth; varying float vSettle;
+    void main(){
+      vec2 uv = gl_PointCoord - 0.5; if(length(uv) > 0.5) discard;
+      float core = smoothstep(0.12, 0.0, length(uv));
+      float mid = smoothstep(0.30, 0.05, length(uv)) * 0.85;
+      float halo = smoothstep(0.50, 0.08, length(uv)) * 0.55;
+      vec3 col = mix(mix(mix(vec3(0.48, 0.06, 0.92), vec3(0.72, 0.25, 1.00), smoothstep(0.0, 0.40, vH)), vec3(0.90, 0.55, 1.00), smoothstep(0.40, 0.72, vH)), vec3(1.00, 0.95, 1.00), smoothstep(0.72, 1.00, vH));
+      gl_FragColor = vec4(clamp(col + vec3(0.70, 0.45, 1.00) * core * 0.90 + vec3(0.40, 0.10, 0.75) * mid * 0.45, 0.0, 1.0), (core + mid + halo) * mix(0.55, 1.0, vDepth) * smoothstep(0.0, 0.42, vDepth) * mix(0.3, 1.0, vSettle));
+    }
+  `;
+
+  const mat = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uSettle: { value: 0 } }, vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const wave = new THREE.Points(geo, mat); wave.position.set(0, -2.6, -3); scene.add(wave);
+
+  window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+  const clock = new THREE.Clock();
+  let camDiveActive = true;
+  (function loop() {
+    requestAnimationFrame(loop);
+    mat.uniforms.uTime.value = clock.getElapsedTime();
+    const bob = Math.sin(clock.getElapsedTime() * 0.18) * 0.12;
+    if (!camDiveActive) camera.position.y = CAM_REST.y + bob;
+    renderer.render(scene, camera);
+  })();
+
+  // Fired once the page loader dismisses (see waitForLoader/playHeaderIn
+  // below) so the dust-settle + camera pull-back play in sync with the hero
+  // text reveal instead of racing it on page load.
+  window.__playOpeningDive = function () {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { mat.uniforms.uSettle.value = 1; camera.position.set(CAM_REST.x, CAM_REST.y, CAM_REST.z); camDiveActive = false; return; }
+    gsap.to(mat.uniforms.uSettle, { value: 1, duration: 2.4, ease: 'power2.out', delay: 0.1 });
+    gsap.to(camera.position, {
+      x: CAM_REST.x, y: CAM_REST.y, z: CAM_REST.z, duration: 2.6, ease: 'power3.out', delay: 0.1,
+      onComplete: () => { camDiveActive = false; }
+    });
+  };
+})();
+
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── Global smooth-scroll tuning ── */
+gsap.ticker.lagSmoothing(1000, 16);
+ScrollTrigger.normalizeScroll(true);
+ScrollTrigger.config({ ignoreMobileResize: true });
+
+/* ── Header entrance (matches 100K-Challenge.html, timed after page loader) ── */
+gsap.set('.main-header', { y: -80, autoAlpha: 0 });
+(function waitForLoader() {
+  var loader = document.getElementById('page-loader');
+  function playHeaderIn() {
+    gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out' });
+    if (typeof window.__playOpeningDive === 'function') window.__playOpeningDive();
+  }
+  if (!loader) { playHeaderIn(); return; }
+  var played = false;
+  var observer = new MutationObserver(function () {
+    if (loader.classList.contains('hidden') && !played) {
+      played = true;
+      observer.disconnect();
+      playHeaderIn();
+    }
+  });
+  observer.observe(loader, { attributes: true, attributeFilter: ['class'] });
+  // Fallback in case loader never dismisses (e.g. element missing later)
+  setTimeout(function () {
+    if (!played) { played = true; observer.disconnect(); playHeaderIn(); }
+  }, 2500);
+})();
+
+/* ── Nav link letter-wave hover (ported from index.html) — each letter is
+   wrapped in its own span so hovering triggers a per-letter bounce+color
+   wave (aboutNavLetterWave, staggered by --i), instead of the simple
+   letter-spacing tween this used before. ── */
+document.querySelectorAll('.nav-center a').forEach(link => {
+  const text = link.textContent;
+  link.innerHTML = text.split('').map((ch, i) =>
+    `<span class="ltr" style="--i:${i}">${ch === ' ' ? '&nbsp;' : ch}</span>`
+  ).join('');
+});
+
+/* ── Social icons bounce on hover (matches 100K-Challenge.html) ── */
+document.querySelectorAll('.social-icon-btn').forEach(icon => {
+  icon.addEventListener('mouseenter', () => {
+    gsap.to(icon, { scale: 1.3, rotation: 10, duration: 0.3, ease: 'back.out(2)' });
+  });
+  icon.addEventListener('mouseleave', () => {
+    gsap.to(icon, { scale: 1, rotation: 0, duration: 0.4, ease: 'elastic.out(1, 0.4)' });
+  });
+});
+
+const track = document.getElementById('track');
+const wireBack = document.getElementById('wire-back');
+const wireAnimated = document.getElementById('wire-animated');
+const plasma1 = document.getElementById('plasma-1');
+const plasma2 = document.getElementById('plasma-2');
+
+let maxPathLength = 0;
+
+function scrollDist() { return track.scrollWidth - window.innerWidth; }
+function setBodyH()   { document.body.style.height = (scrollDist() + window.innerHeight) + 'px'; }
+
+function drawElectricSpine() {
+  const section = document.getElementById('timeline-section');
+  if (!section) return;
+
+  const w = section.offsetWidth;
+  const h = section.offsetHeight;
+  const centerY = h * 0.5;
+
+  const cards = [1, 2, 3, 4].map(id => document.getElementById(`card-${id}`));
+  const nodes = [1, 2, 3, 4].map(id => document.getElementById(`node-${id}`));
+  const pulses = [1, 2, 3, 4].map(id => document.getElementById(`pulse-${id}`));
+
+  const getX = (card) => {
+    if (!card) return 0;
+    return card.offsetLeft + 35;
+  };
+
+  const isMobile = window.innerWidth <= 768;
+  const x0 = getX(cards[0]);
+  const x1 = getX(cards[1]);
+  const x2 = getX(cards[2]);
+  const x3 = getX(cards[3]);
+
+  let points = [];
+  if (isMobile) {
+
+    points.push({ x: x0, y: centerY });
+  } else {
+    points.push({ x: 0,  y: centerY });
+    points.push({ x: x0, y: centerY });
+  }
+
+  points.push({ x: x0 + (x1 - x0) * 0.52, y: centerY + 25 });
+  points.push({ x: x1, y: centerY });
+
+  points.push({ x: x1 + (x2 - x1) * 0.48, y: centerY - 30 });
+  points.push({ x: x2, y: centerY });
+
+  points.push({ x: x2 + (x3 - x2) * 0.55, y: centerY + 35 });
+  points.push({ x: x3, y: centerY });
+  points.push({ x: w,  y: centerY });
+
+  let pathMain = `M ${points[0].x} ${points[0].y}`;
+  let pathP1 = `M ${points[0].x} ${points[0].y}`;
+  let pathP2 = `M ${points[0].x} ${points[0].y}`;
+
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1]; const curr = points[i];
+    const cpX1 = prev.x + (curr.x - prev.x) * 0.5; const cpX2 = cpX1;
+
+    pathMain += ` C ${cpX1} ${prev.y}, ${cpX2} ${curr.y}, ${curr.x} ${curr.y}`;
+    pathP1 += ` C ${cpX1} ${prev.y + 12}, ${cpX2} ${curr.y - 12}, ${curr.x} ${curr.y}`;
+    pathP2 += ` C ${cpX1} ${prev.y - 14}, ${cpX2} ${curr.y + 14}, ${curr.x} ${curr.y}`;
+  }
+
+  wireBack.setAttribute('d', pathMain);
+  wireAnimated.setAttribute('d', pathMain);
+  plasma1.setAttribute('d', pathP1);
+  plasma2.setAttribute('d', pathP2);
+
+  for (let i = 0; i < 4; i++) {
+    if (cards[i] && nodes[i] && pulses[i]) {
+      const posX = `${getX(cards[i])}px`;
+      nodes[i].style.left = posX; nodes[i].style.top = `${centerY}px`;
+      pulses[i].style.left = posX; pulses[i].style.top = `${centerY}px`;
+    }
+  }
+
+  maxPathLength = wireAnimated.getTotalLength();
+  [wireAnimated, plasma1, plasma2].forEach(el => {
+    el.style.strokeDasharray = maxPathLength; el.style.strokeDashoffset = maxPathLength;
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  setBodyH();
+  requestAnimationFrame(() => { drawElectricSpine(); ScrollTrigger.refresh(); });
+});
+
+window.addEventListener('load', () => { setBodyH(); drawElectricSpine(); ScrollTrigger.refresh(); });
+window.addEventListener('resize', () => { setBodyH(); drawElectricSpine(); ScrollTrigger.refresh(); });
+
+gsap.to(track, {
+  x: () => -scrollDist(),
+  ease: 'none',
+  scrollTrigger: {
+    trigger: '#pin-wrapper',
+    pin: true,
+    scrub: 1.2,
+    start: 'top top',
+    end: () => '+=' + scrollDist(),
+    invalidateOnRefresh: true,
+    onUpdate: self => {
+      if (maxPathLength > 0) {
+        const currentDashOffset = maxPathLength - (self.progress * maxPathLength);
+        [wireAnimated, plasma1, plasma2].forEach(el => el.style.strokeDashoffset = currentDashOffset);
+      }
+
+      const section = document.getElementById('timeline-section');
+      if (!section) return;
+      const currentXProgress = self.progress * section.offsetWidth;
+
+      document.querySelectorAll('.era-card').forEach((card, i) => {
+        const nodeEl = document.getElementById(`node-${i + 1}`);
+        const pulseEl = document.getElementById(`pulse-${i + 1}`);
+        if (!nodeEl || !pulseEl) return;
+
+        const connectorLine = card.querySelector('.connector-line');
+        const targetTriggerX = card.offsetLeft + 35;
+        const isTopCard = card.classList.contains('era-1') || card.classList.contains('era-3');
+        const fromY = isTopCard ? -60 : 60;
+
+        if (currentXProgress >= targetTriggerX) {
+          if (!card._revealed) {
+            card._revealed = true;
+            gsap.fromTo(card,
+              { opacity: 0, y: fromY },
+              { opacity: 1, y: 0, duration: 0.6, ease: 'back.out(1.5)' }
+            );
+            nodeEl.style.opacity = "1"; nodeEl.style.transform = "translate(-50%, -50%) scale(1)";
+            if (connectorLine) connectorLine.style.opacity = "1";
+            gsap.fromTo(pulseEl, { scale: 1, opacity: 1 }, { scale: 4.5, opacity: 0, duration: 0.75, ease: 'power2.out', overwrite: 'auto' });
+          }
+          nodeEl.classList.add('lit');
+        } else {
+          if (card._revealed) {
+            card._revealed = false;
+            gsap.to(card, { opacity: 0, y: fromY, duration: 0.4, ease: 'power2.in' });
+            nodeEl.style.opacity = "0"; nodeEl.style.transform = "translate(-50%, -50%) scale(0)";
+            if (connectorLine) connectorLine.style.opacity = "0";
+            gsap.killTweensOf(pulseEl); pulseEl.style.opacity = "0";
+          }
+          nodeEl.classList.remove('lit');
+        }
+      });
+    }
+  }
+});
+
+(function() {
+  const subtitle = document.querySelector('.hero-subtitle');
+  if (!subtitle) return;
+  const text = subtitle.innerText;
+  const words = text.split(' ');
+  subtitle.innerHTML = words.map(w => `<span class="char">${w}</span>`).join(' ');
+})();
+
+gsap.timeline({ defaults:{ ease:'power3.out' } })
+  .to('.origin-label', { opacity:1, duration:0.7, delay:0.4 })
+  .to('.hero-title',   { opacity:1, y:0, duration:1.0 }, '-=0.25')
+  .to('.hero-subtitle', { opacity:1, duration:0 }, '-=0.1')
+  .to('.hero-subtitle .char', {
+    opacity: 1,
+    y: 0,
+    duration: 0.5,
+    stagger: 0.03,
+    ease: 'power2.out'
+  }, '-=0.0');
+
+(function () {
+  const indicator = document.getElementById('scroll-indicator');
+  if (!indicator) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      indicator.classList.add('hidden');
+    } else {
+      indicator.classList.remove('hidden');
+    }
+  }, { passive: true });
+
+  indicator.addEventListener('click', () => {
+    gsap.to(window, {
+      scrollTo: { y: window.innerHeight },
+      duration: 1.4,
+      ease: 'expo.inOut'
+    });
+  });
+})();
+
+/* ── Constellation nav (ported from index.html) — one dot per section,
+   built in JS same as index.html does, current section lit + glowing,
+   click any dot to jump there. ── */
+(function () {
+  const nav = document.getElementById('constellation-nav');
+  if (!nav) return;
+
+  const sections = [
+    { sel: '#hero', label: 'Hero' },
+    { sel: '#timeline-section', label: 'Timeline' },
+    { sel: '#outro', label: 'Outro' },
+    { sel: '#manifesto-section', label: 'Manifesto' },
+    { sel: '#methodology-section', label: 'Methodology' },
+    { sel: '#stackless-section', label: 'Stackless' },
+    { sel: '#human-first-section', label: 'Human First' }
+  ].map(s => ({ ...s, el: document.querySelector(s.sel) })).filter(s => s.el);
+
+  const nodes = sections.map(s => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'constellation-node';
+    dot.setAttribute('aria-label', 'Go to ' + s.label);
+    dot.addEventListener('click', () => {
+      gsap.to(window, { scrollTo: { y: s.el, offsetY: 70 }, duration: 1.2, ease: 'power2.inOut' });
+    });
+    nav.appendChild(dot);
+    return dot;
+  });
+
+  sections.forEach((s, i) => {
+    ScrollTrigger.create({
+      trigger: s.el,
+      start: 'top center',
+      end: 'bottom center',
+      onToggle: self => { if (self.isActive) nodes.forEach((n, j) => n.classList.toggle('is-active', j === i)); }
+    });
+  });
+})();
+
+(function() {
+  const hamburger    = document.getElementById('hamburger');
+  const mobileMenu   = document.getElementById('mobile-menu');
+  const closeMenuBtn = document.getElementById('close-menu');
+  if (!hamburger || !mobileMenu || !closeMenuBtn) return;
+
+  const mobileLinks = mobileMenu.querySelectorAll('a');
+
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.add('active');
+    mobileMenu.classList.add('active');
+    document.body.classList.add('menu-open');
+  });
+
+  const closeMenu = () => {
+    hamburger.classList.remove('active');
+    mobileMenu.classList.remove('active');
+    document.body.classList.remove('menu-open');
+  };
+
+  closeMenuBtn.addEventListener('click', closeMenu);
+  mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+})();
+
+(function() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/_+";
+
+  function initGlitchButtons() {
+    document.querySelectorAll('.contact-neural').forEach(btn => {
+      btn.onmouseover = event => {
+        let iteration = 0;
+        const targetBtn = event.currentTarget;
+        const originalText = targetBtn.dataset.value;
+        if (!originalText) return;
+        const textSpan = targetBtn.querySelector('.neural-text') || targetBtn.querySelector('span');
+        if (!textSpan) return;
+        const interval = setInterval(() => {
+          textSpan.innerText = originalText
+            .split("")
+            .map((letter, index) => {
+              if (index < iteration) return originalText[index];
+              return letters[Math.floor(Math.random() * 39)];
+            })
+            .join("");
+          if (iteration >= originalText.length) clearInterval(interval);
+          iteration += 1 / 3;
+        }, 30);
+      };
+    });
+  }
+  initGlitchButtons();
+})();
+
+(function () {
+
+  ScrollTrigger.create({
+    trigger: '#manifesto-section',
+    start: 'top 120%',
+    end: 'top 60%',
+    scrub: 0.8,
+    onUpdate: self => {
+      document.getElementById('bg-canvas').style.opacity = 1 - self.progress;
+    },
+    onLeaveBack: () => {
+      document.getElementById('bg-canvas').style.opacity = 1;
+    }
+  });
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#manifesto-section',
+      start: 'top 75%',
+      toggleActions: 'play none none none'
+    }
+  });
+
+  tl.to('.manifesto-title', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+    .to('.manifesto-body p', {
+      opacity: 1, y: 0, duration: 0.6,
+      stagger: 0.18, ease: 'power2.out'
+    }, '-=0.3')
+    .to('.manifesto-quote', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }, '-=0.2')
+    .to('.manifesto-revenue', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.1')
+    .to('.manifesto-unfair', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.2')
+    .to('.vm-title', { opacity: 1, y: 0, duration: 0.6, stagger: 0.2, ease: 'power2.out' }, '-=0.5')
+    .to('.vm-list li', { opacity: 1, y: 0, duration: 0.5, stagger: 0.12, ease: 'power2.out' }, '-=0.3');
+
+  const mtl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#methodology-section',
+      start: 'top 80%',
+      toggleActions: 'play none none none'
+    }
+  });
+  mtl.to('.methodology-label', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' })
+     .to('.methodology-heading', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3')
+     .to('.methodology-item', { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'power2.out' }, '-=0.2')
+     .to('.three-tier-panel', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.8');
+
+  const stl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#stackless-section',
+      start: 'top 80%',
+      toggleActions: 'play none none none'
+    }
+  });
+  stl.to('.stackless-header',       { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' })
+     .to('.stackless-subtitle-row',  { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.3')
+     .to('.stackless-bridge',        { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, '-=0.2')
+     .to('.stackless-card', {
+       opacity: 1, y: 0, duration: 0.45,
+       stagger: { amount: 0.6, from: 'start' },
+       ease: 'power2.out'
+     }, '-=0.1');
+
+  ScrollTrigger.create({
+    trigger: '#methodology-section',
+    start: 'top 80%',
+    endTrigger: '#stackless-section',
+    end: 'bottom top',
+    scrub: 0.8,
+    onUpdate: self => {
+      document.getElementById('bg-canvas').style.opacity = Math.min(self.progress * 2, 1);
+    },
+    onLeaveBack: () => {
+      document.getElementById('bg-canvas').style.opacity = 0;
+    }
+  });
+})();
+
+(function () {
+
+  gsap.timeline({
+    scrollTrigger: { trigger: '#outro', start: 'top 82%', toggleActions: 'play none none none' }
+  })
+  .to('.outro-logo',  { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+  .to('.outro-block', { opacity: 1, y: 0, duration: 0.65, stagger: 0.2, ease: 'power2.out' }, '-=0.4')
+  .to('.stateless-banner', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.2');
+
+  gsap.timeline({
+    scrollTrigger: { trigger: '.veracity-section', start: 'top 80%', toggleActions: 'play none none none' }
+  })
+  .to('.veracity-title', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+  .to('.veracity-intro', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.4')
+  .to('.veracity-row',   { opacity: 1, x: 0, duration: 0.5, stagger: 0.12, ease: 'power2.out' }, '-=0.2')
+  .to('.veracity-right', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.6');
+
+  gsap.set('.methodology-label', { clipPath: 'inset(0 100% 0 0)' });
+  ScrollTrigger.create({
+    trigger: '#methodology-section',
+    start: 'top 78%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.methodology-label', {
+        clipPath: 'inset(0 0% 0 0)', opacity: 1, y: 0,
+        duration: 0.6, ease: 'power2.out'
+      });
+    }
+  });
+
+  gsap.set('.stackless-card:nth-child(odd)',  { x: -30 });
+  gsap.set('.stackless-card:nth-child(even)', { x:  30 });
+  ScrollTrigger.create({
+    trigger: '#stackless-section',
+    start: 'top 78%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.stackless-card:nth-child(odd)',  {
+        opacity: 1, x: 0, y: 0, duration: 0.55,
+        stagger: { amount: 0.5, from: 'start' }, ease: 'power2.out'
+      });
+      gsap.to('.stackless-card:nth-child(even)', {
+        opacity: 1, x: 0, y: 0, duration: 0.55,
+        stagger: { amount: 0.5, from: 'start' }, ease: 'power2.out', delay: 0.08
+      });
+    }
+  });
+
+  gsap.set('.hf-left',  { x: -40 });
+  gsap.set('.hf-right', { scale: 0.92 });
+  ScrollTrigger.create({
+    trigger: '#human-first-section',
+    start: 'top 78%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.hf-left',  { opacity: 1, x: 0, y: 0, duration: 0.75, ease: 'power3.out' });
+      gsap.to('.hf-right', { opacity: 1, scale: 1, y: 0, duration: 0.75, ease: 'power3.out', delay: 0.15 });
+    }
+  });
+
+  document.querySelectorAll('.stackless-divider').forEach(el => {
+    gsap.set(el, { scaleX: 0, transformOrigin: 'left center' });
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 88%',
+      once: true,
+      onEnter: () => gsap.to(el, { scaleX: 1, duration: 0.8, ease: 'power3.out' })
+    });
+  });
+
+  /* ── Three-tier cards: staggered pop-in with number flip ── */
+  gsap.set('.three-tier-card', { opacity: 0, y: 40, scale: 0.92 });
+  gsap.set('.three-tier-card-num', { opacity: 0, y: -10 });
+  ScrollTrigger.create({
+    trigger: '.three-tier-cards',
+    start: 'top 82%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.three-tier-card', {
+        opacity: 1, y: 0, scale: 1, duration: 0.65,
+        stagger: 0.18, ease: 'back.out(1.6)'
+      });
+      gsap.to('.three-tier-card-num', {
+        opacity: 1, y: 0, duration: 0.5,
+        stagger: 0.18, delay: 0.15, ease: 'power2.out'
+      });
+    }
+  });
+
+  /* ── Manifesto quote: clip-path reveal like a highlighter sweep ── */
+  gsap.set('.manifesto-quote', { clipPath: 'inset(0 100% 0 0)' });
+  ScrollTrigger.create({
+    trigger: '.manifesto-quote',
+    start: 'top 85%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.manifesto-quote', {
+        clipPath: 'inset(0 0% 0 0)', duration: 0.9, ease: 'power3.inOut'
+      });
+    }
+  });
+
+  /* ── Human-first quote: fade + letter spacing pull-in ── */
+  gsap.set('.hf-quote', { opacity: 0, letterSpacing: '0.15em' });
+  ScrollTrigger.create({
+    trigger: '.hf-quote',
+    start: 'top 88%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.hf-quote', {
+        opacity: 1, letterSpacing: '0.01em', duration: 1, ease: 'power3.out'
+      });
+    }
+  });
+
+  /* ── Outro logo: scale + rotate in ── */
+  gsap.set('.outro-logo', { scale: 0.85, rotate: -4 });
+  ScrollTrigger.create({
+    trigger: '.outro-logo',
+    start: 'top 85%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.outro-logo', {
+        scale: 1, rotate: 0, duration: 0.9, ease: 'elastic.out(1, 0.55)'
+      });
+    }
+  });
+
+  /* ── Veracity table rows: glow pulse on the highlighted row ── */
+  ScrollTrigger.create({
+    trigger: '.veracity-row--highlight',
+    start: 'top 85%',
+    once: true,
+    onEnter: () => {
+      gsap.fromTo('.veracity-row--highlight',
+        { boxShadow: '0 0 0 rgba(244,161,53,0)' },
+        { boxShadow: '0 0 30px rgba(244,161,53,0.25)', duration: 1.2, ease: 'power2.out', delay: 0.6 }
+      );
+    }
+  });
+
+  /* ── Stackless card numbers: count-style scale pulse on enter ── */
+  gsap.set('.stackless-card-num', { opacity: 0, scale: 0.5 });
+  ScrollTrigger.create({
+    trigger: '#stackless-section',
+    start: 'top 78%',
+    once: true,
+    onEnter: () => {
+      gsap.to('.stackless-card-num', {
+        opacity: 1, scale: 1, duration: 0.5,
+        stagger: { amount: 0.7, from: 'start' }, ease: 'back.out(2.5)', delay: 0.2
+      });
+    }
+  });
+
+  /* ── Human-first label tag — slide + fade ── */
+  gsap.set('.hf-label', { opacity: 0, x: -15 });
+  document.querySelectorAll('.hf-label').forEach(el => {
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 88%',
+      once: true,
+      onEnter: () => gsap.to(el, { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out' })
+    });
+  });
+
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   Ambient dust — a second, much subtler generative particle layer,
+   independent of the big bg-canvas terrain and the dna-canvas helix.
+   Fades in specifically while scrolling through the veracity /
+   methodology / stackless sections so those flat text sections still
+   feel alive, without touching any existing content or layout.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('ambient-dust-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['rgba(168,85,247,', 'rgba(200,150,255,', 'rgba(120,60,220,', 'rgba(255,255,255,'];
+  const N = 70;
+  const drift = reducedMotion ? 0 : 1;
+  const dust = Array.from({ length: N }, () => ({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.00035 * drift,
+    vy: ((Math.random() - 0.5) * 0.00035 - 0.00012) * drift,
+    r: 0.6 + Math.random() * 1.6,
+    a: 0.25 + Math.random() * 0.55,
+    col: COLORS[Math.floor(Math.random() * COLORS.length)]
+  }));
+
+  let mouseX = 0.5, mouseY = 0.5;
+  if (!reducedMotion) {
+    window.addEventListener('pointermove', e => {
+      mouseX = e.clientX / innerWidth; mouseY = e.clientY / innerHeight;
+    });
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    dust.forEach(p => {
+      p.x += p.vx + (mouseX - 0.5) * 0.00004 * drift;
+      p.y += p.vy + (mouseY - 0.5) * 0.00004 * drift;
+      if (p.x < -0.05) p.x = 1.05;
+      if (p.x > 1.05) p.x = -0.05;
+      if (p.y < -0.05) p.y = 1.05;
+      if (p.y > 1.05) p.y = -0.05;
+      ctx.beginPath();
+      ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.col + p.a + ')';
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  let activeCount = 0;
+  function setVisible(on) {
+    const wasActive = activeCount > 0;
+    activeCount += on ? 1 : -1;
+    if (activeCount < 0) activeCount = 0;
+    const isActive = activeCount > 0;
+    if (isActive !== wasActive) {
+      gsap.to(canvas, { opacity: isActive ? 0.9 : 0, duration: 0.9, ease: 'power2.out' });
+    }
+  }
+  ['.veracity-section', '#methodology-section', '#stackless-section'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    ScrollTrigger.create({
+      trigger: el, start: 'top 85%', end: 'bottom 15%',
+      onEnter: () => setVisible(true), onLeave: () => setVisible(false),
+      onEnterBack: () => setVisible(true), onLeaveBack: () => setVisible(false)
+    });
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   Scroll-linked 3D card depth — the existing stackless / three-tier /
+   veracity cards already fade in once via the reveal IIFE above; this
+   layers a continuous scroll-scrubbed 3D tilt on top (rotateX/rotateY/z),
+   so they visibly settle into place with real depth as they cross the
+   viewport, instead of only fading in flat. Purely additive: it doesn't
+   touch the existing opacity/x/y reveal logic.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) return;
+
+  ['.stackless-card', '.three-tier-card', '.veracity-row'].forEach(sel => {
+    document.querySelectorAll(sel).forEach((card, i) => {
+      const fromLeft = i % 2 === 0;
+      gsap.fromTo(card,
+        { rotateX: 10, rotateY: fromLeft ? -8 : 8, z: -40 },
+        {
+          rotateX: 0, rotateY: 0, z: 0, ease: 'none',
+          scrollTrigger: { trigger: card, start: 'top 95%', end: 'top 55%', scrub: 0.6 }
+        }
+      );
+    });
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   Kinetic section headings — a scroll-scrubbed clip-path + blur sweep
+   layered on top of each section's existing fade-in, so the heading
+   itself feels like it's being drawn into focus as you scroll past it
+   rather than appearing in one single fade.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) return;
+
+  ['.manifesto-title', '.methodology-heading', '.stackless-title', '.veracity-title'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    gsap.set(el, { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' });
+    gsap.to(el, {
+      clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top 90%', end: 'top 55%', scrub: 0.5 }
+    });
+  });
+})();
+
+(function () {
+  const canvas = document.getElementById('dna-canvas');
+  if (!canvas) return;
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  camera.position.set(0, 0, 13);
+
+  function resize() {
+    const section = document.getElementById('manifesto-section');
+    const w = canvas.offsetWidth || 560;
+    const h = section ? section.offsetHeight : window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  // Two glowing point strands wound into a real 3D double helix (actual
+  // depth via a perspective camera, not a faked sin() offset) — the WebGL
+  // successor to the old flat 2D canvas drawing.
+  const STRAND_N = 260;
+  const HEIGHT = 11;
+  const RADIUS = 2.1;
+  const TURNS = 3.1;
+  const purpleA = new THREE.Color(0xa855f7);
+  const purpleB = new THREE.Color(0xe4c8ff);
+
+  function buildStrand(phaseOffset) {
+    const positions = new Float32Array(STRAND_N * 3);
+    const colors = new Float32Array(STRAND_N * 3);
+    for (let i = 0; i < STRAND_N; i++) {
+      const t = i / (STRAND_N - 1);
+      const angle = t * Math.PI * 2 * TURNS + phaseOffset;
+      positions[i * 3] = Math.cos(angle) * RADIUS;
+      positions[i * 3 + 1] = (t - 0.5) * HEIGHT;
+      positions[i * 3 + 2] = Math.sin(angle) * RADIUS;
+      const col = purpleA.clone().lerp(purpleB, Math.random());
+      colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 0.16, vertexColors: true, transparent: true, opacity: 0.92,
+      blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+    });
+    return new THREE.Points(geo, mat);
+  }
+
+  const helixGroup = new THREE.Group();
+  helixGroup.add(buildStrand(0), buildStrand(Math.PI));
+  scene.add(helixGroup);
+
+  // Faint rungs connecting the two strands, like base pairs.
+  const RUNG_N = 30;
+  const rungPositions = new Float32Array(RUNG_N * 2 * 3);
+  for (let i = 0; i < RUNG_N; i++) {
+    const t = i / (RUNG_N - 1);
+    const angle = t * Math.PI * 2 * TURNS;
+    const y = (t - 0.5) * HEIGHT;
+    rungPositions[i * 6]     = Math.cos(angle) * RADIUS;
+    rungPositions[i * 6 + 1] = y;
+    rungPositions[i * 6 + 2] = Math.sin(angle) * RADIUS;
+    rungPositions[i * 6 + 3] = Math.cos(angle + Math.PI) * RADIUS;
+    rungPositions[i * 6 + 4] = y;
+    rungPositions[i * 6 + 5] = Math.sin(angle + Math.PI) * RADIUS;
+  }
+  const rungGeo = new THREE.BufferGeometry();
+  rungGeo.setAttribute('position', new THREE.BufferAttribute(rungPositions, 3));
+  helixGroup.add(new THREE.LineSegments(rungGeo, new THREE.LineBasicMaterial({ color: 0x8758fc, transparent: true, opacity: 0.16 })));
+
+  // Ambient dust around the helix for depth.
+  const DUST_N = 220;
+  const dustPos = new Float32Array(DUST_N * 3);
+  for (let i = 0; i < DUST_N; i++) {
+    dustPos[i * 3] = (Math.random() - 0.5) * 9;
+    dustPos[i * 3 + 1] = (Math.random() - 0.5) * HEIGHT * 1.3;
+    dustPos[i * 3 + 2] = (Math.random() - 0.5) * 9;
+  }
+  const dustGeo = new THREE.BufferGeometry();
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({
+    color: 0xc89bff, size: 0.03, transparent: true, opacity: 0.22,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  scene.add(dust);
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  let mouseX = 0, mouseY = 0;
+  if (hasFinePointer) {
+    window.addEventListener('pointermove', e => {
+      mouseX = (e.clientX / innerWidth) - 0.5;
+      mouseY = (e.clientY / innerHeight) - 0.5;
+    });
+  }
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const t = clock.getElapsedTime();
+    if (!reducedMotion) helixGroup.rotation.y = t * 0.35;
+    helixGroup.rotation.x = mouseY * 0.22;
+    camera.position.x = mouseX * 1.1;
+    camera.lookAt(0, 0, 0);
+    dust.rotation.y = t * 0.05;
+    renderer.render(scene, camera);
+  })();
+
+  ScrollTrigger.create({
+    trigger: '#manifesto-section',
+    start: 'top 70%',
+    onEnter:     () => canvas.classList.add('visible'),
+    onLeaveBack: () => canvas.classList.remove('visible')
+  });
+  ScrollTrigger.create({
+    trigger: '#manifesto-section',
+    start: 'bottom bottom',
+    onEnter:     () => canvas.classList.remove('visible'),
+    onLeaveBack: () => canvas.classList.add('visible')
+  });
+})();
+
+(function () {
+  const canvas = document.getElementById('circuit-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth  || 340;
+    canvas.height = canvas.offsetHeight || 480;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let time = 0;
+
+  const DOTS = [
+    { x: 0.155, y: 0.455, color: '#a855f7' },
+    { x: 0.845, y: 0.455, color: '#22d3ee' },
+    { x: 0.155, y: 0.700, color: '#f43f5e' },
+    { x: 0.845, y: 0.700, color: '#ec4899' },
+    { x: 0.500, y: 0.870, color: '#7c3aed' },
+  ];
+
+  function drawDot(px, py, color) {
+    const g = ctx.createRadialGradient(px, py, 0, px, py, 10);
+    g.addColorStop(0,   color);
+    g.addColorStop(0.5, color + '55');
+    g.addColorStop(1,   color + '00');
+    ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI*2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+  }
+
+  function ln(x1,y1,x2,y2,col,lw,dash=[]) {
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash);
+    ctx.stroke(); ctx.restore();
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const cx      = W * 0.500;   // center x of everything
+    const ov_cy   = H * 0.190;   // oval center y
+    const ov_rx   = W * 0.160;   // oval half-width
+    const ov_ry   = H * 0.140;   // oval half-height (taller)
+
+    const cross_y = H * 0.455;   // crossbar y
+    const semi_cy = H * 0.670;   // semicircle center y
+    const semi_r  = W * 0.120;   // semicircle radius
+
+    const lx      = W * 0.155;   // left vertical rail x
+    const rx      = W * 0.845;   // right vertical rail x
+
+    const brk_top_y   = H * 0.095;
+    const brk_top_in  = W * 0.090;  // how far inward the L goes
+
+    const brk_bot_y   = H * 0.765;
+    const brk_bot_in  = W * 0.090;
+
+    const mr1_x = W * 0.735, mr1_y = H * 0.095, mr1_w = W * 0.110, mr1_h = H * 0.095;
+    const mr2_x = W * 0.735, mr2_y = H * 0.560, mr2_w = W * 0.110, mr2_h = H * 0.090;
+
+    const bright = 'rgba(160,80,240,0.70)';   // bright purple for oval + semicircle + stem
+    const mid    = 'rgba(130,65,220,0.50)';   // mid for crossbar + main rails
+    const dim    = 'rgba(100,55,200,0.28)';   // dim for brackets + rects + dashes
+    const lw     = 1.5;
+    const lwd    = 1.1;
+
+    ctx.beginPath();
+    ctx.ellipse(cx, ov_cy, ov_rx, ov_ry, 0, 0, Math.PI*2);
+    ctx.strokeStyle = bright;
+    ctx.lineWidth = 1.7;
+    ctx.stroke();
+
+    ln(cx, ov_cy + ov_ry, cx, semi_cy - semi_r, bright, lw);
+
+    ln(lx, cross_y, rx, cross_y, mid, lw);
+
+    ln(lx, cross_y,   lx, brk_top_y,          dim, lwd);  // up
+    ln(lx, brk_top_y, lx + brk_top_in, brk_top_y, dim, lwd); // turn right
+
+    ln(rx, cross_y,   rx, brk_top_y,          dim, lwd);  // up
+    ln(rx, brk_top_y, rx - brk_top_in, brk_top_y, dim, lwd); // turn left
+
+    ln(lx, cross_y, lx, semi_cy, mid, lw);
+
+    ln(rx, cross_y, rx, semi_cy, mid, lw);
+
+    ln(lx, semi_cy,   lx, brk_bot_y,          dim, lwd);
+    ln(lx, brk_bot_y, lx + brk_bot_in, brk_bot_y, dim, lwd);
+
+    ln(rx, semi_cy,   rx, brk_bot_y,          dim, lwd);
+    ln(rx, brk_bot_y, rx - brk_bot_in, brk_bot_y, dim, lwd);
+
+    ctx.beginPath();
+    ctx.arc(cx, semi_cy, semi_r, 0, Math.PI, false); // 0→π = bottom half (cup opening UP)
+    ctx.strokeStyle = bright;
+    ctx.lineWidth = 1.7;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(mr1_x, mr1_y, mr1_w, mr1_h);
+    ctx.strokeStyle = dim;
+    ctx.lineWidth = lwd;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(mr2_x, mr2_y, mr2_w, mr2_h);
+    ctx.strokeStyle = dim;
+    ctx.lineWidth = lwd;
+    ctx.stroke();
+
+    const d1x1 = cx + ov_rx * 0.80, d1y1 = ov_cy - ov_ry * 0.60;
+    ln(d1x1, d1y1, W * 0.88, H * 0.06, dim, 0.9, [3,5]);
+
+    const d2x1 = cx + ov_rx * 0.95, d2y1 = ov_cy - ov_ry * 0.10;
+    ln(d2x1, d2y1, W * 0.90, H * 0.13, dim, 0.9, [2,4]);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, H * 0.910, W * 0.13, 0, Math.PI, true);
+    ctx.strokeStyle = 'rgba(100,55,200,0.16)';
+    ctx.lineWidth = 0.9;
+    ctx.setLineDash([2, 6]);
+    ctx.stroke();
+    ctx.restore();
+
+    const pulseScale = 0.85 + 0.15 * Math.sin(time * 2.5);
+    DOTS.forEach(d => {
+      const g = ctx.createRadialGradient(d.x*W, d.y*H, 0, d.x*W, d.y*H, 12 * pulseScale);
+      g.addColorStop(0,   d.color);
+      g.addColorStop(0.4, d.color + '66');
+      g.addColorStop(1,   d.color + '00');
+      ctx.beginPath(); ctx.arc(d.x*W, d.y*H, 12 * pulseScale, 0, Math.PI*2);
+      ctx.fillStyle = g; ctx.fill();
+      ctx.beginPath(); ctx.arc(d.x*W, d.y*H, 3, 0, Math.PI*2);
+      ctx.fillStyle = d.color; ctx.fill();
+    });
+
+    time += 0.016;
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+  gsap.timeline({
+    scrollTrigger: {
+      trigger: '#human-first-section',
+      start: 'top 78%',
+      toggleActions: 'play none none none'
+    }
+  })
+  .to('.hf-left',  { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+  .to('.hf-right', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.4');
+})();
+</script>
+
+<script>
+(function () {
+  const canvas = document.getElementById('stateless-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const NODE_COUNT = 38;
+  const nodes = [];
+
+  for (let i = 0; i < NODE_COUNT; i++) {
+    nodes.push({
+      x: Math.random(),
+      y: Math.random(),
+      vx: (Math.random() - 0.5) * 0.0004,
+      vy: (Math.random() - 0.5) * 0.0004,
+    });
+  }
+
+  const MAX_DIST = 0.28;
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > 1) n.vx *= -1;
+      if (n.y < 0 || n.y > 1) n.vy *= -1;
+    });
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < MAX_DIST) {
+          const alpha = (1 - dist / MAX_DIST) * 0.35;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x * W, nodes[i].y * H);
+          ctx.lineTo(nodes[j].x * W, nodes[j].y * H);
+          ctx.strokeStyle = `rgba(168,85,247,${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x * W, n.y * H, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,120,255,0.5)';
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+<div class="creative-footer-reveal-container" id="site-footer">
+  <footer class="creative-tech-footer">
+    <div class="footer-top-glow-line"></div>
+
+    <div class="footer-grid-inner">
+      <div class="footer-brand-column">
+        <div class="footer-logo-wrap">
+          <canvas id="footer-logo-canvas"></canvas>
+          <img src="media/REVacity.png" alt="Revacity" style="width:180px; height:auto;" />
+        </div>
+        <p class="footer-brand-tagline">
+          Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.
+        </p>
+      </div>
+
+      <div class="footer-links-grid">
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+            <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+            <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+        </div>
+
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">04 //</span> Before Judging</a>
+            <a href="compare.html" class="footer-link-item"><span class="link-num">05 //</span> Compare</a>
+            <a href="blog.html" class="footer-link-item"><span class="link-num">06 //</span>Blog</a>
+        </div>
+      </div>
+
+      <div class="footer-actions-column">
+        <h4 class="group-title">SYSTEM INTERACTION</h4>
+        <div class="footer-subscribe-wrapper">
+          <input type="email" placeholder="Enter operator email..." class="footer-input-field" />
+          <button type="button" class="footer-submit-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+       <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+        <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+        <div class="footer-legal-links">
+            <a href="privacy.html">PRIVACY DECREE</a>
+            <span class="divider">/</span>
+            <a href="terms.html">TERMINAL TERMS</a>
+            <span class="divider">/</span>
+            <a href="security-clearance.html">SECURITY CLEARANCE</a>
+        </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+
+(function () {
+
+  ScrollTrigger.create({
+    trigger: '#site-footer',
+    start: 'top 90%',
+    end: 'top 40%',
+    scrub: 0.8,
+    onUpdate: self => {
+      document.getElementById('bg-canvas').style.opacity = Math.max(0, 1 - self.progress * 2);
+    }
+  });
+
+  gsap.to('.creative-footer-reveal-container', {
+    scrollTrigger: {
+      trigger: '#site-footer',
+      start: 'top 95%',
+      end: 'bottom bottom',
+      toggleActions: 'play none none reverse'
+    },
+    opacity: 1,
+    filter: 'blur(0px)',
+    y: 0,
+    duration: 0.6,
+    ease: 'power2.out'
+  });
+
+  gsap.fromTo(
+    ['.footer-brand-column', '.footer-links-grid', '.footer-actions-column'],
+    { opacity: 0, y: 20, filter: 'blur(5px)' },
+    {
+      scrollTrigger: { trigger: '#site-footer', start: 'top 90%', toggleActions: 'play none none reverse' },
+      opacity: 1, y: 0, filter: 'blur(0px)',
+      duration: 0.5, stagger: 0.08, ease: 'power2.out'
+    }
+  );
+
+  /* ── Footer bookend: particles gather into the logo, once, mirroring
+     the hero's opening dust-settle so the page closes the way it opened ── */
+  const logoCanvas = document.getElementById('footer-logo-canvas');
+  const logoWrap = document.querySelector('.footer-logo-wrap');
+  if (logoCanvas && logoWrap) {
+    const ctx = logoCanvas.getContext('2d');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function sizeCanvas() {
+      logoCanvas.width = logoWrap.offsetWidth + 80;
+      logoCanvas.height = logoWrap.offsetHeight + 80;
+    }
+    sizeCanvas();
+    window.addEventListener('resize', sizeCanvas);
+
+    const N = 90;
+    const state = { p: 0 };
+    const particles = Array.from({ length: N }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 60 + Math.random() * 90;
+      return {
+        fromX: 0.5 + Math.cos(angle) * (dist / 100),
+        fromY: 0.5 + Math.sin(angle) * (dist / 100),
+        toX: 0.15 + Math.random() * 0.7,
+        toY: 0.15 + Math.random() * 0.7,
+        r: 0.8 + Math.random() * 2,
+        col: Math.random() < 0.5 ? 'rgba(168,85,247,' : 'rgba(230,56,136,'
+      };
+    });
+
+    let played = false;
+    function draw() {
+      const W = logoCanvas.width, H = logoCanvas.height;
+      ctx.clearRect(0, 0, W, H);
+      if (state.p <= 0) return;
+      const fade = 1 - THREE.MathUtils.smoothstep(state.p, 0.7, 1.0);
+      particles.forEach(pt => {
+        const x = (pt.fromX + (pt.toX - pt.fromX) * state.p) * W;
+        const y = (pt.fromY + (pt.toY - pt.fromY) * state.p) * H;
+        const a = (0.15 + state.p * 0.7) * fade;
+        ctx.beginPath();
+        ctx.arc(x, y, pt.r, 0, Math.PI * 2);
+        ctx.fillStyle = pt.col + a + ')';
+        ctx.fill();
+      });
+    }
+
+    ScrollTrigger.create({
+      trigger: '#site-footer',
+      start: 'top 88%',
+      once: true,
+      onEnter: () => {
+        if (played) return;
+        played = true;
+        if (reducedMotion) return;
+        gsap.to(state, {
+          p: 1, duration: 1.8, ease: 'power2.out',
+          onUpdate: draw,
+          onComplete: () => { setTimeout(() => ctx.clearRect(0, 0, logoCanvas.width, logoCanvas.height), 500); }
+        });
+      }
+    });
+  }
+})();
+</script>
+</body>
+
+<script>
+  (function () {
+
+    document.documentElement.classList.add('loader-active');
+    document.body.classList.add('loader-active');
+
+    function dismissLoader() {
+      var loader = document.getElementById('page-loader');
+      if (loader) {
+
+        window.scrollTo(0, 0);
+        loader.classList.add('hidden');
+
+        setTimeout(function () {
+          document.documentElement.classList.remove('loader-active');
+          document.body.classList.remove('loader-active');
+        }, 950);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { setTimeout(dismissLoader, 50); });
+    } else {
+      setTimeout(dismissLoader, 50);
+    }
+  })();
+</script>
+</html>
