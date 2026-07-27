@@ -75,26 +75,11 @@ body.page-about .nav-center a:hover .ltr {
   100% { transform: translateY(0); color: #9b5de5; text-shadow: 0 0 8px rgba(155,93,229,0.5); }
 }
 
-/* Button gradients — ported from index.html's violet/gold semantic pair
-   (warrant = cool violet, reward = gold), replacing style.css's default
-   magenta/green pair for this page only. */
-body.page-about .btn-warrant {
-  background: linear-gradient(135deg, #6f8fff 0%, #9d6fff 50%, #c96fe0 100%);
-  box-shadow: none;
-}
-body.page-about .btn-warrant:hover {
-  background: linear-gradient(135deg, #86a2ff 0%, #b088ff 50%, #db8bec 100%);
-  box-shadow: 0 0 20px rgba(157,111,255,0.5);
-}
-body.page-about .btn-reward {
-  background: linear-gradient(135deg, #ffc857 0%, #ffdb8a 50%, #ffe9b8 100%);
-  color: #1a1420;
-  box-shadow: none;
-}
-body.page-about .btn-reward:hover {
-  background: linear-gradient(135deg, #ffb92e 0%, #ffcf70 50%, #ffe08a 100%);
-  box-shadow: 0 0 20px rgba(255,200,87,0.5);
-}
+/* Button gradients — was overriding style.css's default magenta/green pair
+   to a one-off violet/gold palette here. Per request, about.html's header
+   should match index.html's actual buttons, which are magenta/green (same
+   as style.css's shared default) — so this override is removed and both
+   buttons just fall through to that shared rule now, same as index.html. */
 
 /* ══════════════════════════════════════════════════════════════
    Title styles — ported from index.html's chapter-heading treatment
@@ -102,7 +87,7 @@ body.page-about .btn-reward:hover {
    heading, and its eyebrow treatment (uppercase, wide tracking, soft
    glow in the label's own color) for the small labels above them.
    ══════════════════════════════════════════════════════════════ */
-body.page-about .hero-title,
+body.page-about .about-hero-title,
 body.page-about .era-name,
 body.page-about .manifesto-title,
 body.page-about .methodology-heading,
@@ -601,7 +586,7 @@ canvas#gl {
 
     <section id="hero">
       <p class="origin-label">The Origin</p>
-      <h1 class="hero-title">How We Got Here.</h1>
+      <h1 class="about-hero-title">How We Got Here.</h1>
       <p class="hero-subtitle">Living, human-first, Zero-legacy, Dynamic knowledge graph, Stackless stack (JIT learning), Metacognition agency, following stateless outcome engineering practice specialized in marketing and Ai intelligence</p>
 
     </section>
@@ -1124,7 +1109,7 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => { setBodyH(); drawElectricSpine(); ScrollTrigger.refresh(); });
 window.addEventListener('resize', () => { setBodyH(); drawElectricSpine(); ScrollTrigger.refresh(); });
 
-gsap.to(track, {
+const trackRideTween = gsap.to(track, {
   x: () => -scrollDist(),
   ease: 'none',
   scrollTrigger: {
@@ -1180,6 +1165,153 @@ gsap.to(track, {
     }
   }
 });
+const pinST = trackRideTween.scrollTrigger;
+
+/* ══════════════════════════════════════════════════════════════
+   Mobile paginated swipe navigation — ports index.html's
+   document-level touch-pagination controller so the WHOLE page
+   (hero → each era card → outro → manifesto → methodology →
+   stackless → human-first) advances one swipe at a time on mobile,
+   exactly like the home page. Earlier version of this left the
+   pinned hero/timeline scrub section un-paginated (continuous drag
+   only); per feedback that read as "just scrolling", not swiping
+   like the home page — so the pin range is now broken into a stop
+   per era card too. Each stop is computed from the same progress
+   math the pin's own onUpdate already uses (targetTriggerX / section
+   width, mapped back to an absolute scrollY through pinST.start/end),
+   so a swipe's smooth window.scrollTo() animates straight through
+   that card's reveal exactly as if the user had dragged there by hand.
+   Same axis-lock dead-zone as index.html's fix: a touch is only ever
+   classified once, after AXIS_LOCK_PX of movement, so a horizontal
+   drag on the stackless/three-tier mobile carousels never gets its
+   native scroll silently cancelled by an early preventDefault()
+   before the axis is known.
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+  const MOBILE_BP = 768;
+  const HOLD_MS = 900;
+  const SWIPE_THRESHOLD = 24;
+  const EPS = 4;
+  const AXIS_LOCK_PX = 6;
+
+  let listening = false;
+  let tracking = false;
+  let locked = false;
+  let startY = 0, startX = 0;
+  let axisDecided = false, isHorizontal = false;
+
+  function isMobileWidth(){ return window.innerWidth < MOBILE_BP; }
+
+  /* Where in the pin's 0–1 scrub does this era card sit dead-center in the
+     viewport? (Not the same as the progress that first fades it in — that
+     threshold fires the instant the card's left edge enters view, so
+     landing a swipe there leaves it hugging one side of the screen with a
+     big dead gap on the other, which is the half-empty layout reported
+     back. Solving for "card center == viewport center" instead lands each
+     swipe on a properly composed frame, the same as the reveal threshold
+     used by the onUpdate handler above but aimed at the card's midpoint
+     rather than its leading edge.) */
+  function eraCardStopProgress(card, range){
+    const heroEl = document.getElementById('hero');
+    if(!heroEl || !card || !(range > 0)) return null;
+    const cardCenterInTrack = heroEl.offsetWidth + card.offsetLeft + card.offsetWidth / 2;
+    const viewportCenter = window.innerWidth / 2;
+    return Math.min(1, Math.max(0, (cardCenterInTrack - viewportCenter) / range));
+  }
+
+  function getPaginationStops(){
+    const stops = [0];
+    if(pinST && pinST.end > pinST.start){
+      const range = pinST.end - pinST.start;
+      [1, 2, 3, 4].forEach(id => {
+        const card = document.getElementById('card-' + id);
+        const progress = eraCardStopProgress(card, range);
+        if(progress !== null) stops.push(pinST.start + progress * range);
+      });
+      stops.push(pinST.end);
+    }
+    ['#outro', '#manifesto-section', '#methodology-section', '#stackless-section', '#human-first-section']
+      .forEach(sel => {
+        const el = document.querySelector(sel);
+        if(el) stops.push(el.offsetTop);
+      });
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if(maxScroll > 0) stops.push(maxScroll);
+    return Array.from(new Set(stops.map(v => Math.round(v)))).sort((a,b) => a - b);
+  }
+
+  function onTouchStart(e){
+    if(e.touches.length !== 1) return;
+    tracking = true;
+    axisDecided = false;
+    isHorizontal = false;
+    startY = e.touches[0].clientY;
+    startX = e.touches[0].clientX;
+  }
+  function onTouchMove(e){
+    if(!tracking) return;
+    if(!axisDecided){
+      const t = e.touches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      if(Math.abs(dx) > AXIS_LOCK_PX || Math.abs(dy) > AXIS_LOCK_PX){
+        axisDecided = true;
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+      } else {
+        return; // dead-zone: don't preventDefault before the axis is known
+      }
+    }
+    if(isHorizontal) return; // native horizontal card-carousel scroll owns this
+    e.preventDefault(); // this controller owns vertical scrolling on mobile, everywhere on the page
+  }
+  function onTouchEnd(e){
+    if(!tracking) return;
+    tracking = false;
+    if(isHorizontal) return;
+    if(locked) return;
+    const touch = e.changedTouches && e.changedTouches[0];
+    const endY = touch ? touch.clientY : startY;
+    const dy = startY - endY;
+    if(Math.abs(dy) < SWIPE_THRESHOLD) return;
+
+    const stops = getPaginationStops();
+    const curY = window.scrollY;
+    let target;
+    if(dy > 0){
+      target = stops.find(s => s > curY + EPS);
+    } else {
+      const before = stops.filter(s => s < curY - EPS);
+      target = before.length ? before[before.length - 1] : undefined;
+    }
+    if(target === undefined) return;
+
+    locked = true;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+    setTimeout(() => { locked = false; }, HOLD_MS);
+  }
+
+  function enable(){
+    if(listening) return;
+    listening = true;
+    document.addEventListener('touchstart', onTouchStart, { passive:true });
+    document.addEventListener('touchmove', onTouchMove, { passive:false });
+    document.addEventListener('touchend', onTouchEnd, { passive:true });
+    document.addEventListener('touchcancel', onTouchEnd, { passive:true });
+  }
+  function disable(){
+    if(!listening) return;
+    listening = false;
+    tracking = false; locked = false;
+    document.removeEventListener('touchstart', onTouchStart);
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend', onTouchEnd);
+    document.removeEventListener('touchcancel', onTouchEnd);
+  }
+  function syncForWidth(){
+    if(isMobileWidth()) enable(); else disable();
+  }
+  syncForWidth();
+  window.addEventListener('resize', syncForWidth);
+})();
 
 (function() {
   const subtitle = document.querySelector('.hero-subtitle');
@@ -1191,7 +1323,7 @@ gsap.to(track, {
 
 gsap.timeline({ defaults:{ ease:'power3.out' } })
   .to('.origin-label', { opacity:1, duration:0.7, delay:0.4 })
-  .to('.hero-title',   { opacity:1, y:0, duration:1.0 }, '-=0.25')
+  .to('.about-hero-title',   { opacity:1, y:0, duration:1.0 }, '-=0.25')
   .to('.hero-subtitle', { opacity:1, duration:0 }, '-=0.1')
   .to('.hero-subtitle .char', {
     opacity: 1,

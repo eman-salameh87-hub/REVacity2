@@ -27,6 +27,7 @@ window.scrollTo(0, 0);
 </script>
 <title>REVacity — Revenue Engineering, Not Marketing</title>
 <meta name="description" content="REVacity is a stateless outcome-engineering practice. A scroll-driven journey through why the industry is broken, what we replace, and how revenue topology works — not a funnel.">
+<link rel="icon" type="image/png" href="media/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -112,6 +113,17 @@ window.scrollTo(0, 0);
       radial-gradient(ellipse at 50% 55%, rgba(3,2,8,0) 35%, rgba(3,2,8,0.6) 100%),
       linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
     z-index:5;
+    transition:background .6s ease;
+  }
+  /* Dims just the center, where the "infinity" gate's oversized near-white
+     particle glow otherwise blows out the Book-the-Diagnostic text/form —
+     the base vignette above leaves the middle 35% fully transparent, which
+     is fine everywhere else but not here. Same rule for mobile and desktop
+     since .vignette is plain viewport-relative CSS. */
+  body.has-diagnostic-glow .vignette{
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(3,2,8,0.55) 0%, rgba(3,2,8,0.4) 45%, rgba(3,2,8,0.65) 100%),
+      linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
   }
 
   header.chrome-top{
@@ -164,6 +176,17 @@ window.scrollTo(0, 0);
     width:min(1400px,94vw); text-align:center; z-index:20;
     pointer-events:none; transform:translateX(-50%);
   }
+  /* Scoped to the diagnostic/closing chapter specifically, rather than
+     every chapter — turning main.chapter-copy itself into a flex column
+     globally would make every OTHER chapter's <h1> shrink-to-fit its
+     content as a flex item instead of staying full-width with text-align
+     centering its text, which changes how long headings ("BROKEN MODELS.
+     ONE REALITY.", etc.) wrap. Only this chapter's content (subtext,
+     skeptic row, form anchor) needed real flex centering, so only this
+     chapter gets it. */
+  main.chapter-copy.has-diagnostic{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
   main.chapter-copy.is-centered{
     bottom:auto; top:calc(50% + (var(--header-h) / 2)); width:min(900px, 92vw);
     transform:translate(-50%, -50%);
@@ -195,12 +218,15 @@ window.scrollTo(0, 0);
      A chapter with `items` needs far more width than the 620px the copy
      normally runs at, and reads as a document rather than a caption — so the
      whole block goes wide and left-aligned for these. */
-  main.chapter-copy.has-list{ width:min(1080px, 92vw); text-align:center; }
+  main.chapter-copy.has-list{ width:min(1080px, 92vw); text-align:left; }
   /* The full-size heading (up to 5rem) plus five entries overruns a laptop
      viewport, which cut the last items off below the fold. Smaller here — and
-     closer to the proportions of the reference besides. */
+     closer to the proportions of the reference besides. Heading and eyebrow
+     now align left to match the list beneath them (was centered, which read
+     as mismatched against the list's own left alignment), with a fixed 15px
+     gap down to the list. */
   main.chapter-copy.has-list h1{
-    margin-bottom:0;
+    margin-bottom:15px;
     font-size:clamp(1.75rem, 4vw, 3.2rem);
   }
   main.chapter-copy.has-list .chapter-rule{ margin:14px auto 20px; max-width:880px; }
@@ -292,20 +318,42 @@ window.scrollTo(0, 0);
   }
   main.chapter-copy.has-cards .cards-grid{ display:grid; }
   @media (max-width:900px){
-    /* Was a single stacked column here — narrow viewports are exactly where
-       "drag to explore" reads most naturally (it's a touchscreen), so this
-       becomes a swipeable horizontal carousel instead. Desktop's 3-column
-       grid above is completely untouched by this rule. */
+    /* Back to a single stacked column on mobile — the swipeable horizontal
+       carousel this used to be left a sliver of the next card peeking off
+       the right edge, which read as a layout glitch rather than an
+       invitation to drag. Desktop's 3-column grid above is untouched. */
     main.chapter-copy.has-cards .cards-grid{
-      display:flex; overflow-x:auto; scroll-snap-type:x proximity;
-      gap:14px; padding:2px 6vw 14px; margin:0 -6vw;
-      -webkit-overflow-scrolling:touch; scrollbar-width:none; cursor:grab;
+      display:flex; flex-direction:column;
+      gap:10px; padding:0; margin:0;
+      overflow-x:visible; cursor:auto;
     }
-    main.chapter-copy.has-cards .cards-grid::-webkit-scrollbar{ display:none; }
-    main.chapter-copy.has-cards .cards-grid:active{ cursor:grabbing; }
     main.chapter-copy.has-cards .landscape-card{
-      flex:0 0 82vw; scroll-snap-align:center;
+      flex:1 1 auto; width:100%; box-sizing:border-box;
+      /* Number + title side by side instead of the number sitting on its own
+         line above the title — reads more like a compact list row on a
+         narrow screen. flex-wrap + the description forced to its own full
+         width line (below) keeps the description from trying to sit beside
+         them too. */
+      flex-flow:row wrap; align-items:baseline; column-gap:12px;
     }
+    main.chapter-copy.has-cards .card-number{ margin-bottom:0; }
+    main.chapter-copy.has-cards .card-title{ margin:0; font-weight:400; }
+    main.chapter-copy.has-cards .card-description{ flex:1 0 100%; margin-top:4px; }
+    /* Desktop's 32px/44px top/bottom padding was tuned for the number sitting
+       on its own line above the title — now that it's inline with the title
+       (above) the card has a lot of empty air top and bottom. Tightened up
+       for mobile only. */
+    main.chapter-copy.has-cards .landscape-card{ padding:12px 16px 14px 16px; }
+    /* Text sizes below were fixed rem values tuned for the desktop 3-column
+       grid — on the narrower 82vw carousel card they read oversized relative
+       to the card's own width. Scaled to the viewport with clamp() instead so
+       they shrink gracefully on small phones while never exceeding the
+       original desktop size. */
+    main.chapter-copy.has-cards .card-number{ font-size:clamp(1.9rem, 7vw, 2.6rem); }
+    main.chapter-copy.has-cards .card-title{ font-size:clamp(1.1rem, 4.6vw, 1.4rem); }
+    main.chapter-copy.has-cards .card-description{ font-size:clamp(0.82rem, 3.6vw, 0.92rem); line-height:1.3; }
+    main.chapter-copy.has-cards .landscape-footer-bar{ padding:14px 18px; }
+    main.chapter-copy.has-cards .footer-bar-text{ font-size:clamp(0.9rem, 3.8vw, 1.05rem); line-height:1.3; }
   }
   .landscape-card{
     position:relative; background-color:rgba(17,17,18,0.6);
@@ -387,7 +435,41 @@ window.scrollTo(0, 0);
   }
   main.chapter-copy.has-negation .negation-grid{ display:grid; }
   @media (max-width:900px){
-    main.chapter-copy.has-negation .negation-grid{ grid-template-columns:1fr; }
+    main.chapter-copy.has-negation .negation-grid{ grid-template-columns:1fr; gap:8px; }
+    /* The X was vertically centered against the full title+description
+       block, floating oddly low once the description wrapped to several
+       lines. On mobile only, the card becomes a 2-col grid so the icon sits
+       beside just the title row; display:contents on the content column lets
+       its children (title/description) become direct grid items so the
+       description can span the full width on its own row underneath. */
+    main.chapter-copy.has-negation .negation-card{
+      display:grid; grid-template-columns:auto 1fr; column-gap:10px;
+      align-items:baseline; padding:8px 12px;
+    }
+    main.chapter-copy.has-negation .card-icon-column{
+      grid-column:1; grid-row:1; width:auto;
+    }
+    main.chapter-copy.has-negation .icon-cross{ font-size:1.5rem; }
+    main.chapter-copy.has-negation .negation-footer-bar .icon-check{ display:none; }
+    main.chapter-copy.has-negation .card-content-column{ display:contents; }
+    main.chapter-copy.has-negation .negation-card-title{
+      grid-column:2; grid-row:1; margin:0 0 3px 0; font-weight:400;
+    }
+    main.chapter-copy.has-negation .negation-card-description{
+      grid-column:1 / -1; grid-row:2; margin-top:2px; line-height:1.25;
+    }
+    #clpsBeat0{
+      max-width: none !important;
+      white-space: pre-wrap !important;
+      padding: 0px 15px !important;
+    }
+  }
+  @media (max-width:768px){
+    /* The prior fix only hid the small checkmark glyph inside this bar —
+       the bar itself (with the "We are a Revenue and Growth Engineering
+       Practice..." text) was still rendering underneath. Hides the whole
+       bar below 768px specifically, per request. */
+    main.chapter-copy.has-negation .negation-footer-bar{ display:none !important; }
   }
   .negation-card{
     position:relative; background-color:rgba(17,17,18,0.6);
@@ -448,18 +530,37 @@ window.scrollTo(0, 0);
   }
   main.chapter-copy.has-comparison .comparison-table{ display:grid; }
   @media (max-width:700px){
-    main.chapter-copy.has-comparison .comparison-table{ grid-template-columns:1fr 32px 1fr; row-gap:8px; }
+    main.chapter-copy.has-comparison .comparison-table{
+      grid-template-columns:1fr 32px 1fr; row-gap:4px; margin:0 0 6px;
+    }
     /* term-box below was a fixed height:30px with no wrap handling — fine
        on desktop where each column has room, but terms like "Novel Embedded
        Agent" or "Architectural Liberation" don't fit on one line in a ~140px
        mobile column at the original 0.9rem, so the text was overflowing the
        pill vertically and colliding with the row below (only 4px row-gap).
-       Smaller font + auto height + wrapping fixes it; the taller row-gap
-       above gives wrapped two-line rows breathing room. */
-    .term-box{
-      height:auto; min-height:30px; font-size:0.72rem; line-height:1.3;
-      padding:6px 8px; white-space:normal; text-align:center;
+       Smaller font + auto height + wrapping fixes it; row-gap tightened
+       above and the bold weight dropped so the left column reads less
+       heavy/shouty next to the grayed-out "Replaces" column.
+       NOTE: scoped to "main.chapter-copy.has-comparison .term-box" rather
+       than the bare ".term-box" — the plain class has the exact same
+       specificity as the unscoped base .term-box rule declared further
+       down the stylesheet, so on source order alone the base rule was
+       winning even inside this media query and silently cancelling every
+       property here (font-size/weight, height, wrapping, all of it). The
+       extra scoping wins on specificity instead, so it can't be undone by
+       load order. */
+    main.chapter-copy.has-comparison .term-box{
+      height:auto; min-height:26px; font-size:0.8rem; line-height:1.25;
+      padding:5px 4px; white-space:nowrap; text-align:center; font-weight:400;
+      overflow:hidden; text-overflow:ellipsis; letter-spacing:-0.2px;
     }
+    /* BANNED badge + term list side by side left little room for the list
+       to wrap sensibly next to it — stacked instead, badge on its own line
+       above the terms. */
+    main.chapter-copy.has-comparison .banned-footer-banner{
+      flex-direction:column; align-items:flex-start; gap:8px; padding:10px 14px;
+    }
+    main.chapter-copy.has-comparison .eyebrow{ display:none; }
   }
   .table-column-header{
     font-size:1.15rem; font-weight:700; text-align:center; margin-bottom:0;
@@ -532,8 +633,33 @@ window.scrollTo(0, 0);
   }
   main.chapter-copy.has-topology .topology-content-split{ display:grid; }
   @media (max-width:900px){
-    main.chapter-copy.has-topology .topology-content-split{ grid-template-columns:1fr; }
-    .topology-graphic-sidebar{ display:none; }
+    main.chapter-copy.has-topology .topology-content-split{ grid-template-columns:1fr; margin:0 0 8px; }
+    /* Was a bare ".topology-graphic-sidebar{ display:none }" — same specificity
+       as the unconditional ".topology-graphic-sidebar{ display:flex }" rule
+       declared further down the stylesheet, so the later rule always won
+       regardless of viewport and the diamond graphic never actually hid on
+       mobile. Scoped selector (plus !important, since this is a hard
+       show/hide toggle rather than a tunable value) wins on specificity
+       instead, so load order can't undo it. */
+    main.chapter-copy.has-topology .topology-graphic-sidebar{ display:none !important; }
+    /* Font size/padding below were sized for the 2-column desktop layout
+       where the table has ~620px of the split to itself — cramped at full
+       viewport width on a phone. Same tightening pattern as the other
+       tables/cards on this page.
+       Tightened further (was 0.62/0.72rem with 6px 8px padding, line-height
+       1.3): at 11 phase rows, the previous sizing ran the whole vertically-
+       centered block taller than the viewport, so the centered box overflowed
+       top and bottom — the top half was invisible behind the header, the
+       bottom half got hard-clipped by .stage's overflow:hidden, cutting off
+       the 11th row ("The Return") entirely. Smaller type + tighter padding/
+       line-height shrinks total table height enough for all 11 rows plus the
+       footnote to fit inside a typical phone viewport without clipping. */
+    main.chapter-copy.has-topology .topology-table th{
+      font-size:0.56rem; padding:4px 6px;
+    }
+    main.chapter-copy.has-topology .topology-table td{
+      font-size:0.66rem; padding:3px 6px; line-height:1.15;
+    }
   }
   .topology-table-wrapper{
     background-color:rgba(17,17,18,0.6); border:1px solid rgba(255,255,255,0.05);
@@ -573,6 +699,15 @@ window.scrollTo(0, 0);
     will-change:opacity, transform, filter;
   }
   main.chapter-copy.has-topology .topology-footnote{ display:block; }
+  @media (max-width:900px){
+    /* Was inheriting the desktop 0.95rem — oversized against the shrunk
+       mobile table above it and, at three lines on a narrow phone, one of
+       the things pushing the vertically-centered block taller than the
+       viewport (see the topology-table tightening above). */
+    main.chapter-copy.has-topology .topology-footnote{
+      font-size:0.72rem; line-height:1.35;
+    }
+  }
 
   /* ── "Broken Models. One Reality." cards ─────────────────────────────────
      Same idea again: heading stays put, this fades in below it and out
@@ -589,28 +724,69 @@ window.scrollTo(0, 0);
     border:1px solid color-mix(in srgb, var(--neg) 35%, transparent);
     color:var(--neg); font-size:0.85rem; font-weight:500; letter-spacing:0.5px;
     padding:10px 18px; border-radius:4px; box-shadow:0 4px 15px rgba(0,0,0,0.4);
-    margin:0 0 18px; align-self:flex-start;
+    /* Was margin:0 0 18px (all below, none above the badge); splitting it
+       evenly to 9px/9px then overlapped the badge into the cards below,
+       since the badge's OWN bottom margin is the only thing separating it
+       from .models-columns-grid — halving it from 18 to 9 wasn't enough
+       clearance. Smaller gap above (just enough breathing room off the
+       heading), larger gap below (enough to clear the card row). */
+    /* Negative top margin pulls it up into the heading's own line-height
+       whitespace — margin:0 alone still left a gap from the h1's leading
+       and the badge's own vertical padding. */
+    margin:-10px 0 24px; align-self:flex-start;
     opacity:0; transform:translateY(16px); filter:blur(4px);
     will-change:opacity, transform, filter;
   }
   main.chapter-copy.has-models .dying-agency-badge{ display:inline-block; }
+  /* Heading's own margin-bottom (14px, shared by every chapter's h1) plus
+     the badge's padding/line-height was still reading as a bigger gap than
+     it should here specifically — per request, drop the heading's bottom
+     margin to 0 for just this chapter rather than touching the shared h1
+     rule everywhere else. */
+  main.chapter-copy.has-models h1{ margin-bottom:0; }
   .models-columns-grid{
     display:none; grid-template-columns:repeat(3, 1fr); gap:20px;
     align-items:stretch; width:100%; margin:0 0 10px; text-align:left;
   }
   main.chapter-copy.has-models .models-columns-grid{ display:grid; }
   @media (max-width:900px){
-    /* same carousel treatment as .cards-grid above, same reasoning */
+    /* Swipeable horizontal carousel, one card at a time, on mobile.
+       main.chapter-copy sets pointer-events:none on itself (the copy block
+       normally just sits inert over the WebGL canvas so the document-level
+       touch handler can own scroll/pagination) — every descendant inherits
+       that none, which silently made this whole carousel untouchable: no
+       hit-testing means no native touch-scroll and no target for the
+       mouse-drag script below, regardless of the overflow-x:auto/scroll-snap
+       here. pointer-events:auto on the carousel itself (inherited by the
+       cards inside) is what actually lets a finger or mouse drag it — this
+       is the same defect the has-cards carousel hit and sidestepped by
+       reverting to a stacked column instead of fixing; enabling pointer
+       events here is the real fix rather than another workaround. */
     main.chapter-copy.has-models .models-columns-grid{
       display:flex; overflow-x:auto; scroll-snap-type:x proximity;
       gap:14px; padding:2px 6vw 14px; margin:0 -6vw;
       -webkit-overflow-scrolling:touch; scrollbar-width:none; cursor:grab;
+      pointer-events:auto;
+      /* Tells the browser up front that this element handles horizontal
+         panning itself, rather than leaving it to infer that only after the
+         document-level touchmove listener's axis-lock check runs (see
+         onTouchMove above) — belt-and-suspenders so a fast/diagonal swipe
+         can't get eaten by the page-pagination controller before the axis
+         is decided. */
+      touch-action:pan-x;
     }
     main.chapter-copy.has-models .models-columns-grid::-webkit-scrollbar{ display:none; }
     main.chapter-copy.has-models .models-columns-grid:active{ cursor:grabbing; }
     main.chapter-copy.has-models .model-card{
       flex:0 0 82vw; scroll-snap-align:center;
     }
+    /* Per request: the "WHY YOUR CURRENT AGENCY IS DYING" badge, each card's
+       briefcase/monitor/robot icon, and the colored pill tag under each
+       title are all dropped on mobile — cards go straight from heading to
+       body text. */
+    main.chapter-copy.has-models .dying-agency-badge{ display:none; }
+    main.chapter-copy.has-models .card-icon-row{ display:none; }
+    main.chapter-copy.has-models .card-pill-tag{ display:none; }
   }
   .model-card{
     background-color:#0f061e; border:1px solid rgb(78 65 108 / 80%);
@@ -682,8 +858,12 @@ window.scrollTo(0, 0);
      resolving into --pos (the gold of value/certainty/close) — the same
      two colors, every time, so the ending finally feels like an ending. */
   .purple-glow-text{
-    color:var(--pos); font-weight:700;
-    text-shadow:0 0 20px color-mix(in srgb, var(--pos) 65%, transparent), 0 0 40px color-mix(in srgb, var(--pos) 30%, transparent);
+    color:#6a4bff; font-weight:700;
+    animation:certaintyGlowPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes certaintyGlowPulse{
+    0%, 100%{ text-shadow:0 0 12px rgba(106,75,255,0.55), 0 0 24px rgba(106,75,255,0.25); }
+    50%{ text-shadow:0 0 26px rgba(106,75,255,0.9), 0 0 52px rgba(106,75,255,0.5); }
   }
   .skeptic-cta-block{
     display:none; flex-direction:column; align-items:center; margin:0 0 26px;
@@ -694,7 +874,15 @@ window.scrollTo(0, 0);
   .skeptic-title{
     font-family:"Inter","Helvetica Neue",Arial,sans-serif; font-weight:800;
     font-size:1.5rem; letter-spacing:-0.02em; line-height:1.5; margin:0;
-    background:linear-gradient(to right, var(--accent) 0%, var(--pos) 100%);
+    background:linear-gradient(to right,
+      #ff11a8 0%,
+      #ff705a 20%,
+      #ffe600 42%,
+      #e1b63c 60%,
+      #c48682 72%,
+      #a256bd 85%,
+      #5326cf 100%
+    );
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
     transition:background .6s ease;
   }
@@ -703,12 +891,12 @@ window.scrollTo(0, 0);
   .compare-text{
     font-family:"Inter","Helvetica Neue",Arial,sans-serif; font-weight:600;
     font-size:1rem; line-height:1.3; letter-spacing:-0.01em;
-    background:linear-gradient(to right, var(--accent) 0%, var(--pos) 100%);
+    background:linear-gradient(to right, #4804c0 0%, #fd00df 100%);
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
     transition:background .6s ease;
   }
   .go-capsule-btn{
-    background:linear-gradient(90deg, var(--accent) 0%, var(--pos) 100%);
+    background:#ee45f2;
     border:none; cursor:pointer; transition:transform 0.2s ease, background .6s ease;
     padding:2px; border-radius:30px; display:inline-flex; align-items:center;
     flex-shrink:0;
@@ -720,18 +908,68 @@ window.scrollTo(0, 0);
     width:32px; height:32px; border-radius:50%; display:flex; align-items:center;
     justify-content:center; line-height:1;
   }
+  @media (max-width:900px){
+    /* Desktop sizing (1.5rem title, 1.15rem desc, 1.3 line-height throughout)
+       read oversized and airy stacked full-width on a phone — smaller type
+       and tighter margins/line-height so "Still skeptical?" through the GO
+       button reads as one compact block instead of three loosely-spaced
+       lines. */
+    .financial-certainty-banner{ margin:0 0 8px; }
+    .skeptic-cta-block{ margin:0 0 16px; }
+    .skeptic-title{ font-size:1.15rem; line-height:1.25; }
+    .skeptic-desc{ font-size:0.9rem; line-height:1.3; margin:2px 0 8px; }
+    .compare-action-row{ gap:8px; }
+    .compare-text{ font-size:0.8rem; line-height:1.25; }
+    .go-text{ font-size:0.85rem; padding:0 12px 0 15px; }
+    .arrow-icon{ width:26px; height:26px; font-size:1.1rem; }
+  }
+  .diag-form-anchor{ width:100%; max-width:640px; margin:0 auto; height:1px; }
   .diagnostic-intake-form{
     display:none; flex-direction:column; gap:10px; width:100%; max-width:640px;
-    margin:0 auto; text-align:left; border-top:1px solid rgba(255,255,255,0.15);
+    margin:0 auto; text-align:left;
     padding-top:16px; opacity:0; filter:blur(4px);
-    transform:translateY(var(--reveal-rise, 16px)) perspective(1100px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    /* Was also perspective(1100px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))
+       — the same mouse-follow 3D tilt used on the cards/table elsewhere on
+       the page (see the pointermove listener a few screens down). Removed
+       here per request: a form you're meant to click into and type in
+       shouldn't be visually rotating toward the cursor as you move toward
+       it, and a 3D-transformed containing block around real <input>/
+       <select>/<textarea> elements is exactly the kind of thing that can
+       make click/focus behave inconsistently across browsers. Just the
+       plain reveal rise now, no rotation. */
+    transform:translateY(var(--reveal-rise, 16px));
     transition:transform .5s cubic-bezier(.2,.8,.2,1);
     will-change:opacity, transform, filter;
+    /* main.chapter-copy sets pointer-events:none on itself (the copy block
+       normally just sits inert over the WebGL canvas) — every descendant
+       inherits that none, which silently made every field in this form
+       unclickable/untypable, same defect the mobile card carousel hit
+       earlier. auto here (inherited by the inputs/select/textarea inside)
+       is what actually lets a click land in a field at all. */
+    pointer-events:auto;
+    /* Detached from main.chapter-copy at runtime (see the
+       "detach diagnostic form" script) and re-anchored here via
+       position:fixed, synced every frame to where the .diag-form-anchor
+       placeholder sits — so it's no longer a descendant of the pointer-
+       events:none copy block at all, structurally immune to that whole
+       class of bug rather than just patched around it again. */
+    position:fixed; top:0; left:0; z-index:25;
   }
-  main.chapter-copy.has-diagnostic .diagnostic-intake-form{ display:flex; }
+  .diagnostic-intake-form.js-visible{ display:flex; }
+  /* Same story for the GO button — it used to be tabindex="-1"
+     aria-hidden="true" and inert by design (pure decoration). Now a real,
+     focusable control: clicking it jumps focus into the form's first field
+     so "click GO" is what actually starts filling it in, per request. */
+  .go-capsule-btn{ pointer-events:auto; }
   .form-grid-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .form-input-group{ display:flex; flex-direction:column; gap:5px; }
-  .form-input-group label{ color:#6b7280; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; }
+  /* Labels removed per request — each input's placeholder (NAME → "Your
+     name", EMAIL → "you@company.com", etc.) already carries the same info,
+     so the label above it was redundant. display:none instead of deleting
+     the <label> elements/for-id pairing in the HTML, so screen-reader/
+     autofill association still exists in the markup even though it's not
+     shown. */
+  .form-input-group label{ display:none; color:#6b7280; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; }
   .form-input-group input, .form-input-group select, .form-input-group textarea{
     background-color:#0a0315; border:1px solid #3e3e43; border-radius:4px; color:#e5e5e8;
     font-size:0.95rem; padding:7px 14px; width:100%; box-sizing:border-box; outline:none;
@@ -758,6 +996,14 @@ window.scrollTo(0, 0);
     text-decoration:underline;
   }
   .u-word{ text-decoration:underline; }
+  a.u-word{
+    color:inherit; cursor:pointer; text-decoration-thickness:1px;
+    pointer-events:auto; /* main.chapter-copy sets pointer-events:none on itself */
+    transition:color .3s ease, text-shadow .3s ease;
+  }
+  a.u-word:hover, a.u-word:focus-visible{
+    color:var(--accent); text-shadow:0 0 14px var(--accent);
+  }
   .word-fly{ display:inline-block; will-change:transform, opacity; }
   main.chapter-copy .eyebrow{
     margin:0 0 10px; font-size:11px; letter-spacing:0.32em; text-transform:uppercase;
@@ -767,6 +1013,32 @@ window.scrollTo(0, 0);
   /* "Book the Diagnostic." (infinity) has no eyebrow tag in the reference —
      drop it from the flow instead of leaving a blank line above the heading. */
   main.chapter-copy .eyebrow:empty{ display:none; margin:0; }
+  /* The intro chapter's eyebrow ("Are you here to Compete, or to Dominate?")
+     is a spoken statement, not a small-caps label like every other
+     chapter's eyebrow — so it gets its own larger italic serif treatment
+     instead of the shared uppercase/letter-spaced style above. Scoped to
+     .eyebrow--statement (toggled in updateCopyDOM() off ch.isStatement,
+     currently only true for the 'intro' chapter) so this never leaks onto
+     the other chapters' eyebrow labels. Purple→gold→purple text gradient
+     (literal #a855f7/#ffd023, matching the accent/gold used on the-agent.html
+     and services.html rather than this page's own --accent/--pos tokens, per
+     direct spec) with a fixed size/margin instead of the shared rule's
+     responsive clamp(). Gold solid (not gradient) for the two underlined
+     words so they read as a deliberate callout against the gradient
+     sentence. */
+  main.chapter-copy .eyebrow.eyebrow--statement{
+text-transform: none;
+    letter-spacing: 0.01em;
+    font-size: clamp(0.65rem, 2.3vw, 1.45rem);
+    font-weight: 500;
+    text-shadow: none;
+    margin: 0 0 clamp(10px, 2vw, 20px);
+    background: linear-gradient(260deg, #8300ff, #dfb428, #8300ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent
+  }
+
   /* Matches .clps-beat — the collapse's "INTELLIGENCE, NOT HYPE" — so the
      journey headings and the collapse read as the same voice. Was Cormorant
      Garamond serif at 500 weight. */
@@ -810,19 +1082,22 @@ window.scrollTo(0, 0);
   }
   .scroll-cue .scroll-pill{
     width:26px; height:42px; border-radius:999px;
-    border: 2px solid var(--accent);
+    /* Was var(--accent) — on the intro chapter that resolves to a pale
+       near-white (#e7ecff), which just read as plain white/cream rather
+       than a real color. Fixed purple instead, per request. */
+    border: 2px solid #a855f7;
     display:flex; align-items:flex-start; justify-content:center;
     padding-top:8px; box-sizing:border-box;
     transition:border-color .3s ease, transform .3s ease;
   }
-  .scroll-cue:hover .scroll-pill{ border-color:rgba(238,240,255,0.65); transform:scale(1.06); }
+  .scroll-cue:hover .scroll-pill{ border-color:#c084fc; transform:scale(1.06); }
   .scroll-cue .scroll-arrow-inner{
     width:14px; height:18px;
     animation:scrollArrowBounce 1.8s ease-in-out infinite;
   }
   .scroll-cue .scroll-arrow-inner svg{
     width:100%; height:100%;
-    stroke:var(--accent); stroke-width:1.6; fill:none;
+    stroke:#a855f7; stroke-width:1.6; fill:none;
     stroke-linecap:round; stroke-linejoin:round;
     transition:stroke .4s ease;
   }
@@ -832,18 +1107,42 @@ window.scrollTo(0, 0);
   }
 
   .corner-label{
-    position:absolute; z-index:19; left:0; top:0;
+    position:fixed; z-index:9000; left:0; top:0;
     font-family:'Inter',sans-serif; font-size:clamp(1.2rem, 3vw, 2.2rem); font-weight:700;
-    color:#f0e8ff; line-height:1.15; opacity:0; pointer-events:none;
+    color:#f0e8ff; line-height:1.15; opacity:0; pointer-events:auto !important;
     display:flex; flex-direction:column; align-items:center; text-align:center;
     width:max-content; max-width:min(340px, 44vw);
-    /* position is driven every frame from JS (see projectLabel), which
-       projects the 3D shape's world position to screen space and writes
-       a translate3d(...) here — this keeps the text riding on top of
-       the shape through its float/drift animation and as the camera
-       moves. translate(-50%,-50%) centers the text block on that point. */
+    text-decoration:none; cursor:pointer;
+    /* Deliberately `position:fixed` (viewport-relative, independent of any
+       ancestor) with a very high explicit z-index, and the elements
+       themselves live as the last nodes in <body> (see markup near the
+       closing tag) rather than nested inside .stage — because .stage only
+       establishes its OWN local stacking context: a z-index set on a
+       descendant here can never outrank a LATER SIBLING section elsewhere
+       on the page (e.g. the Collapse section further down, which is
+       deliberately layered above .stage on scroll) no matter how high that
+       descendant's z-index is set. Living at the body level with z-index
+       9000 sidesteps that entirely — this label now out-stacks everything
+       except the page-transition veil (z-index 9999).
+       position is still driven every frame from JS (see projectLabel),
+       which projects the 3D shape's world position to screen space and
+       writes a translate3d(...) here — that math is already viewport-
+       relative, so moving this element's DOM location changes nothing
+       about how it's positioned, only how it stacks.
+       pointer-events:auto is marked !important so nothing else on the
+       page can win a cascade fight and silently turn this back off; the
+       explore-on/merge-on/dark-on rules further down still correctly
+       force it back to none (also !important) once the label is
+       genuinely out of the story. */
     will-change:transform;
     transform:translate(-50%,-50%);
+    transition:color .3s ease, text-shadow .3s ease;
+  }
+  .corner-label:hover, .corner-label:focus-visible{
+    color:var(--accent); text-shadow:0 0 18px var(--accent);
+  }
+  .corner-label:hover .corner-label-sub, .corner-label:focus-visible .corner-label-sub{
+    color:inherit;
   }
   .corner-label-sub{
     display:block; font-size:clamp(0.7rem, 1.5vw, 0.82rem); color:#f0e8ff;
@@ -880,6 +1179,7 @@ window.scrollTo(0, 0);
   }
   @media (prefers-reduced-motion: reduce){
     .scroll-cue .scroll-arrow-inner{ animation:none; }
+    .purple-glow-text{ animation:none; text-shadow:0 0 20px rgba(106,75,255,0.55), 0 0 40px rgba(106,75,255,0.25); }
   }
 
   /* while exploring, the rest of the chrome steps back a little so the
@@ -986,36 +1286,34 @@ window.scrollTo(0, 0);
 }
 .header-buttons { display: flex; gap: 15px; align-items: center; }
 /* Two persistent header CTAs, visible through the entire journey regardless
-   of chapter — so unlike everything else on the page, they can't just track
-   the live --accent (that would mean the same button changing color eight
-   times as you scroll). Instead each is pinned to ONE of the two fixed
-   semantic colors, same logic as every other accent in the piece: Warrant
-   (start the engagement) reads in the cool violet/--accent family; Reward
-   (the $100k guarantee) reads in --pos gold, since gold is reserved for
-   value everywhere else on the page too. Previously these were an unrelated
-   fuchsia-magenta and a bright green — two more one-off brand kits stacked
-   on top of the cosmic story before it had even started. */
+   of chapter. Colors match the shared style.css treatment used on
+   about.html/services.html/the-agent.html (fuchsia-magenta for Warrant,
+   green-lime for Reward), so the header reads identically across every
+   page in the site instead of index.html running its own one-off violet/
+   gold palette for these two buttons. */
 .btn-warrant {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
   padding: clamp(8px, 1.5vw, 11px) clamp(18px, 3vw, 30px);
   color: #fff; text-decoration: none; font-size: clamp(0.75rem, 1.5vw, 0.88rem); font-weight: 600;
   letter-spacing: 0.03em; border: none; border-radius: 999px;
-  background: linear-gradient(135deg, #6f8fff 0%, #9d6fff 50%, #c96fe0 100%);
+  background: linear-gradient(135deg, #d946ef 0%, #a21caf 50%, #e11d9e 100%);
+  box-shadow: 0 0 18px rgba(217, 70, 239, 0.55), 0 0 6px rgba(217, 70, 239, 0.3) inset;
   transition: all 0.3s ease; overflow: hidden; cursor: pointer; white-space: nowrap;
 }
 .btn-warrant::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); transition: left 0.5s ease; z-index:1; }
-.btn-warrant:hover { background: linear-gradient(135deg, #86a2ff 0%, #b088ff 50%, #db8bec 100%); transform: translateY(-2px); }
+.btn-warrant:hover { background: linear-gradient(135deg, #e879f9 0%, #c026d3 50%, #f43f9e 100%); box-shadow: 0 0 28px rgba(217, 70, 239, 0.8), 0 0 10px rgba(217, 70, 239, 0.4) inset; transform: translateY(-2px); }
 .btn-warrant:hover::before { left: 100%; }
 .btn-reward {
   position: relative; display: inline-flex; align-items: center; justify-content: center;
   padding: clamp(8px, 1.5vw, 11px) clamp(18px, 3vw, 30px);
-  color: #1a1420; text-decoration: none; font-size: clamp(0.75rem, 1.5vw, 0.88rem); font-weight: 700;
+  color: #000000; text-decoration: none; font-size: clamp(0.75rem, 1.5vw, 0.88rem); font-weight: 700;
   letter-spacing: 0.03em; border-radius: 999px; border: none;
-  background: linear-gradient(135deg, #ffc857 0%, #ffdb8a 50%, #ffe9b8 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #84cc16 50%, #a3e635 100%);
+  box-shadow: 0 0 22px rgba(34, 197, 94, 0.55), 0 0 40px rgba(132, 204, 22, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease; overflow: hidden; cursor: pointer; white-space: nowrap;
 }
 .btn-reward::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s ease; z-index:1; }
-.btn-reward:hover { background: linear-gradient(135deg, #ffb92e 0%, #ffcf70 50%, #ffe08a 100%); transform: translateY(-2px); }
+.btn-reward:hover { background: linear-gradient(135deg, #16a34a 0%, #65a30d 50%, #84cc16 100%); box-shadow: 0 0 32px rgba(34, 197, 94, 0.75), 0 0 55px rgba(132, 204, 22, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
 .btn-reward:hover::before { left: 100%; }
 .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; z-index: 205; }
 .hamburger span { width: 28px; height: 2px; background-color: #f0e8ff; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: block; box-shadow: 0 0 5px color-mix(in srgb, var(--accent) 40%, transparent); }
@@ -1062,6 +1360,7 @@ window.scrollTo(0, 0);
 @media (max-width: 768px) {
   .main-header { height: 64px; padding: 0 4%; }
   .main-header .logo img { width: clamp(100px, 28vw, 140px); }
+  .clps-panel-left{gap: 5px !important;}
 }
 @media (max-width: 480px) {
   .main-header { height: 58px; padding: 0 4%; }
@@ -1126,8 +1425,8 @@ window.scrollTo(0, 0);
 
 
   <main class="chapter-copy is-centered" id="copy">
-    <p class="eyebrow" id="eyebrow">&ldquo;Are you here to <u>Compete</u>, or to <u>Dominate</u>?&rdquo;</p>
-    <h1 id="heading">Are you Here for a <span class="u-word">Reason</span> or <span class="u-word">Reasoning</span>?</h1>
+    <p class="eyebrow eyebrow--statement" id="eyebrow">&ldquo;Are you here to <u>Compete</u>, or to <u>Dominate</u>?&rdquo;</p>
+    <h1 id="heading">Are you Here for a <a class="u-word" href="services.html">Reason</a> or <a class="u-word" href="the-agent.html">Reasoning</a>?</h1>
     <p class="sub" id="sub"></p>
     <div class="chapter-rule" id="chapterRule"></div>
     <ol class="chapter-list" id="chapterList"></ol>
@@ -1245,7 +1544,7 @@ window.scrollTo(0, 0);
       <p class="skeptic-desc" id="skepticDesc"></p>
       <div class="compare-action-row">
         <span class="compare-text" id="compareText"></span>
-        <button type="button" class="go-capsule-btn" tabindex="-1" aria-hidden="true">
+        <button type="button" class="go-capsule-btn" id="diagGoBtn">
           <span class="go-text">GO</span>
           <span class="arrow-icon">&raquo;</span>
         </button>
@@ -1300,9 +1599,6 @@ window.scrollTo(0, 0);
       </div>
     </div>
   </div>
-
-  <div class="corner-label corner-label--tr" id="labelAgent">The Agent<span class="corner-label-sub">Revenue is my only language</span></div>
-  <div class="corner-label corner-label--bl" id="labelServices">Services<span class="corner-label-sub">Still looking for the standard list?<br>We understand, But not FOLLOW</span></div>
 
   <div class="detail-panel" id="detailPanel">
     <button class="close" id="detailClose" aria-label="Close">&times;</button>
@@ -1411,6 +1707,10 @@ window.scrollTo(0, 0);
     letter-spacing: -0.01em;
     text-transform: uppercase;
     color: #eeecf3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
   }
   .clps-beat small {
     display: block;
@@ -1433,7 +1733,7 @@ window.scrollTo(0, 0);
   #clpsBeat0 {
     max-width: none;
     white-space: nowrap;
-    font-size: clamp(1.6rem, 4.2vw, 4.5rem);
+    font-size: clamp(2rem, 4.2vw, 4.5rem);
   }
   /* "The current collapse" should read with only its own first letter
      capitalized, as typed — but .clps-beat (shared with "INTELLIGENCE, NOT
@@ -1449,9 +1749,9 @@ window.scrollTo(0, 0);
      at the tail is the one deliberate exception: this headline is a
      warning, so it's allowed to end on the story's one warning color. */
   .clps-gradient-text {
-    text-transform: none;
+    text-transform: capitalize;
     display: inline-block;
-    background: linear-gradient(90deg, #ffffff 0%, var(--accent) 55%, var(--neg) 100%);
+    background: linear-gradient(90deg, #ec4899 0%, #f97316 35%, #eab308 65%, #a855f7 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -1485,6 +1785,18 @@ window.scrollTo(0, 0);
     line-height: 1.6;
     letter-spacing: 0;
     font-weight: 400;
+    box-sizing: border-box;
+  }
+  /* Grid/flex items default to min-width:auto, not 0 — meaning a child's
+     own intrinsic content size can force it (and the grid track it's in)
+     wider than the space actually available, overflowing past the
+     viewport edge even though every text rule above wraps correctly on
+     its own. min-width:0 here is what actually lets that wrapping take
+     effect within the real available width instead of being overridden
+     by this default. This, not the font sizes, was the real cause of
+     text crowding/exceeding the screen edge on mobile. */
+  .clps-panel-left, .clps-panel-right {
+    min-width: 0;
   }
   .clps-panel-left {
     display: flex;
@@ -1507,6 +1819,7 @@ window.scrollTo(0, 0);
     padding-left: 18px;
     border-left: 3px solid var(--accent);
     transition: border-color 1.2s ease;
+    overflow-wrap: break-word;
   }
   .clps-panel-text {
     font-family: 'Space Grotesk', sans-serif;
@@ -1514,6 +1827,7 @@ window.scrollTo(0, 0);
     line-height: 1.6;
     color: #eceaf2;
     margin: 0;
+    overflow-wrap: break-word;
   }
   .clps-panel-text-warn {
     color: var(--neg);
@@ -1550,6 +1864,7 @@ window.scrollTo(0, 0);
     background-clip: text;
     color: transparent;
     transition: background 1.2s ease;
+    overflow-wrap: break-word;
   }
   .clps-quote-text-alt {
     background: linear-gradient(90deg, #ffffff, var(--accent));
@@ -1565,6 +1880,7 @@ window.scrollTo(0, 0);
     font-size: 13px;
     line-height: 1.55;
     color: #9d99ab;
+    overflow-wrap: break-word;
   }
   .clps-bullet-list {
     list-style: none;
@@ -1583,6 +1899,7 @@ window.scrollTo(0, 0);
     font-family: 'Space Grotesk', sans-serif;
     font-size: 14px;
     color: #cac7d4;
+    overflow-wrap: break-word;
   }
   .clps-bullet-list li::before {
     content: '';
@@ -1599,13 +1916,69 @@ window.scrollTo(0, 0);
   @media (max-width: 860px) {
     .clps-beat-panel {
       grid-template-columns: 1fr;
-      gap: 26px;
+      gap: 10px;
     }
     .clps-quote-box, .clps-bullet-list {
       text-align: left;
     }
+    .clps-quote-eyebrow{
+      letter-spacing: 0em !important;
+      text-align: left;
+    }
+    .clps-quote-text{
+      text-align: left;
+    }
+    .clps-quote-note{
+      line-height: 1.4
+    }
+    .clps-panel-text{
+      line-height: 1.4
+    }
+    .clps-panel-subtitle{
+      display: none;
+    }
+    .clps-bullet-list{
+      margin-top: 15px;
+    }
+    .clps-panel-text-warn{
+      display: none;
+    }
+    .clps-panel-right{
+      gap: 5px !important;
+    }
+    .clps-gradient-text{
+      margin-top: 25px;
+    }
+  }
+
+  /* Narrow phones (down to ~320px): the panel title's clamp() floor
+     (1.9rem/30.4px) never actually shrinks below that no matter how
+     narrow the screen gets, since its vw component is tiny at these
+     widths — on a 320-375px phone that's tight against both edges of
+     a 92vw-wide panel. Same idea for the quote-box padding, which was
+     eating into the already-narrow content width. Everything above
+     already wraps normally (overflow-wrap:break-word is the safety
+     net for any single long word), this just gives it more literal
+     room so nothing crowds the screen edges. */
+  @media (max-width: 480px) {
+    .clps-beat-panel {
+      width: 94vw;
+      gap: 10px;
+    }
+    .clps-panel-title {
+      font-size: clamp(1.5rem, 9vw, 3.1rem);
+    }
     .clps-quote-box {
-      text-align: center;
+      padding: 16px 18px;
+    }
+    .clps-bullet-list {
+      padding: 14px 18px;
+    }
+    .clps-quote-text {
+      font-size: clamp(16px, 5.2vw, 27px);
+    }
+    .clps-quote-text-alt {
+      font-size: clamp(14px, 4.4vw, 21px);
     }
   }
 
@@ -2122,7 +2495,7 @@ const chapters = [
   {
     key:'intro', hex:'#e7ecff', isStatement:true,
     eyebrow:'\u201cAre you here to <u>Compete</u>, or to <u>Dominate</u>?\u201d',
-    heading:'Are you Here for a <span class="u-word">Reason</span> or <span class="u-word">Reasoning</span>?',
+    heading:'Are you Here for a <a class="u-word" href="services.html">Reason</a> or <a class="u-word" href="the-agent.html">Reasoning</a>?',
     sub:'',
     detail:'Smooth, immersive 3D scroll experiences built with GSAP, WebGL, and Three.js \u2014 turning simple scrolling into responsive visual motion.'
   },
@@ -2267,7 +2640,7 @@ const chapters = [
     diagBanner:'We don\u2019t sell services. We sell <span class="purple-glow-text">financial certainty.</span>',
     skepticTitle:'Still skeptical?',
     skepticDesc:'Good. Skeptics make the best clients.',
-    compareText:'Compare us with others so you can know more'
+    compareText:'Compare us with others<br>so you can know more'
   }
 ];
 const N_CHAPTERS = chapters.length;
@@ -2325,6 +2698,7 @@ const els = {
   skepticDesc: document.getElementById('skepticDesc'),
   compareText: document.getElementById('compareText'),
   diagnosticForm: document.getElementById('diagnosticForm'),
+  diagGoBtn: document.getElementById('diagGoBtn'),
   scrollTrackA: document.getElementById('scrollTrackA'),
   scrollTrackB: document.getElementById('scrollTrackB'),
   enterBtn: document.getElementById('enterBtn'),
@@ -3286,7 +3660,7 @@ function skyLightFrom(hex, peak, whiten){
   return mix(r) + ',' + mix(g) + ',' + mix(b);
 }
 const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
-const SKY_MONOCHROME = true;
+const SKY_MONOCHROME = false;
 const SKY_GLOW = 0.30;
 
 function buildGalaxySkyTexture(){
@@ -4210,22 +4584,30 @@ function buildGate(ch, pos){
     return { group, ring: sb.ring, glow: sb.glow };
   }
 
+  /* ch.key === 'origin' already returned above via buildStarBirth, so this
+     `big` only ever ends up true for 'infinity' in practice — every other
+     journey gate (nebula/galaxy/horizon) takes the R:4.4 branch below. */
   const big = ch.key === 'origin' || ch.key === 'infinity';
-  const R = big ? 6.2 : 4.4;
+  const R = big ? 5.2 : 4.4;   // was 6.2 for big — infinity's core read too
+                                // large/bright right behind the Book-the-
+                                // Diagnostic text, per request
 
   /* interiorFill scatters extra particles across the ring's interior
      (see buildParticleRing) instead of leaving it hollow/empty in the
      middle — the same technique already used for the intro's Agent
      shape. Restored here for every journey gate (nebula/galaxy/
      horizon/infinity): keep these dots as-is, don't remove or reduce
-     them again unless explicitly asked to. */
+     them again unless explicitly asked to. (infinity's count and its
+     glow's count/opacity below ARE now reduced from their original
+     "big" values — per request, this one gate's near-white core was
+     washing out the closing form's text/legibility.) */
   const ring = buildParticleRing(ch.hex, R, big, {
-    interiorFill: big ? 700 : 480,
+    interiorFill: big ? 500 : 480,
     interiorFalloff: 0.9
   });
   group.add(ring);
 
-  const glow = buildGlowCloud(ch.hex, R*1.15, big ? 900 : 620, { size:0.35, opacity:0.65 });
+  const glow = buildGlowCloud(ch.hex, R*1.15, big ? 600 : 620, { size:0.35, opacity: big ? 0.4 : 0.65 });
   group.add(glow);
 
   group.position.copy(pos);
@@ -4552,6 +4934,171 @@ function scrollToChapter(idx){
   const p   = (idx - 1) / (N_CHAPTERS - 2);
   window.scrollTo({ top: b + p * (end - b), behavior:'smooth' });
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Mobile paginated scroll (<768px) — a single swipe advances exactly
+   one "beat", instead of free continuous scrolling. Once a swipe
+   lands, every touch is ignored (the page "holds") for 2 seconds
+   before the next swipe is allowed to fire — same locked, one-at-a-
+   time behavior for swiping back up to the previous beat.
+
+   The stops are built from the actual landmark elements the hero/
+   collapse/journey is made of (#scrollTrackA → #scrollDive →
+   .clps-section → #scrollRise → #scrollDark → #scrollTrackB), not
+   from chapter index. An earlier version called scrollToChapter(1)
+   for the very first swipe — but that function's "chapter 1" is
+   anchored to the TOP of #scrollTrackB, which sits AFTER the entire
+   dive/collapse/rise/dark sequence (scrollState.t ~0.35 of the whole
+   page by that point) — so one swipe from the hero skipped the whole
+   collapse cinematic and landed mid-transition, with the next
+   chapter's copy and the still-fading intro orbs on screen at once.
+   Stopping at each landmark's own top (plus a mid-point inside the
+   300vh .clps-section, and each individual chapter position inside
+   #scrollTrackB, using the same b + p*(end-b) formula scrollToChapter
+   uses there) gives one swipe per real beat of the story instead.
+   touchmove is prevented while a single-finger drag is in progress so
+   the browser's own native scroll never fights the programmatic one;
+   a plain tap (no real vertical movement) still reaches buttons/links
+   untouched. Automatically enables/disables as the viewport crosses
+   768px (e.g. rotating a phone to landscape, or resizing a desktop
+   window while testing), rather than only checking once on load.
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+  const MOBILE_BP = 768;
+  const HOLD_MS = 2000;
+  const SWIPE_THRESHOLD = 24; // px of vertical movement before a touch counts as a swipe, not a tap
+  const EPS = 4; // px slack so the current position never counts as its own "next"/"prev" stop
+
+  let listening = false;
+  let tracking = false;
+  let locked = false;
+  let startY = 0;
+  let startX = 0;
+  let axisDecided = false;
+  let isHorizontal = false;
+  const AXIS_LOCK_PX = 6; // small dead-zone before committing this touch to horizontal or vertical
+
+  function isMobileWidth(){ return window.innerWidth < MOBILE_BP; }
+
+  /* recomputed on every swipe (cheap: a handful of offsetTop/offsetHeight
+     reads) rather than cached, so it stays correct across resizes/reflows. */
+  function getPaginationStops(){
+    const stops = [0];
+    const diveEl  = document.getElementById('scrollDive');
+    const clpsEl  = document.querySelector('.clps-section');
+    const riseEl  = document.getElementById('scrollRise');
+    const darkEl  = document.getElementById('scrollDark');
+    const trackB  = els.scrollTrackB;
+
+    if(diveEl) stops.push(diveEl.offsetTop);
+    if(clpsEl){
+      const top = clpsEl.offsetTop, h = clpsEl.offsetHeight;
+      stops.push(top, top + h * 0.5); // an extra stop midway through the 300vh collapse
+    }
+    if(riseEl) stops.push(riseEl.offsetTop);
+    if(darkEl) stops.push(darkEl.offsetTop);
+    if(trackB){
+      const b = trackB.offsetTop;
+      const end = b + trackB.offsetHeight - window.innerHeight;
+      for(let idx = 1; idx <= N_CHAPTERS - 1; idx++){
+        const p = (idx - 1) / (N_CHAPTERS - 2);
+        stops.push(b + p * (end - b));
+      }
+    }
+    return Array.from(new Set(stops.map(v => Math.round(v)))).sort((a, b) => a - b);
+  }
+
+  function onTouchStart(e){
+    if(e.touches.length !== 1) return;
+    tracking = true;
+    axisDecided = false;
+    isHorizontal = false;
+    startY = e.touches[0].clientY;
+    startX = e.touches[0].clientX;
+  }
+  function onTouchMove(e){
+    if(!tracking) return;
+    if(!axisDecided){
+      const t = e.touches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      if(Math.abs(dx) > AXIS_LOCK_PX || Math.abs(dy) > AXIS_LOCK_PX){
+        axisDecided = true;
+        // Horizontal-scrolling elements (e.g. the mobile card carousels) need
+        // their native touch scroll left alone — only a predominantly
+        // vertical drag belongs to this controller. Decided once per touch
+        // and never re-checked mid-gesture, so it can't flip-flop partway
+        // through a drag.
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+      } else {
+        // Still inside the dead-zone (under AXIS_LOCK_PX) — axis unknown.
+        // Used to fall through to e.preventDefault() below unconditionally
+        // while undecided, since isHorizontal starts false. That's what was
+        // actually killing the card carousel: browsers commit to "no native
+        // scroll" for a whole touch sequence the moment preventDefault() is
+        // called on ANY of its early touchmove events, and never un-commit
+        // just because a later event in the same gesture stops calling it —
+        // so every horizontal drag got its first ~6px silently prevented
+        // before isHorizontal even had a chance to flip true, permanently
+        // voiding the browser's own horizontal scroll for that touch even
+        // though this function correctly backed off afterward. Returning
+        // here instead leaves the gesture's default behavior untouched
+        // until we actually know which axis it is.
+        return;
+      }
+    }
+    if(isHorizontal) return; // let the native horizontal carousel scroll handle it
+    e.preventDefault(); // this controller owns vertical scrolling on mobile now, locked or not
+  }
+  function onTouchEnd(e){
+    if(!tracking) return;
+    tracking = false;
+    if(isHorizontal) return; // was a horizontal carousel drag, not a page swipe — nothing to paginate
+    if(locked) return; // "holding" — ignore this gesture's outcome entirely
+    const touch = e.changedTouches && e.changedTouches[0];
+    const endY = touch ? touch.clientY : startY;
+    const dy = startY - endY; // >0: finger moved up the screen = advance to next beat
+    if(Math.abs(dy) < SWIPE_THRESHOLD) return; // a tap, not a swipe — leave it alone
+
+    const stops = getPaginationStops();
+    const curY = window.scrollY;
+    let target;
+    if(dy > 0){
+      target = stops.find(s => s > curY + EPS);
+    } else {
+      const before = stops.filter(s => s < curY - EPS);
+      target = before.length ? before[before.length - 1] : undefined;
+    }
+    if(target === undefined) return; // already at the first/last stop
+
+    locked = true;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+    setTimeout(() => { locked = false; }, HOLD_MS);
+  }
+
+  function enable(){
+    if(listening) return;
+    listening = true;
+    document.addEventListener('touchstart', onTouchStart, { passive:true });
+    document.addEventListener('touchmove', onTouchMove, { passive:false });
+    document.addEventListener('touchend', onTouchEnd, { passive:true });
+    document.addEventListener('touchcancel', onTouchEnd, { passive:true });
+  }
+  function disable(){
+    if(!listening) return;
+    listening = false;
+    tracking = false; locked = false;
+    document.removeEventListener('touchstart', onTouchStart);
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend', onTouchEnd);
+    document.removeEventListener('touchcancel', onTouchEnd);
+  }
+  function syncForWidth(){
+    if(isMobileWidth()) enable(); else disable();
+  }
+  syncForWidth();
+  window.addEventListener('resize', syncForWidth);
+})();
+
 els.enterBtn.addEventListener('click', () => {
   /* from the opening statement, "Enter" drops you into the collapse */
   if(scrollState.t < T1 * 0.5){
@@ -4561,6 +5108,87 @@ els.enterBtn.addEventListener('click', () => {
   const next = Math.min(N_CHAPTERS-1, Math.round(scrollState.t*(N_CHAPTERS-1)) + 1);
   scrollToChapter(next);
 });
+/* GO used to be purely decorative (tabindex="-1" aria-hidden="true", no
+   handler) and the form below it was inert anyway (pointer-events:none
+   inherited from main.chapter-copy — see the .diagnostic-intake-form rule
+   above). Per request: clicking GO now jumps focus straight into the
+   form's first field, so it actually reads as the button that starts
+   filling the diagnostic intake out. scrollIntoView first in case the
+   form isn't fully in view (e.g. right after the chapter transition on a
+   short mobile viewport) — focus() alone doesn't guarantee that. */
+if(els.diagGoBtn){
+  els.diagGoBtn.addEventListener('click', () => {
+    const firstField = els.diagnosticForm ? els.diagnosticForm.querySelector('input, select, textarea') : null;
+    if(firstField){
+      firstField.scrollIntoView({ behavior:'smooth', block:'center' });
+      firstField.focus({ preventScroll:true });
+    }
+  });
+}
+/* Final, JS-level guarantee that the diagnostic form is actually
+   clickable/typable — set directly as inline styles (with !important)
+   rather than relying on any stylesheet rule, cascade order, or
+   specificity at all. Inline !important beats stylesheet !important, so
+   this wins regardless of anything else on the page, present or future.
+   Runs once at load — these particular elements are static markup, never
+   destroyed/recreated by updateCopyDOM(), so there's nothing that would
+   ever reset it afterward. */
+(function forceFormInteractive(){
+  const targets = [];
+  if(els.diagnosticForm) targets.push(els.diagnosticForm);
+  if(els.diagGoBtn) targets.push(els.diagGoBtn);
+  if(els.diagnosticForm){
+    targets.push(...els.diagnosticForm.querySelectorAll('input, select, textarea, label, .custom-select-wrapper, .form-input-group, .form-grid-row'));
+  }
+  targets.forEach(el => el.style.setProperty('pointer-events', 'auto', 'important'));
+})();
+
+/* Every previous attempt at this form assumed something ELSE was
+   overriding pointer-events back to none and tried to out-specificity it.
+   Since that kept not fixing it, stop trusting the cascade at all: pull
+   the real <form> completely out of main.chapter-copy's subtree so
+   there's no ancestor to inherit pointer-events:none FROM in the first
+   place, regardless of what CSS rule or future change might otherwise
+   apply. A 1px-tall .diag-form-anchor is left behind in the form's
+   original spot purely so the surrounding layout doesn't jump; the real
+   form becomes a direct child of <body>, position:fixed, with its
+   left/top/width synced to that anchor's on-screen rect every animation
+   frame (cheap: one getBoundingClientRect + three style writes). Its
+   show/hide is now the .js-visible class (toggled in updateCopyDOM())
+   instead of the old has-diagnostic descendant-selector, since it's no
+   longer a descendant of anything chapter-related. */
+(function detachDiagnosticForm(){
+  const form = els.diagnosticForm;
+  if(!form || !form.parentNode) return;
+  const anchor = document.createElement('div');
+  anchor.className = 'diag-form-anchor';
+  form.parentNode.insertBefore(anchor, form);
+  document.body.appendChild(form);
+
+  function syncPosition(){
+    const r = anchor.getBoundingClientRect();
+    form.style.left = r.left + 'px';
+    form.style.top = r.top + 'px';
+    form.style.width = r.width + 'px';
+    /* The anchor started as a fixed 1px placeholder — fine for holding
+       horizontal position, but main.chapter-copy's own height (which its
+       vertical centering is computed from, whether via yPercent:-50 or
+       the has-diagnostic flex box) no longer accounted for the form's
+       real height once the actual form left the flow. That shortened
+       "measured" height shifted the whole visible block (heading,
+       subtext, skeptic row, AND the still-visually-present fixed form)
+       down from true center. Growing the anchor to match the form's
+       actual rendered height restores the original centering math without
+       needing to touch the centering logic itself. */
+    anchor.style.height = form.offsetHeight + 'px';
+  }
+  function tick(){
+    syncPosition();
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
 els.detailClose.addEventListener('click', () => {
   showDetail = false;
   gsap.to(els.detailPanel, { opacity:0, y:20, duration:0.3, ease:'power2.in',
@@ -4654,6 +5282,9 @@ const MODEL_ICONS = {
 function updateCopyDOM(ch){
   domChapterIdx = chapters.indexOf(ch);
   els.eyebrow.innerHTML = ch.eyebrow;
+  /* larger italic "spoken statement" treatment for the intro chapter's
+     eyebrow only — see .eyebrow--statement in <style> */
+  els.eyebrow.classList.toggle('eyebrow--statement', !!ch.isStatement);
   els.heading.innerHTML = ch.heading;
   els.sub.textContent = ch.sub;
   els.detailHeading.innerHTML = ch.heading;
@@ -4810,12 +5441,28 @@ function updateCopyDOM(ch){
 
   const hasDiagnostic = hasDiagnosticContent(ch);
   els.copy.classList.toggle('has-diagnostic', hasDiagnostic);
+  /* infinity's near-white accent (#f3e8ff) plus its larger "big" particle
+     ring/glow (see buildGate — R:6.2 vs 4.4, more particles than every
+     other gate) makes this one gate's core render far brighter than the
+     rest of the journey, right behind the Book-the-Diagnostic copy/form —
+     legible on the other chapters' more saturated hues, but this one washes
+     the text out. Toggled on body (not #copy, which GSAP transforms —
+     see .vignette below) so a plain CSS override can darken just the
+     center of the vignette while this chapter's active, same on mobile
+     and desktop since it's viewport-relative, not tied to the 3D scene. */
+  document.body.classList.toggle('has-diagnostic-glow', hasDiagnostic);
+  /* .diagnostic-intake-form now lives outside main.chapter-copy entirely
+     (see detachDiagnosticForm below), so it can no longer rely on the old
+     "main.chapter-copy.has-diagnostic .diagnostic-intake-form{display:flex}"
+     descendant-selector rule — it's not a descendant anymore. This class
+     is its show/hide switch now. */
+  if(els.diagnosticForm) els.diagnosticForm.classList.toggle('js-visible', hasDiagnostic);
   if(hasDiagnostic){
     if(els.diagnosticLead) els.diagnosticLead.innerHTML = ch.diagLead;
     if(els.diagnosticBanner) els.diagnosticBanner.innerHTML = ch.diagBanner || '';
     if(els.skepticTitle) els.skepticTitle.textContent = ch.skepticTitle || '';
     if(els.skepticDesc) els.skepticDesc.textContent = ch.skepticDesc || '';
-    if(els.compareText) els.compareText.textContent = ch.compareText || '';
+    if(els.compareText) els.compareText.innerHTML = ch.compareText || '';
   } else {
     if(els.diagnosticLead) els.diagnosticLead.innerHTML = '';
     if(els.diagnosticBanner) els.diagnosticBanner.innerHTML = '';
@@ -5071,6 +5718,11 @@ function transitionToChapter(idx){
          just yPercent, so re-entering the hero can't inherit stale x/y from
          whatever transform GSAP last wrote while in .is-mid. */
       gsap.set(els.copy, { x:0, y:0, xPercent:-50, yPercent:-50 });
+      /* Restore real clickability for the two corner labels now that
+         we're actually back in the hero — see the idx!==0 branch below
+         for why this was turned off. */
+      els.labelAgent.style.setProperty('pointer-events', 'auto', 'important');
+      els.labelServices.style.setProperty('pointer-events', 'auto', 'important');
     });
   } else {
     tl.to(els.copy, { opacity:0, y:16, duration:0.32, ease:'power2.in' })
@@ -5137,6 +5789,21 @@ function transitionToChapter(idx){
      the (0, 0.5) fade window at all. */
   if(idx !== 0){
     gsap.to([els.labelAgent, els.labelServices], { opacity:0, duration:0.3, ease:'power2.out', overwrite:true });
+    /* Bug fix: these are position:fixed, z-index:9000, pointer-events:auto
+       !important (see .corner-label above) — opacity alone doesn't stop
+       them from being clickable. projectLabel() freezes each one at its
+       last valid on-camera screen position once the intro gate goes
+       behind the camera (see the z>1||z<-1 early-return there) instead of
+       moving them off-screen, so once you've scrolled past the intro they
+       sit invisible but still hit-testable wherever they last were —
+       frequently smack in the middle of the viewport, since that's where
+       the hero's own shapes sit. Every later chapter's centered content
+       (including "Book the Diagnostic"'s form/GO button) renders in that
+       same central area, so clicks/taps meant for it were being silently
+       swallowed by an invisible link instead. !important here to actually
+       beat the stylesheet's own !important. */
+    els.labelAgent.style.setProperty('pointer-events', 'none', 'important');
+    els.labelServices.style.setProperty('pointer-events', 'none', 'important');
   }
 
   /* a brief brightness flash through the starfield — GSAP tweening
@@ -5882,7 +6549,7 @@ requestAnimationFrame(render);
 (function(){
   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  const SELECTOR = '.landscape-card, .negation-card, .model-card, .topology-table-wrapper, .diagnostic-intake-form';
+  const SELECTOR = '.landscape-card, .negation-card, .model-card, .topology-table-wrapper';
   const MAX_DEG = 6;
   let current = null;
   function setTilt(el, rotX, rotY){
@@ -5983,6 +6650,33 @@ requestAnimationFrame(render);
   body.dark-on .detail-panel{
     opacity:0 !important; pointer-events:none !important;
     transition:opacity .45s ease;
+  }
+
+  /* ══ Failsafe, last rules in the document on purpose ══
+     The diagnostic form/GO button were still reported unclickable after
+     the earlier pointer-events:auto fixes (.diagnostic-intake-form,
+     .go-capsule-btn) and after disabling the two corner labels in JS.
+     Rather than keep guessing at whatever specific thing is still
+     overriding those, this pins the actual inputs down directly by ID
+     with !important — the highest-specificity, last-in-source-order rule
+     possible short of an inline style, so nothing earlier in the
+     cascade (inherited pointer-events:none from main.chapter-copy, or
+     anything else) can still be winning. */
+  #diagnosticForm,
+  #diagnosticForm input,
+  #diagnosticForm select,
+  #diagnosticForm textarea,
+  #diagGoBtn{
+    pointer-events:auto !important;
+  }
+  /* Belt-and-suspenders for the corner-label click-blocker theory: instead
+     of relying only on the transitionToChapter() JS toggling this at the
+     right moment, tie it directly to the DOM state CSS can already see —
+     main.chapter-copy only carries .is-centered while chapter 0 (the hero)
+     is active, which is exactly when these two labels are meant to be
+     live. Any other time, force them fully out of hit-testing. */
+  body:has(main.chapter-copy:not(.is-centered)) .corner-label{
+    pointer-events:none !important;
   }
 </style>
 <script>
@@ -6229,102 +6923,7 @@ requestAnimationFrame(render);
 })();
 </script>
 
-<!-- ═══ A living cursor ═══
-     A trailing glow that follows the pointer with a little lag, drawn on
-     its own 2D canvas layered above everything (pointer-events:none, so it
-     never intercepts a click). Reads --accent live every frame, so the
-     trail is dyed by whatever chapter you're currently in, same as every
-     other accent in the piece. This is intentionally not a replacement for
-     the real cursor — the site is still text-heavy, hiding the native
-     pointer would hurt usability — it's an addition sitting on top of it.
-     Entirely self-contained: its own canvas, its own rAF loop wrapped in a
-     try/catch so a failure in here can never take down the actual 3D
-     scene's render loop, and an early return on touch/coarse-pointer
-     devices and prefers-reduced-motion. Zero dependency on Three.js, GSAP,
-     or anything else on the page — if this script never ran at all, nothing
-     else on the page would even notice. -->
-<script>
-(function(){
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-
-  var canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9999;';
-  document.body.appendChild(canvas);
-  var ctx = canvas.getContext('2d');
-  if(!ctx) return;
-
-  function resize(){
-    var dpr = window.devicePixelRatio || 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  var mx = -999, my = -999, tx = -999, ty = -999;
-  var hoverScale = 1, hoverTarget = 1;
-  var trail = [];
-  var MAX_TRAIL = 14;
-  var HOVER_SELECTOR = 'a, button, .pill, .icon-btn, .landscape-card, .negation-card, .model-card, .topology-table-wrapper, .diagnostic-intake-form, input, select, textarea, .scroll-cue';
-
-  window.addEventListener('pointermove', function(e){
-    tx = e.clientX; ty = e.clientY;
-    var overInteractive = e.target.closest ? e.target.closest(HOVER_SELECTOR) : null;
-    hoverTarget = overInteractive ? 1.8 : 1;
-  }, { passive:true });
-  window.addEventListener('pointerleave', function(){ tx = -999; ty = -999; });
-
-  var cachedAccent = '#9db4ff', accentReadCounter = 0;
-  function readAccent(){
-    /* re-reading a computed style every single frame is wasteful for a
-       value that only actually changes at chapter boundaries — sampled
-       every 20 frames instead of every frame. */
-    accentReadCounter++;
-    if(accentReadCounter % 20 === 0){
-      try{
-        var v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-        if(v) cachedAccent = v;
-      }catch(e){ /* keep the last known-good value */ }
-    }
-    return cachedAccent;
-  }
-
-  function loop(){
-    try{
-      mx += (tx - mx) * 0.18;
-      my += (ty - my) * 0.18;
-      hoverScale += (hoverTarget - hoverScale) * 0.15;
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      if(mx > -500){
-        trail.push({ x: mx, y: my });
-        if(trail.length > MAX_TRAIL) trail.shift();
-        var accent = readAccent();
-        for(var i = 0; i < trail.length; i++){
-          var p = i / trail.length;
-          ctx.beginPath();
-          ctx.arc(trail[i].x, trail[i].y, 1.5 * p * hoverScale, 0, Math.PI * 2);
-          ctx.fillStyle = accent;
-          ctx.globalAlpha = p * 0.35;
-          ctx.fill();
-        }
-        ctx.globalAlpha = 0.9;
-        ctx.beginPath();
-        ctx.arc(mx, my, 5 * hoverScale, 0, Math.PI * 2);
-        ctx.strokeStyle = accent;
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
-    }catch(e){ /* a bad frame here just skips its own visuals, never propagates */ }
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-})();
-</script>
+<!-- "A living cursor" trailing-glow effect removed per request. -->
 
 <script>
 /* ── Exit transition — closes a plain veil over the screen before any
@@ -6360,6 +6959,14 @@ requestAnimationFrame(render);
   });
 })();
 </script>
+
+<!-- Deliberately placed here, as the very last elements in <body> — see the
+     long comment on .corner-label in <head> for why: living at the top of
+     the DOM stacking order (plus position:fixed + z-index:9000) is what
+     makes these reliably clickable regardless of whatever else on the page
+     is doing its own z-index/stacking-context tricks. -->
+<a class="corner-label corner-label--tr" id="labelAgent" href="the-agent.html">The Agent<span class="corner-label-sub">Revenue is my only language</span></a>
+<a class="corner-label corner-label--bl" id="labelServices" href="services.html">Services<span class="corner-label-sub">Still looking for the standard list?<br>We understand, But not FOLLOW</span></a>
 
 </body>
 </html>
