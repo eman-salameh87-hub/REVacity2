@@ -963,7 +963,11 @@ canvas#gl {
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ── Global smooth-scroll tuning ── */
+/* ── Global smooth-scroll tuning ──
+   normalizeScroll(true) here is immediately turned back off on mobile by
+   the swipe-pagination controller further down this script, which needs
+   sole ownership of touchmove/window.scrollTo to paginate reliably — see
+   the comment in that controller's enable()/disable(). ── */
 gsap.ticker.lagSmoothing(1000, 16);
 ScrollTrigger.normalizeScroll(true);
 ScrollTrigger.config({ ignoreMobileResize: true });
@@ -1292,6 +1296,18 @@ const pinST = trackRideTween.scrollTrigger;
   function enable(){
     if(listening) return;
     listening = true;
+    /* ScrollTrigger.normalizeScroll(true) is switched on globally further up
+       this script — it's GSAP's own touch-scroll takeover, meant to smooth
+       out mobile Safari/Chrome quirks for pinned/scrubbed sections. It runs
+       its own touchstart/touchmove handling and keeps its own internal
+       scroll-position proxy instead of driving plain window.scrollY, which
+       was the actual reason nothing here worked: two independent systems
+       were both fighting to own touchmove, and window.scrollTo() calls from
+       this controller weren't reliably syncing with normalizeScroll's own
+       state. Turning normalizeScroll off for as long as this controller is
+       the one driving touch (i.e. on mobile) removes that conflict outright
+       instead of trying to patch around it. */
+    if(window.ScrollTrigger && ScrollTrigger.normalizeScroll) ScrollTrigger.normalizeScroll(false);
     document.addEventListener('touchstart', onTouchStart, { passive:true });
     document.addEventListener('touchmove', onTouchMove, { passive:false });
     document.addEventListener('touchend', onTouchEnd, { passive:true });
@@ -1301,6 +1317,7 @@ const pinST = trackRideTween.scrollTrigger;
     if(!listening) return;
     listening = false;
     tracking = false; locked = false;
+    if(window.ScrollTrigger && ScrollTrigger.normalizeScroll) ScrollTrigger.normalizeScroll(true);
     document.removeEventListener('touchstart', onTouchStart);
     document.removeEventListener('touchmove', onTouchMove);
     document.removeEventListener('touchend', onTouchEnd);
