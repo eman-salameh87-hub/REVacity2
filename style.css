@@ -4,6 +4,10 @@
   padding: 0;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   width: 100%;
   background: #0a0315;
@@ -95,9 +99,39 @@ body {
   z-index: 104;
 }
 
+/* Header sweep + logo pulse + nav letter-wave below are ported from
+   index.html's own inline header CSS, so every page sharing this
+   stylesheet (about.html, services.html, the-agent.html, etc.) gets the
+   same header treatment as index.html by default instead of each page
+   re-declaring its own body.page-X copy of the same thing. var(--pos)/
+   var(--accent) fall back to fixed gold/violet tones for pages that don't
+   define those custom properties themselves (only index.html's scroll-
+   driven theme sets them live). */
+.main-header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,127,255,0.95), rgba(255,208,35,0.5), transparent);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: headerSweep 7s ease-in-out infinite;
+  pointer-events: none;
+  opacity: .8;
+}
+@keyframes headerSweep {
+  0%   { background-position: -60% 0; }
+  50%  { background-position: 130% 0; }
+  100% { background-position: -60% 0; }
+}
+
 .logo img {
   width: clamp(130px, 12vw, 175px);
   filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.4));
+  animation: logoGlowPulse 4.5s ease-in-out infinite;
+}
+@keyframes logoGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(168,85,247,0.4)); }
+  50%      { filter: drop-shadow(0 0 26px rgba(216,127,255,0.8)); }
 }
 
 .nav-center {
@@ -109,6 +143,10 @@ body {
   min-width: 0;
 }
 
+/* Simplified to match index.html: no more underline-sweep background-image
+   or the ::before ghost-lift/::after glow-dot pseudo-elements — just plain
+   link styling, with the per-letter wave (.ltr spans, added by each page's
+   own nav-wrap script) doing all the hover motion now. */
 .nav-center a {
   text-decoration: none;
   color: #fff;
@@ -117,71 +155,24 @@ body {
   letter-spacing: 0.01em;
   white-space: nowrap;
   position: relative;
-  padding-bottom: 4px;
+  padding: 4px 0;
   display: inline-block;
-  transition: color 0.3s ease;
-
-  /* Glowing underline that sweeps in */
-  background-image:
-    linear-gradient(90deg, #a855f7, #e11d9e, #ffd023);
-  background-size: 0% 1.5px;
-  background-repeat: no-repeat;
-  background-position: left bottom;
-  transition:
-    background-size 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.3s ease,
-    letter-spacing 0.3s ease,
-    text-shadow 0.3s ease;
 }
 
-.nav-center a::before {
-  /* Ghost text layer for the "lift" duplicate effect */
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  color: transparent;
-  background: linear-gradient(90deg, #a855f7, #ffd023);
-  -webkit-background-clip: text;
-  background-clip: text;
-  transform: translateY(0px);
-  opacity: 0;
-  transition:
-    opacity 0.25s ease,
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none;
+.nav-center a .ltr {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), color 0.35s ease, text-shadow 0.35s ease;
 }
 
-.nav-center a::after {
-  /* Subtle glow flare dot that pops under the link */
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%) scaleX(0);
-  width: 60%;
-  height: 6px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(168,85,247,0.7) 0%, transparent 70%);
-  filter: blur(3px);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-  opacity: 0;
+.nav-center a:hover .ltr {
+  animation: navLetterWave 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation-delay: calc(var(--i) * 28ms);
 }
 
-.nav-center a:hover {
-  color: #e2c6ff;
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 12px rgba(168, 85, 247, 0.6), 0 0 24px rgba(168, 85, 247, 0.3);
-  background-size: 100% 1.5px;
-}
-
-.nav-center a:hover::before {
-  opacity: 0.18;
-  transform: translateY(-2px);
-}
-
-.nav-center a:hover::after {
-  transform: translateX(-50%) scaleX(1);
-  opacity: 1;
+@keyframes navLetterWave {
+  0%   { transform: translateY(0); color: #fff; text-shadow: none; }
+  45%  { transform: translateY(-7px); color: var(--pos, #ffc857); text-shadow: 0 0 10px color-mix(in srgb, var(--pos, #ffc857) 80%, transparent); }
+  100% { transform: translateY(0); color: var(--accent, #a855f7); text-shadow: 0 0 8px color-mix(in srgb, var(--accent, #a855f7) 50%, transparent); }
 }
 
 .header-buttons {
@@ -5554,7 +5545,16 @@ body.loader-active {
   .era-2 { left: 130vw; }
   .era-3 { left: 230vw; }
   .era-4 { left: 330vw; width: clamp(220px, 70vw, 300px); }
-  #outro { height: auto; min-height: 100vh; padding: 80px clamp(20px, 6vw, 40px); justify-content: center; }
+  #outro {
+    height: auto; min-height: 100vh; padding: 80px clamp(20px, 6vw, 40px);
+    justify-content: center; overflow-x: hidden; max-width: 100%;
+  }
+  /* .footer-logo-wrap's own canvas bleeds calc(100% + 80px) past it (see
+     about.html's inline style) for a decorative glow — harmless on desktop
+     where there's room, but worth capping here so it can never contribute
+     to the page's horizontal scroll range on a narrow phone viewport. */
+  .footer-logo-wrap { max-width: 100%; overflow: visible; }
+  .outro-inner-wrap { overflow-x: hidden; max-width: 100%; }
   .outro-blocks { grid-template-columns: 1fr; gap: 36px; }
   .outro-logo { width: clamp(120px, 45vw, 200px); }
   .outro-heading { font-size: clamp(1.2rem, 5vw, 1.5rem); }
@@ -5563,17 +5563,82 @@ body.loader-active {
   .stateless-right { border-left: none; border-top: 1px solid rgba(255,255,255,0.06); }
   #manifesto-section { padding: clamp(60px, 8vw, 100px) clamp(20px, 6vw, 40px); }
   .manifesto-layout { grid-template-columns: 1fr; }
-  #dna-canvas { width: 300px; opacity: 0.6; }
+  /* #dna-canvas.visible (id+class) already outranks this plain #dna-canvas
+     rule, so an opacity here never actually dims the visible state — just
+     sizing it down for the narrower column. Height is capped rather than
+     left at the base rule's 100% — on mobile #manifesto-section stacks
+     into one tall column of wrapped paragraph text (often 1500px+), and
+     stretching the canvas to match that height was warping the helix's
+     rendered aspect ratio into an unrecognizable diagonal smear (the
+     JS resize() now also reads the canvas's own box instead of the
+     section's, but both fixes are needed together). */
+  #dna-canvas { width: 340px; height: 520px; top: 40px; }
   .manifesto-quote { margin-left: 0; }
   .methodology-cols { grid-template-columns: 1fr; gap: clamp(48px, 8vw, 80px); }
   .methodology-heading { font-size: clamp(1.8rem, 6vw, 2.4rem); }
   .methodology-item { padding-left: 0; }
+  #human-first-section, .hf-inner { overflow-x: hidden; max-width: 100%; }
   .hf-inner { grid-template-columns: 1fr; }
-  .hf-right { aspect-ratio: 1 / 0.75; margin-right: 0; }
+  .hf-right {
+    aspect-ratio: 1 / 0.75; margin-right: 0;
+    width: 100%; max-width: 100%; box-sizing: border-box;
+  }
   .veracity-section { grid-template-columns: 1fr; }
   .veracity-right { border-left: none; border-top: 1px solid rgba(255,255,255,0.07); padding-left: 0; padding-top: 32px; }
   .veracity-row { grid-template-columns: 90px 28px 1fr; padding: 14px 16px; }
   .veracity-title { font-size: clamp(1.3rem, 6vw, 1.8rem); }
+
+  /* Per request: the three-tier cards also read better as a plain vertical
+     stack on mobile (one full-width card per row) rather than a horizontal
+     swipe carousel — same reversal as the stackless cards below. */
+  .three-tier-cards {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .three-tier-card {
+    width: 100%; max-width: 100%; margin: 0; box-sizing: border-box;
+  }
+
+  /* Per request: the stackless principles read better as a plain vertical
+     stack on mobile (one full-width card per row, wrapping down the page)
+     rather than a horizontal swipe carousel — reverting to a single column. */
+  .stackless-grid {
+    display: grid; grid-template-columns: 1fr; gap: 10px;
+  }
+  .stackless-grid::before { display: none; }
+  .stackless-card { width: 100%; }
+
+  /* Left-align the section header (title, the two "Human Stack" /
+     "Agentic Workforce" rows, and the "DKG is the bridge" line) on
+     mobile instead of the desktop's centered treatment. */
+  .stackless-header { text-align: left; }
+  .stackless-subtitle-row { justify-content: flex-start; align-items: flex-start; }
+  .stackless-bridge { text-align: left; }
+
+  /* Each subtitle item is a flex row of [dot, strong-label, dash-text] — fine
+     on a wide desktop line where nothing wraps, but on mobile the label
+     ("The Agentic Workforce") wraps to two lines on its own while the
+     dash-text flex item stays pinned at its original horizontal slot,
+     leaving a big empty gap next to the first line. Switching to plain
+     block/inline flow lets the dot sit as a leading bullet and the label +
+     dash-text wrap together naturally as one line of text, no dead gap. */
+  .stackless-subtitle-item {
+    display: block;
+  }
+  .stackless-dot {
+    display: inline-block;
+    margin-right: 7px;
+    vertical-align: middle;
+  }
+
+  /* Defensive containment — belt-and-suspenders so an intrinsically-wide
+     scrollable descendant (either carousel above, or anything added later)
+     can never again inflate the page's own horizontal scroll range. */
+  .methodology-cols, .three-tier-panel, .stackless-inner,
+  #methodology-section, #stackless-section {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 900px) {
@@ -5583,8 +5648,7 @@ body.loader-active {
 }
 
 @media (max-width: 640px) {
-  .stackless-grid { grid-template-columns: 1fr; }
-  .stackless-subtitle-row { flex-direction: column; align-items: center; gap: 8px; }
+  .stackless-subtitle-row { flex-direction: column; align-items: flex-start; gap: 8px; }
   .veracity-row { grid-template-columns: 90px 28px 1fr; }
 }
 
