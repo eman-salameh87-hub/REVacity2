@@ -22,6 +22,21 @@
 body.page-about {
   background: #030208;
 }
+/* Hide the visible scrollbar track/thumb this page's long pinned-scrub +
+   vertical-section layout was showing as a persistent gray line down the
+   right edge — purely cosmetic, scrolling itself still works exactly the
+   same via touch, wheel, or keyboard. Unscoped html/body selectors are
+   safe here since this rule only lives in about.html's own stylesheet. */
+html, body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
 body.page-about .mobile-slide-menu {
   background: #030208;
 }
@@ -1029,7 +1044,25 @@ const plasma2 = document.getElementById('plasma-2');
 let maxPathLength = 0;
 
 function scrollDist() { return track.scrollWidth - window.innerWidth; }
-function setBodyH()   { document.body.style.height = (scrollDist() + window.innerHeight) + 'px'; }
+/* Was: document.body.style.height = scrollDist() + innerHeight, unconditionally.
+   That's exactly enough room for the pin to scrub and nothing more — it was
+   silently truncating the page's real scrollable height to just the pin's
+   own range, which is why #outro and everything after it (manifesto,
+   methodology, stackless, human-first) were unreachable by any scroll,
+   touch or otherwise: the debug readout confirmed maxScroll == pinST.end
+   exactly. ScrollTrigger's own pin+end mechanism already inserts a
+   correctly-sized spacer for the pin; this manual height was never meant
+   to shrink the page below its natural full content height, only to
+   guarantee AT LEAST that much room while things are still settling early
+   on. Measuring the natural height first (by briefly clearing the inline
+   override) and taking whichever is taller preserves that original intent
+   without ever cutting off real content below. */
+function setBodyH() {
+  document.body.style.height = '';
+  const natural = document.body.scrollHeight;
+  const needed = scrollDist() + window.innerHeight;
+  document.body.style.height = Math.max(natural, needed) + 'px';
+}
 
 function drawElectricSpine() {
   const section = document.getElementById('timeline-section');
@@ -1279,6 +1312,7 @@ const pinST = trackRideTween.scrollTrigger;
 
     const stops = getPaginationStops();
     const curY = window.scrollY;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
     let target;
     if(dy > 0){
       target = stops.find(s => s > curY + EPS);
@@ -1286,7 +1320,20 @@ const pinST = trackRideTween.scrollTrigger;
       const before = stops.filter(s => s < curY - EPS);
       target = before.length ? before[before.length - 1] : undefined;
     }
-    if(target === undefined) return;
+    /* Landmark stops come from live layout reads (offsetTop/offsetLeft) that
+       can be thrown off by a mid-gesture reflow (address-bar show/hide,
+       a ScrollTrigger.refresh() firing between the swipe starting and
+       ending, etc.) — if that ever makes every computed stop land at or
+       behind the current position, a deliberate swipe would otherwise do
+       nothing and the page would feel stuck. Falling back to a plain
+       one-viewport nudge in the swiped direction guarantees a swipe is
+       never a dead end, even if the "jump to the next landmark" math
+       misfires for this one gesture. */
+    if(target === undefined){
+      target = dy > 0 ? curY + window.innerHeight : curY - window.innerHeight;
+      target = Math.max(0, Math.min(maxScroll, target));
+      if(Math.abs(target - curY) < EPS) return; // genuinely already at the top/bottom
+    }
 
     locked = true;
     window.scrollTo({ top: target, behavior: 'smooth' });
@@ -1731,7 +1778,19 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) return;
 
+  /* .stackless-card and .three-tier-card are now plain full-width vertical
+     stacks on mobile (per request) — this scrub-linked rotateY tilt was
+     designed for a wider desktop layout, where a card mid-tilt just looks
+     like a subtle 3D lean. In a single narrow mobile column, a card that
+     hasn't finished its own tilt yet (its trigger runs individually per
+     card, from when its top hits 95% of the viewport to 55%) visibly
+     leans out of line with the cards above it that have already settled
+     flat — exactly the "not aligned" cards reported back, not a real
+     layout bug. .veracity-row keeps the effect since it wasn't reported
+     as an issue and isn't a plain full-width stack on mobile. */
+  const isMobile = window.innerWidth < 768;
   ['.stackless-card', '.three-tier-card', '.veracity-row'].forEach(sel => {
+    if (isMobile && (sel === '.stackless-card' || sel === '.three-tier-card')) return;
     document.querySelectorAll(sel).forEach((card, i) => {
       const fromLeft = i % 2 === 0;
       gsap.fromTo(card,
@@ -1781,53 +1840,79 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
   camera.position.set(0, 0, 13);
 
   function resize() {
-    const section = document.getElementById('manifesto-section');
+    /* Was sizing the renderer/camera off #manifesto-section's own height —
+       on mobile that section stacks into one tall column full of paragraph
+       text (often 1500px+), while #dna-canvas itself is CSS-capped much
+       shorter. Feeding that mismatched, way-too-tall height into
+       camera.aspect made the horizontal field of view absurdly narrow,
+       so the helix rendered as a stretched, unrecognizable diagonal smear
+       instead of a helix. Measuring the canvas's own actual displayed box
+       keeps the aspect ratio (and therefore the shape) correct no matter
+       how tall the surrounding text column gets. */
     const w = canvas.offsetWidth || 560;
-    const h = section ? section.offsetHeight : window.innerHeight;
+    const h = canvas.offsetHeight || 480;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
 
-  // Two glowing point strands wound into a real 3D double helix (actual
-  // depth via a perspective camera, not a faked sin() offset) — the WebGL
-  // successor to the old flat 2D canvas drawing.
-  const STRAND_N = 260;
-  const HEIGHT = 11;
-  const RADIUS = 2.1;
-  const TURNS = 3.1;
-  const purpleA = new THREE.Color(0xa855f7);
-  const purpleB = new THREE.Color(0xe4c8ff);
+  // Two glowing strands wound into a real 3D double helix (actual depth via
+  // a perspective camera, not a faked sin() offset). Reworked per reference
+  // to read as a thick, dense braided rope rather than a sparse dotted
+  // wire: far more points per strand, scattered with a small radial jitter
+  // (THICKNESS) so each strand has visible body instead of being a single
+  // point-wide line, plus bright white/lilac bursts at every crossing so
+  // the two strands visibly weave over each other like the reference.
+  const STRAND_N = 900;
+  const HEIGHT = 12;
+  const RADIUS = 2.3;
+  const TURNS = 3.4;
+  const THICKNESS = 0.2;
+  const purpleDeep = new THREE.Color(0x6d28d9);
+  const purpleLight = new THREE.Color(0xf3e8ff);
 
-  function buildStrand(phaseOffset) {
+  /* tint biases this strand's color mix toward purpleLight — the two
+     strands otherwise share one gradient and blur into a single mass
+     where they cross, instead of reading as two distinct interwoven
+     ropes. A tighter THICKNESS (was 0.34) also keeps each strand a clean
+     rope rather than a blobby cluster. */
+  function buildStrand(phaseOffset, tint) {
     const positions = new Float32Array(STRAND_N * 3);
     const colors = new Float32Array(STRAND_N * 3);
     for (let i = 0; i < STRAND_N; i++) {
       const t = i / (STRAND_N - 1);
       const angle = t * Math.PI * 2 * TURNS + phaseOffset;
-      positions[i * 3] = Math.cos(angle) * RADIUS;
-      positions[i * 3 + 1] = (t - 0.5) * HEIGHT;
-      positions[i * 3 + 2] = Math.sin(angle) * RADIUS;
-      const col = purpleA.clone().lerp(purpleB, Math.random());
+      const jitter = (Math.random() - 0.5) * THICKNESS;
+      positions[i * 3]     = Math.cos(angle) * (RADIUS + jitter);
+      positions[i * 3 + 1] = (t - 0.5) * HEIGHT + (Math.random() - 0.5) * THICKNESS * 0.8;
+      positions[i * 3 + 2] = Math.sin(angle) * (RADIUS + jitter);
+      const col = purpleDeep.clone().lerp(purpleLight, Math.min(1, Math.random() * 0.65 + tint));
       colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const mat = new THREE.PointsMaterial({
-      size: 0.16, vertexColors: true, transparent: true, opacity: 0.92,
+      size: 0.06, vertexColors: true, transparent: true, opacity: 0.95,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
     });
     return new THREE.Points(geo, mat);
   }
 
   const helixGroup = new THREE.Group();
-  helixGroup.add(buildStrand(0), buildStrand(Math.PI));
+  helixGroup.add(buildStrand(0, 0), buildStrand(Math.PI, 0.3));
   scene.add(helixGroup);
 
-  // Faint rungs connecting the two strands, like base pairs.
-  const RUNG_N = 30;
+  // Rungs connecting the two strands (base pairs), now bright and visible
+  // rather than a faint 0.16-opacity line, plus a small burst of near-white
+  // points at every crossing to read as a glowing "X" where the strands
+  // weave — the signature look from the reference.
+  const RUNG_N = 46;
   const rungPositions = new Float32Array(RUNG_N * 2 * 3);
+  const crossPositions = [];
+  const crossColors = [];
+  const white = new THREE.Color(0xffffff);
+  const lilac = new THREE.Color(0xd9b8ff);
   for (let i = 0; i < RUNG_N; i++) {
     const t = i / (RUNG_N - 1);
     const angle = t * Math.PI * 2 * TURNS;
@@ -1838,10 +1923,28 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
     rungPositions[i * 6 + 3] = Math.cos(angle + Math.PI) * RADIUS;
     rungPositions[i * 6 + 4] = y;
     rungPositions[i * 6 + 5] = Math.sin(angle + Math.PI) * RADIUS;
+
+    for (let k = 0; k < 8; k++) {
+      crossPositions.push(
+        (Math.random() - 0.5) * 0.55,
+        y + (Math.random() - 0.5) * 0.55,
+        (Math.random() - 0.5) * 0.55
+      );
+      const c = white.clone().lerp(lilac, Math.random());
+      crossColors.push(c.r, c.g, c.b);
+    }
   }
   const rungGeo = new THREE.BufferGeometry();
   rungGeo.setAttribute('position', new THREE.BufferAttribute(rungPositions, 3));
-  helixGroup.add(new THREE.LineSegments(rungGeo, new THREE.LineBasicMaterial({ color: 0x8758fc, transparent: true, opacity: 0.16 })));
+  helixGroup.add(new THREE.LineSegments(rungGeo, new THREE.LineBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.45 })));
+
+  const crossGeo = new THREE.BufferGeometry();
+  crossGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(crossPositions), 3));
+  crossGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(crossColors), 3));
+  helixGroup.add(new THREE.Points(crossGeo, new THREE.PointsMaterial({
+    size: 0.07, vertexColors: true, transparent: true, opacity: 0.9,
+    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+  })));
 
   // Ambient dust around the helix for depth.
   const DUST_N = 220;
@@ -1874,7 +1977,7 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
   (function loop() {
     requestAnimationFrame(loop);
     const t = clock.getElapsedTime();
-    if (!reducedMotion) helixGroup.rotation.y = t * 0.35;
+    if (!reducedMotion) helixGroup.rotation.y = t * 0.18;
     helixGroup.rotation.x = mouseY * 0.22;
     camera.position.x = mouseX * 1.1;
     camera.lookAt(0, 0, 0);
@@ -1882,17 +1985,29 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
     renderer.render(scene, camera);
   })();
 
+  /* Per request: the wave-terrain background (#bg-canvas) should duck out
+     of the way whenever the DNA helix is on screen, and come back once the
+     helix is scrolled past in either direction — otherwise the two purple
+     dot patterns compete visually. Tied to the exact same enter/leave
+     events that already show/hide the helix, just inverted, so the two
+     stay perfectly in sync. #bg-canvas already carries a CSS
+     transition:opacity rule, so setting .style.opacity directly animates
+     smoothly on its own. */
+  const waveCanvas = document.getElementById('bg-canvas');
+  function hideWave(){ if (waveCanvas) waveCanvas.style.opacity = '0'; }
+  function showWave(){ if (waveCanvas) waveCanvas.style.opacity = ''; }
+
   ScrollTrigger.create({
     trigger: '#manifesto-section',
     start: 'top 70%',
-    onEnter:     () => canvas.classList.add('visible'),
-    onLeaveBack: () => canvas.classList.remove('visible')
+    onEnter:     () => { canvas.classList.add('visible'); hideWave(); },
+    onLeaveBack: () => { canvas.classList.remove('visible'); showWave(); }
   });
   ScrollTrigger.create({
     trigger: '#manifesto-section',
     start: 'bottom bottom',
-    onEnter:     () => canvas.classList.remove('visible'),
-    onLeaveBack: () => canvas.classList.add('visible')
+    onEnter:     () => { canvas.classList.remove('visible'); showWave(); },
+    onLeaveBack: () => { canvas.classList.add('visible'); hideWave(); }
   });
 })();
 
