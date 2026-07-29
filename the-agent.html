@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
 /* ── The Agent — page-specific overrides ── */
@@ -20,10 +21,23 @@ body{height:100%;overflow-y:auto}
 :root{--header-h:80px}
 body.page-agent .main-agent-section{margin-top:var(--header-h)}
 
+/* .menu-item has no font-family of its own in the shared stylesheet — it
+   just inherits from body, which this page sets to the terminal-style
+   "Google Sans Code" monospace for its own content. That's fine for the
+   page itself, but it also made the mobile slide-menu (Collapse/About Us/
+   etc.) render in monospace while every other page's mobile menu inherits
+   a normal sans-serif body font instead. Scoped back to match. */
+body.page-agent .mobile-slide-menu,
+body.page-agent .mobile-slide-menu .menu-item,
+body.page-agent .mobile-slide-menu .btn-warrant,
+body.page-agent .mobile-slide-menu .btn-reward{
+  font-family:'DM Sans',sans-serif;
+}
+
 /* .form-group conflicts with style.css (different layout) — scoped */
 body.page-agent .form-group{display:flex;flex-direction:column;gap:10px}
-body.page-agent .form-group label{font-size:0.65rem;text-transform:uppercase;letter-spacing:2px;color:#666;font-weight:600}
-body.page-agent .form-group input{background:transparent;border:1px solid #1f1f2e;padding:clamp(14px,2vh,18px) 20px;color:#fff;font-family:"Google Sans Code",monospace;font-size:0.95rem;outline:none;transition:border-color 0.3s;width:100%;border-radius:0}
+body.page-agent .form-group label{font-family:'Space Grotesk','Inter',sans-serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:2px;color:#666;font-weight:600}
+body.page-agent .form-group input{background:transparent;border:1px solid #1f1f2e;padding:clamp(8px,2vh,18px) 20px;color:#fff;font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.3s;width:100%;border-radius:0}
 body.page-agent .form-group input::placeholder{color:#444}
 body.page-agent .form-group input:focus{border-color:#a855f7}
 
