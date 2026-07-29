@@ -125,6 +125,14 @@ window.scrollTo(0, 0);
       radial-gradient(ellipse at 50% 50%, rgba(3,2,8,0.55) 0%, rgba(3,2,8,0.4) 45%, rgba(3,2,8,0.65) 100%),
       linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
   }
+  /* The Agent / Services orbs sit in the corners, right where the default
+     vignette above darkens hardest (rgba(3,2,8,0.6) at the outer edge) —
+     lighten it while the intro is on screen so their glow isn't muted. */
+  body.intro-bright .vignette{
+    background:
+      radial-gradient(ellipse at 50% 55%, rgba(3,2,8,0) 45%, rgba(3,2,8,0.22) 100%),
+      linear-gradient(to bottom, rgba(3,2,8,0.18) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.22) 100%);
+  }
 
   header.chrome-top{
     position:absolute; top:0; left:0; right:0; z-index:20;
@@ -1188,6 +1196,15 @@ text-transform: none;
   body.explore-on .scroll-cue,
   body.explore-on .corner-label{
     opacity:0.25; pointer-events:none; transition:opacity .4s ease;
+  }
+
+  /* .corner-label is deliberately fixed/body-level with z-index:9000 (see
+     its own comment above) so it out-stacks everything except the page-
+     transition veil — but that also means it renders above the mobile
+     slide-menu (z-index:204), bleeding through on top of it when open.
+     Force it fully hidden while the mobile menu is up. */
+  body.mobile-menu-open .corner-label{
+    opacity:0 !important; pointer-events:none !important;
   }
 
   /* ── Letterboxing bars — built in JS, pulsed by GSAP on chapter cuts ──
@@ -3290,7 +3307,7 @@ function buildServicesOrb(baseRadius, particleTex){
     }
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(posArr),3));
     geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colArr),3));
-    const mat = new THREE.PointsMaterial({ size:pSize*1.2, vertexColors:true, transparent:true, opacity:0.9, map:particleTex, blending:THREE.AdditiveBlending, depthWrite:false });
+    const mat = new THREE.PointsMaterial({ size:pSize*1.2, vertexColors:true, transparent:true, opacity:0.9, map:particleTex, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false });
     group.add(new THREE.Points(geo, mat));
   });
 
@@ -3315,7 +3332,7 @@ function buildServicesOrb(baseRadius, particleTex){
     }
     const streamGeo = new THREE.BufferGeometry();
     streamGeo.setAttribute('position', new THREE.BufferAttribute(streamPos,3));
-    const sMat = new THREE.PointsMaterial({ size:pSize*0.25, color:new THREE.Color(hex), transparent:true, opacity:0.99, map:particleTex, blending:THREE.AdditiveBlending, depthWrite:false });
+    const sMat = new THREE.PointsMaterial({ size:pSize*0.25, color:new THREE.Color(hex), transparent:true, opacity:0.99, map:particleTex, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false });
     const sPoints = new THREE.Points(streamGeo, sMat);
     const flowSpeed = (zi%2===0?1:-1)*(0.08+zi*0.015);
     Object.assign(sPoints.userData, { isStream:true, baseStreamPos:new Float32Array(streamPos), streamPhi:phi, flowSpeed });
@@ -3628,7 +3645,8 @@ function buildGlowCloud(hex, radius, count, opts){
   const mat = new THREE.PointsMaterial({
     size:(opts && opts.size) || 0.42, map:GLOW_TEX, vertexColors:true, transparent:true,
     opacity:(opts && opts.opacity) || 0.7,
-    depthWrite:false, blending:THREE.AdditiveBlending, sizeAttenuation:true
+    depthWrite:false, blending:THREE.AdditiveBlending, sizeAttenuation:true,
+    toneMapped:false /* skip the scene's ACES filmic rolloff so this glow renders at full raw brightness */
   });
   return new THREE.Points(geo, mat);
 }
@@ -3917,7 +3935,7 @@ function buildParticleRing(hex, R, big, opts){
     size: (opts && opts.pointSize!==undefined) ? opts.pointSize : (big?0.15:0.12),
     map:GLOW_TEX, vertexColors:true, transparent:true,
     opacity: (opts && opts.pointOpacity!==undefined) ? opts.pointOpacity : 0.92,
-    depthWrite:false, blending:THREE.AdditiveBlending
+    depthWrite:false, blending:THREE.AdditiveBlending, toneMapped:false
   });
   const pts = new THREE.Points(geo, mat);
   if(swayEnabled){
@@ -4493,7 +4511,7 @@ function buildGate(ch, pos){
     shapeA.userData.floatPhase = agentFloatPhase;
     group.add(shapeA);
     setupHoverRepel(shapeAMain, 3.2, 1.1);
-    const glowA = buildGlowCloud(ch.hex, 2.8, 340, { size:0.24, opacity:0.5 });
+    const glowA = buildGlowCloud(ch.hex, 2.8, 560, { size:0.34, opacity:1 });
     glowA.position.copy(shapeA.position);
     glowA.userData.floatBase = glowA.position.clone();
     glowA.userData.floatPhase = agentFloatPhase;
@@ -4525,7 +4543,7 @@ function buildGate(ch, pos){
     shapeB.userData.floatPhase = servicesFloatPhase;
     group.add(shapeB);
     // (hover-repel skipped: shapeB is now a multi-layer Group, not a single geometry)
-    const glowB = buildGlowCloud(ch.hex, 4.6, 340, { size:0.26, opacity:0.5 });
+    const glowB = buildGlowCloud(ch.hex, 4.6, 560, { size:0.36, opacity:1 });
     glowB.position.copy(shapeB.position);
     glowB.userData.floatBase = glowB.position.clone();
     glowB.userData.floatPhase = servicesFloatPhase;
@@ -6183,6 +6201,12 @@ function renderFrame(){
     els.labelAgent.style.opacity = String(introFade);
     els.labelServices.style.opacity = String(introFade);
   }
+  /* The Agent / Services orbs sit in the screen corners, which is exactly
+     where the default .vignette darkens hardest — lighten it while the
+     intro is showing so their now-boosted glow actually reads brighter
+     instead of getting eaten by the corner falloff. Same toggle-a-body-
+     class pattern already used for has-diagnostic-glow above. */
+  document.body.classList.toggle('intro-bright', chapterFloat < 0.3);
 
   /* scroll speed, smoothed — drives the reactive flourishes below */
   const rawVelocity = Math.abs(smoothT - prevScrollT) / dt;
@@ -6510,10 +6534,12 @@ requestAnimationFrame(render);
   hamburger.addEventListener('click', () => {
     hamburger.classList.add('active');
     mobileMenu.classList.add('active');
+    document.body.classList.add('mobile-menu-open');
   });
   const closeMenu = () => {
     hamburger.classList.remove('active');
     mobileMenu.classList.remove('active');
+    document.body.classList.remove('mobile-menu-open');
   };
   closeMenuBtn.addEventListener('click', closeMenu);
   mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
