@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+window.scrollTo(0, 0);
+window.addEventListener('pageshow', function () { window.scrollTo(0, 0); });
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVacity | Our Architecture</title>
+<link rel="icon" type="image/png" href="media/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<link href="style.css" rel="stylesheet">
+<style>
+:root{--pink:#e63888;--purple:#9b5de5;--gold:#f4a135;--white:#ffffff;--dim:rgba(255,255,255,0.6);--bg:#0a0315;--shadow-purple:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(147,51,234,0.45),0 0 60px rgba(147,51,234,0.2),inset 0 0 15px rgba(147,51,234,0.1);--shadow-red:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(239,68,68,0.45),0 0 60px rgba(239,68,68,0.2),inset 0 0 15px rgba(239,68,68,0.1);--shadow-blue:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(59,130,246,0.45),0 0 60px rgba(59,130,246,0.2),inset 0 0 15px rgba(59,130,246,0.1);--shadow-orange:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(245,158,11,0.45),0 0 60px rgba(245,158,11,0.2),inset 0 0 15px rgba(245,158,11,0.1);--shadow-green:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(16,185,129,0.45),0 0 60px rgba(16,185,129,0.2),inset 0 0 15px rgba(16,185,129,0.1);--shadow-teal:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(20,184,166,0.45),0 0 60px rgba(20,184,166,0.2),inset 0 0 15px rgba(20,184,166,0.1);--shadow-pink:0 4px 20px rgba(0,0,0,0.9),0 0 25px rgba(236,72,153,0.45),0 0 60px rgba(236,72,153,0.2),inset 0 0 15px rgba(236,72,153,0.1)}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+/* #hero conflicts — scoped */
+/* No background-color here (unlike the old rule this replaces) — #hero
+   must stay transparent so the fixed #css-stars and #ambient-dust-canvas
+   behind it (both z-index:0) are actually visible through it, the same
+   way about.html's #hero has no background of its own either. */
+body.page-architecture #hero{width:100vw;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 5vw 60px;position:relative;z-index:1;}
+/* .hero-title conflicts — scoped */
+body.page-architecture .hero-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,4rem);font-weight:600;line-height:1;letter-spacing:-0.02em;position:relative;padding-bottom:0.5rem;width:fit-content;background:linear-gradient(90deg,#e63888 0%,#9b5de5 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.page-architecture .hero-title::after{display:none}
+/* .hero-subtitle conflicts — scoped */
+body.page-architecture .hero-subtitle{margin-top:1.6rem;max-width:580px;font-family:'DM Sans',sans-serif;font-size:clamp(0.95rem,1.4vw,1.05rem);font-weight:300;line-height:1.5;color:rgba(255,255,255,0.72);opacity:1;transform:none}
+/* .origin-label conflicts — scoped */
+body.page-architecture .origin-label{font-family:'Syne',sans-serif;font-size:0.85rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--purple);margin-bottom:0.5rem;font-weight:700}
+@media(max-width:768px){body.page-architecture #hero{padding:100px 6vw 60px}}
+
+/* #030208 (not the page's old #0a0315) to match the starfield/header/
+   section backgrounds now used throughout the rest of the page — the
+   veil needs to be the same tone as what it's covering/revealing, or
+   dissolving it shows a visible color flash. */
+#page-transition{position:fixed;inset:0;z-index:9999;background:#030208;pointer-events:none}
+#page-transition::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(155,93,229,0.16),rgba(3,2,8,0) 62%)}
+
+/* ══════════════════════════════════════════════════════════════
+   Real background — same skybox + near/far twinkling star-point
+   fields as about.html/index.html, using about.html's EXACT tone
+   (#030208, near-black) rather than a recolor to this page's own --bg.
+   Rendered on its own persistent fixed canvas (#gl inside .stage). The
+   WebGL version of this wasn't rendering any visible stars on this page
+   for reasons that were never fully pinned down (no thrown error) — see
+   #css-stars below, which is the reliable 2D fallback actually doing
+   the visible work now. The wave-terrain that used to sit in front of
+   this has been removed entirely per request.
+   ══════════════════════════════════════════════════════════════ */
+.stage{position:fixed;inset:0;overflow:hidden;width:100vw;height:100vh;height:100dvh;z-index:0;pointer-events:none}
+canvas#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
+.vignette{position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(ellipse at 50% 55%,rgba(3,2,8,0) 35%,rgba(3,2,8,0.6) 100%),
+  linear-gradient(to bottom,rgba(3,2,8,0.4) 0%,rgba(3,2,8,0) 20%,rgba(3,2,8,0) 70%,rgba(3,2,8,0.55) 100%);
+  z-index:5}
+
+/* Ambient dust — ported from about.html: a second, subtler drifting-dot
+   particle layer, for extra atmospheric depth. Starts invisible; only
+   toggled on by scroll once the hero has been scrolled past (matches
+   about.html's own behavior — see the entrance script below). */
+#ambient-dust-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0}
+
+/* Reliable 2D-canvas star field — the WebGL version on #gl above wasn't
+   rendering any visible stars on this page despite being byte-identical
+   to about.html's own script, with no thrown error to explain why.
+   Plain 2D canvas sidesteps whatever that was entirely and is what's
+   actually showing the dots now. */
+#css-stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* Shared style.css's .main-header background is rgba(10,3,21,0.85) — a
+   purple tint tuned for pages with a purple/navy bg. This page's actual
+   background is the starfield's near-black #030208, so match that
+   instead of showing a visibly purple-tinted bar at the top. */
+.main-header{background:rgba(3,2,8,0.85)}
+</style>
+</head>
+<body class="page-architecture">
+
+<div id="page-transition"></div>
+
+<div class="stage">
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Background + stars — ported verbatim from about.html, using its
+   exact near-black tone (#030208) rather than a recolor, per an
+   explicit "take the same background color" request.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+try {
+  const canvas = document.getElementById('gl');
+  if (!canvas) { console.warn('[bg-stars] #gl canvas not found in DOM'); return; }
+  if (typeof THREE === 'undefined') { console.warn('[bg-stars] THREE is not defined — three.js CDN script failed to load'); return; }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#030208');
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 700);
+  const CAM_BASE = { x: 0, y: 0, z: 40 };
+  camera.position.set(CAM_BASE.x, CAM_BASE.y, CAM_BASE.z);
+  camera.lookAt(0, 0, 24);
+
+  const fog = new THREE.FogExp2(new THREE.Color('#030208').getHex(), 0.0055);
+  scene.fog = fog;
+
+  function resizeGL() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeGL);
+  resizeGL();
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Galaxy skybox (ported verbatim from index.html) ---- */
+  const SKY_BASE = '#030208';
+  function skyLightFrom(hex, peak, whiten) {
+    const r = parseInt(hex.substr(1, 2), 16),
+          g = parseInt(hex.substr(3, 2), 16),
+          b = parseInt(hex.substr(5, 2), 16);
+    const k = peak / (Math.max(r, g, b) || 1);
+    const mix = (v) => Math.round(v * k + (255 - v * k) * whiten);
+    return mix(r) + ',' + mix(g) + ',' + mix(b);
+  }
+  const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
+  const SKY_MONOCHROME = true;
+  const SKY_GLOW = 0.30;
+
+  function buildGalaxySkyTexture() {
+    const W = 1600, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = SKY_MONOCHROME ? SKY_BASE : '#050208';
+    ctx.fillRect(0, 0, W, H);
+
+    const bandRGB = SKY_MONOCHROME ? SKY_LIGHT : '150,90,200';
+    const bandA = 0.045 * (SKY_MONOCHROME ? SKY_GLOW : 1);
+    const band = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.72);
+    band.addColorStop(0, 'rgba(' + bandRGB + ',0)');
+    band.addColorStop(0.5, 'rgba(' + bandRGB + ',' + bandA + ')');
+    band.addColorStop(1, 'rgba(' + bandRGB + ',0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, H * 0.26, W, H * 0.48);
+
+    const blobDefs = [
+      { x: 0.12, y: 0.40, r: 220, rgb: '200,90,220', a: 0.07 },
+      { x: 0.32, y: 0.60, r: 190, rgb: '110,90,235', a: 0.06 },
+      { x: 0.58, y: 0.34, r: 260, rgb: '150,80,255', a: 0.065 },
+      { x: 0.80, y: 0.56, r: 190, rgb: '230,110,200', a: 0.05 },
+      { x: 0.46, y: 0.20, r: 160, rgb: '180,150,255', a: 0.03 },
+      { x: 0.94, y: 0.30, r: 140, rgb: '90,110,255', a: 0.045 },
+    ];
+    const blobs = blobDefs.map(function (b) {
+      const rgb = SKY_MONOCHROME ? SKY_LIGHT : b.rgb;
+      const a = b.a * (SKY_MONOCHROME ? SKY_GLOW : 1);
+      return { x: b.x, y: b.y, r: b.r, c: 'rgba(' + rgb + ',' + a + ')' };
+    });
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(b => {
+      const g = ctx.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+
+    for (let i = 0; i < 1200; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const inBand = y > H * 0.28 && y < H * 0.72;
+      const r = Math.random() * (inBand ? 1.7 : 1.1) + 0.2;
+      const a = Math.random() * 0.8 + 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const skyGeo = new THREE.SphereGeometry(320, 40, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: buildGalaxySkyTexture(), side: THREE.BackSide, fog: false });
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  scene.add(skyMesh);
+
+  /* ---- Star point-fields (ported verbatim from index.html) ---- */
+  function starTexture() {
+    const s = 128;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.12, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const STAR_TEX = starTexture();
+
+  function buildStars(count, radius, zSpan, size, opacity) {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.6;
+      positions[i * 3 + 2] = 45 - Math.random() * zSpan;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size, map: STAR_TEX, color: 0xffffff, transparent: true, opacity,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+  function makeStarField(layers, countEach, radius, zSpan, size, baseOpacity) {
+    const group = new THREE.Group();
+    const list = [];
+    for (let i = 0; i < layers; i++) {
+      const mesh = buildStars(countEach, radius, zSpan, size, baseOpacity);
+      group.add(mesh);
+      list.push({ mesh, baseOpacity, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.9 });
+    }
+    scene.add(group);
+    return { group, layers: list };
+  }
+  /* Reverted back to about.html/index.html's exact standard values — the
+     earlier "bump the size up" edit was a mistake made from misjudging a
+     screenshot that was actually about.html itself at these same sizes. */
+  const nearStarField = makeStarField(4, 163, 34, 150, 0.055, 0.85);
+  const farStarField  = makeStarField(3, 133, 130, 220, 0.045, 0.4);
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const elapsed = clock.getElapsedTime();
+    if (!reducedMotion) {
+      [...nearStarField.layers, ...farStarField.layers].forEach((l) => {
+        const twinkle = 0.78 + 0.22 * Math.sin(elapsed * l.speed + l.phase);
+        l.mesh.material.opacity = l.baseOpacity * twinkle;
+      });
+      nearStarField.group.rotation.z = elapsed * 0.003;
+      farStarField.group.rotation.z = -elapsed * 0.0015;
+      skyMesh.rotation.y = elapsed * 0.004;
+      camera.position.x = CAM_BASE.x + Math.sin(elapsed * 0.05) * 1.4;
+      camera.position.y = CAM_BASE.y + Math.sin(elapsed * 0.037) * 0.8;
+      camera.lookAt(0, 0, 24);
+    }
+    renderer.render(scene, camera);
+  })();
+} catch (err) {
+  console.error('[bg-stars] failed:', err);
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:6px;left:6px;z-index:99999;background:#3a0000;'
+    + 'color:#ff8080;font:11px/1.4 monospace;padding:8px 10px;border:1px solid #ff4444;'
+    + 'border-radius:6px;max-width:92vw;white-space:pre-wrap;';
+  banner.textContent = '[bg-stars] ' + (err && err.message ? err.message : err);
+  document.body.appendChild(banner);
+}
+})();
+</script>
+
+<canvas id="css-stars"></canvas>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Reliable 2D-canvas star field — the actual visible dots on this page.
+   Sits directly on the shared starfield/.stage layer now that the
+   wave-terrain that used to sit between them has been removed.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('css-stars');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    canvas.width = window.innerWidth * Math.min(window.devicePixelRatio || 1, 2);
+    canvas.height = window.innerHeight * Math.min(window.devicePixelRatio || 1, 2);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const N = 180;
+  const stars = Array.from({ length: N }, () => {
+    const near = Math.random() < 0.35;
+    return {
+      x: Math.random(),
+      y: Math.random(),
+      r: near ? 1.6 + Math.random() * 2.2 : 0.6 + Math.random() * 1.2,
+      baseA: near ? 0.55 + Math.random() * 0.4 : 0.2 + Math.random() * 0.35,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.4 + Math.random() * 0.8
+    };
+  });
+
+  const clock = { t0: performance.now() };
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const elapsed = (performance.now() - clock.t0) / 1000;
+    stars.forEach(s => {
+      const twinkle = reducedMotion ? 1 : 0.78 + 0.22 * Math.sin(elapsed * s.speed + s.phase);
+      const a = s.baseA * twinkle;
+      const px = s.x * W, py = s.y * H, r = s.r * (W / 1000);
+      /* Same gradient stops as about.html's actual STAR_TEX (tight bright
+         core fading fast) instead of the previous wide/soft falloff that
+         was rendering as blurry blobs rather than crisp points. */
+      const g = ctx.createRadialGradient(px, py, 0, px, py, r * 1.7);
+      g.addColorStop(0, `rgba(255,255,255,${a})`);
+      g.addColorStop(0.12, `rgba(255,255,255,${a * 0.85})`);
+      g.addColorStop(0.3, `rgba(255,255,255,${a * 0.12})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(px, py, r * 1.7, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+<canvas id="ambient-dust-canvas"></canvas>
+
+<header class="main-header">
+    <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+    <nav class="nav-center">
+        <a href="index.html" data-text="The Collapse">The Collapse</a>
+        <a href="about.html" data-text="About Us">About Us</a>
+        <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+        <a href="compare.html" data-text="Compare">Compare</a>
+        <a href="blog.html" data-text="Blog">Blog</a>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+
+        <div class="header-buttons">
+            <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+                <span>Start a Warrant</span>
+            </a>
+            <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+                <span>$100k Reward</span>
+            </a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</header>
+
+<div class="mobile-slide-menu" id="mobile-menu">
+    <div class="close-menu" id="close-menu">
+        <span></span>
+        <span></span>
+    </div>
+
+    <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+    <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+    <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+    <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+    <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+    <div class="mobile-menu-cta" style="--i: 6;">
+        <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+        <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+    </div>
+</div>
+
+
+<section id="hero">
+<h1 class="hero-title">Our Architecture</h1>
+<ul class="hero-list">
+<li>Architectural libration, Neuro-Symbolic (Radical)</li>
+<li>Human first, Hybrid</li>
+<li>Zero legacy, (Living) agency</li>
+<li>Dynamic Knowledge Graph</li>
+<li>Cognitive aware, Contextual Resonance</li>
+<li>Novel Factory: Sandbox of Possibilities (Proprietary algorithm)</li>
+<li>Fully Embraced, and Converged with all Modern, Neo, Super, 3.0, 4.0, 5.0, 6.0 marketing, specialized in Marketing 7.0, all Integrated, Contextualized and Harnessed with the latest Ai Practices, Shifts, modeling.</li>
+<li>Agilty Stack, "The Stackless" Stack:
+<ol>
+<li>The Human Stack: "The Sovereign Architects"</li>
+<li>The Agentic Workforce: "Meta-Configurable Swarms"</li>
+</ol>
+</li>
+</ul>
+</section>
+<section id="agent-stack">
+<div class="agent-stack-inner">
+<div class="agent-stack-header">
+<p class="agent-stack-label">THE AGENT STACK</p>
+<h2 class="agent-stack-title">See <span class="title-arrow">→</span> Decide <span class="title-arrow">→</span> Execute <span class="title-arrow">→</span> Learn</h2>
+</div>
+<div class="agent-cards-wrap">
+<div class="agent-card agent-card--red">
+<div class="agent-card-num">01</div>
+<h3 class="agent-card-title">The Scouter</h3>
+<p class="agent-card-role">(Detection Layer)</p>
+<p class="agent-card-body">Detects what needs attention. Five sub-agents: Signal, Leak, Gap, Opportunity, Risk. Runs continuously.</p>
+</div>
+<div class="agent-arrow"><canvas class="bolt-canvas" id="bolt-0"></canvas></div>
+<div class="agent-card agent-card--purple">
+<div class="agent-card-num">02</div>
+<h3 class="agent-card-title">The Liberation Meta-Agent</h3>
+<p class="agent-card-role">(Decomposition + Procurement)</p>
+<p class="agent-card-body">The General Manager. Decomposes goals into sub-tasks, builds Shopping Lists, procures Subagents. Fires underperformers mid-task.</p>
+</div>
+<div class="agent-arrow"><canvas class="bolt-canvas" id="bolt-1"></canvas></div>
+<div class="agent-card agent-card--blue">
+<div class="agent-card-num">03</div>
+<h3 class="agent-card-title">The Orchestrator</h3>
+<p class="agent-card-role">(Coordination + Composition)</p>
+<p class="agent-card-body">The Master Agent. Stitches outputs into cohesive deployable workflows. Routes by priority KPI.</p>
+</div>
+<div class="agent-arrow"><canvas class="bolt-canvas" id="bolt-2"></canvas></div>
+<div class="agent-card agent-card--green">
+<div class="agent-card-num">04</div>
+<h3 class="agent-card-title">The Observer</h3>
+<p class="agent-card-role">(Evaluation + Feedback)</p>
+<p class="agent-card-body">The Systemic Conscience. Always-on. Watches outputs, feeds VOM drift back, maintains learning state.</p>
+</div>
+</div>
+<canvas id="feedback-loop-canvas"></canvas>
+<div class="agent-tags">
+<span>DATA INTEL</span><span class="sep">|</span>
+<span>GEN-CONTENT</span><span class="sep">|</span>
+<span>ROI-OPTIMIZATION</span><span class="sep">|</span>
+<span>COMMERCE</span><span class="sep">|</span>
+<span>HYPER-PERSONALIZATION</span><span class="sep">|</span>
+<span>PREDICTIVE</span><span class="sep">|</span>
+<span>MULTI-SENSORY</span><span class="sep">|</span>
+<span>NEURO-SYMBOLIC</span>
+</div>
+</div>
+</section>
+<section id="cognitive-infra">
+<div class="ci-inner">
+<div>
+<p class="ci-label">OUTCOME ENGINEERING</p>
+<h2 class="ci-heading">Eight Dimensions. One Outcome.</h2>
+<p class="ci-sublayers-title">Every warranted engagement is engineered across these eight dimensions simultaneously.</p>
+</div>
+<div class="ci-grid">
+<div class="ci-card ci-card--purple"><div class="ci-card-num">01</div><h3 class="ci-card-title">Customer</h3><p class="ci-card-body">Meaning-state mapping, cognitive journey, trust velocity.</p></div>
+<div class="ci-card ci-card--red"><div class="ci-card-num">02</div><h3 class="ci-card-title">Product</h3><p class="ci-card-body">Value architecture, feature-revenue alignment, market fit forensics.</p></div>
+<div class="ci-card ci-card--blue"><div class="ci-card-num">03</div><h3 class="ci-card-title">Pricing</h3><p class="ci-card-body">Revenue topology optimizat, elasticity engineering, margin architecture.</p></div>
+<div class="ci-card ci-card--orange"><div class="ci-card-num">04</div><h3 class="ci-card-title">Communication</h3><p class="ci-card-body">Signal engineering, narrative architecture, meaning delivery systems.</p></div>
+<div class="ci-card ci-card--green"><div class="ci-card-num">05</div><h3 class="ci-card-title">Presence</h3><p class="ci-card-body">Zero-distance commerce, channel architecture, attention topology.</p></div>
+<div class="ci-card ci-card--teal"><div class="ci-card-num">06</div><h3 class="ci-card-title">Brand</h3><p class="ci-card-body">Identity engineering, trust infrastructure, perception architecture.</p></div>
+<div class="ci-card ci-card--pink"><div class="ci-card-num">07</div><h3 class="ci-card-title">Budgetary</h3><p class="ci-card-body">Investment architecture, spend-to-revenue mapping, waste elimination.</p></div>
+<div class="ci-card ci-card--blue"><div class="ci-card-num">08</div><h3 class="ci-card-title">Modernization</h3><p class="ci-card-body">Technical readiness, organizational evolution, capability architecture.</p></div>
+</div>
+<div class="ci-banner">
+<p class="ci-banner-text">These are not departments. They are <span>engineering surfaces.</span> Every dimension is addressed in every engagement — not siloed, not sequential.</p>
+</div>
+</div>
+</section>
+<div class="creative-footer-reveal-container" id="site-footer">
+<footer class="creative-tech-footer">
+<div class="footer-top-glow-line"></div>
+<div class="footer-grid-inner">
+<div class="footer-brand-column">
+<img src="media/REVacity.png" alt="Revacity" style="width:180px;height:auto"/>
+<p class="footer-brand-tagline">Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.</p>
+</div>
+<div class="footer-links-grid">
+    <div class="footer-link-group">
+        <h4 class="group-title">STRUCTURE</h4>
+        <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+        <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+        <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+    </div>
+
+    <div class="footer-link-group">
+        <h4 class="group-title">STRUCTURE</h4>
+        <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">04 //</span> Before Judging</a>
+        <a href="compare.html" class="footer-link-item"><span class="link-num">05 //</span> Compare</a>
+        <a href="blog.html" class="footer-link-item"><span class="link-num">06 //</span>Blog</a>
+    </div>
+</div>
+<div class="footer-actions-column">
+<h4 class="group-title">SYSTEM INTERACTION</h4>
+<div class="footer-subscribe-wrapper">
+<input type="email" placeholder="Enter operator email..." class="footer-input-field"/>
+<button type="button" class="footer-submit-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+</div>
+
+  <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+
+</div>
+</div>
+<div class="footer-bottom-bar">
+    <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+    <div class="footer-legal-links">
+        <a href="privacy.html">PRIVACY DECREE</a>
+        <span class="divider">/</span>
+        <a href="terms.html">TERMINAL TERMS</a>
+        <span class="divider">/</span>
+        <a href="security-clearance.html">SECURITY CLEARANCE</a>
+    </div>
+</div>
+</footer>
+</div>
+<script>
+(function(){
+const hamburger=document.getElementById('hamburger');
+const mobileMenu=document.getElementById('mobile-menu');
+const closeMenuBtn=document.getElementById('close-menu');
+if(!hamburger||!mobileMenu||!closeMenuBtn)return;
+hamburger.addEventListener('click',()=>{hamburger.classList.add('active');mobileMenu.classList.add('active');});
+const closeMenu=()=>{hamburger.classList.remove('active');mobileMenu.classList.remove('active');};
+closeMenuBtn.addEventListener('click',closeMenu);
+mobileMenu.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeMenu));
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Ambient dust — ported from about.html: a second, much subtler
+   generative particle layer for extra atmospheric depth. About.html
+   fades this in/out for its later veracity/methodology/stackless
+   sections (which don't exist here) — on this page it stays off through
+   the hero (matching about.html's own hero, which never shows it
+   either) and only toggles on once the hero has scrolled past.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('ambient-dust-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['rgba(168,85,247,', 'rgba(200,150,255,', 'rgba(120,60,220,', 'rgba(255,255,255,'];
+  const N = 70;
+  const drift = reducedMotion ? 0 : 1;
+  const dust = Array.from({ length: N }, () => ({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.00035 * drift,
+    vy: ((Math.random() - 0.5) * 0.00035 - 0.00012) * drift,
+    r: 0.6 + Math.random() * 1.6,
+    a: 0.25 + Math.random() * 0.55,
+    col: COLORS[Math.floor(Math.random() * COLORS.length)]
+  }));
+
+  let mouseX = 0.5, mouseY = 0.5;
+  if (!reducedMotion) {
+    window.addEventListener('pointermove', e => {
+      mouseX = e.clientX / innerWidth; mouseY = e.clientY / innerHeight;
+    });
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    dust.forEach(p => {
+      p.x += p.vx + (mouseX - 0.5) * 0.00004 * drift;
+      p.y += p.vy + (mouseY - 0.5) * 0.00004 * drift;
+      if (p.x < -0.05) p.x = 1.05;
+      if (p.x > 1.05) p.x = -0.05;
+      if (p.y < -0.05) p.y = 1.05;
+      if (p.y > 1.05) p.y = -0.05;
+      ctx.beginPath();
+      ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.col + p.a + ')';
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  window.__showAmbientDust = function () {
+    if (typeof gsap === 'undefined') { canvas.style.opacity = 0.9; return; }
+    gsap.to(canvas, { opacity: 0.9, duration: 1.2, ease: 'power2.out', delay: 0.3 });
+  };
+
+  /* Matches about.html's actual behavior: dust stays off through the hero
+     (kept pure-white-dots-only there) and only appears once the hero has
+     scrolled past, fading out again if the user scrolls back up into it. */
+  if (typeof ScrollTrigger !== 'undefined') {
+    const hero = document.querySelector('#hero');
+    if (hero) {
+      ScrollTrigger.create({
+        trigger: hero, start: 'top 85%', end: 'bottom 15%',
+        onLeave: () => gsap.to(canvas, { opacity: 0.9, duration: 0.9, ease: 'power2.out' }),
+        onEnterBack: () => gsap.to(canvas, { opacity: 0, duration: 0.9, ease: 'power2.out' })
+      });
+    }
+  }
+})();
+</script>
+<script>
+(function(){
+const canvases=document.querySelectorAll('.bolt-canvas');
+if(!canvases.length)return;
+const states=Array.from(canvases).map((canvas,i)=>({canvas,ctx:canvas.getContext('2d'),segs:[],alpha:0,timer:8+i*7}));
+function makeBolt(x1,y1,x2,y2,rough,depth){const segs=[];function split(ax,ay,bx,by,d){if(d===0){segs.push([ax,ay,bx,by]);return;}const mx=(ax+bx)/2+(Math.random()-0.5)*rough*(d/depth)*1.2;const my=(ay+by)/2+(Math.random()-0.5)*rough*0.6;split(ax,ay,mx,my,d-1);split(mx,my,bx,by,d-1);}split(x1,y1,x2,y2,depth);return segs;}
+function resizeAll(){states.forEach(({canvas})=>{const rect=canvas.getBoundingClientRect();canvas.width=rect.width||80;canvas.height=rect.height||40;});}
+function drawBolt(ctx,segs,alpha){if(!segs.length||alpha<=0)return;ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle='rgba(180,120,255,0.8)';ctx.lineWidth=1.5;ctx.shadowColor='rgba(147,51,234,1)';ctx.shadowBlur=8;segs.forEach(([ax,ay,bx,by])=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();});ctx.restore();}
+function loop(){states.forEach(state=>{const{canvas,ctx}=state;ctx.clearRect(0,0,canvas.width,canvas.height);state.timer--;if(state.timer<=0){state.segs=makeBolt(0,canvas.height/2,canvas.width,canvas.height/2,12,4);state.alpha=1.0;state.timer=15+Math.floor(Math.random()*20);}state.alpha=Math.max(0,state.alpha-0.05);drawBolt(ctx,state.segs,state.alpha);});requestAnimationFrame(loop);}
+window.addEventListener('resize',resizeAll);
+setTimeout(()=>{resizeAll();loop();},100);
+})();
+</script>
+<script>
+(function(){
+const canvas=document.getElementById('feedback-loop-canvas');
+if(!canvas)return;
+const ctx=canvas.getContext('2d');
+let dashOffset=0;
+function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);const c1=document.querySelector('.agent-card--red');const c4=document.querySelector('.agent-card--green');if(!c1||!c4){requestAnimationFrame(draw);return;}const r1=c1.getBoundingClientRect();const r4=c4.getBoundingClientRect();const cr=canvas.getBoundingClientRect();const x4=r4.right-cr.left-(r4.width*0.2);const x1=r1.left-cr.left+(r1.width*0.2);const yTop=4;const yBot=canvas.height-10;dashOffset-=0.4;ctx.save();ctx.strokeStyle='rgba(168,85,247,0.6)';ctx.lineWidth=1.5;ctx.shadowColor='rgba(168,85,247,0.8)';ctx.shadowBlur=6;ctx.setLineDash([6,4]);ctx.lineDashOffset=dashOffset;ctx.beginPath();ctx.moveTo(x4,yTop);ctx.lineTo(x4,yBot);ctx.lineTo(x1,yBot);ctx.lineTo(x1,yTop);ctx.stroke();ctx.restore();requestAnimationFrame(draw);}
+window.addEventListener('resize',resize);
+setTimeout(()=>{resize();draw();},150);
+})();
+</script>
+<script>
+(function () {
+    function runHeaderFooterAnims() {
+        if (typeof gsap === 'undefined') return;
+        if (typeof ScrollTrigger !== 'undefined') {
+            gsap.registerPlugin(ScrollTrigger);
+        }
+
+        /* ── Page-transition veil — fade out on arrival ── */
+        (function(){
+            var veil = document.getElementById('page-transition');
+            /* NOT calling window.__showAmbientDust() here anymore — about.html
+               itself never shows the (partly purple-toned) dust during its
+               hero either, only later while scrolling through its veracity/
+               methodology/stackless sections. Firing it immediately on load
+               was tinting some of the hero's dots purple instead of the pure
+               white about.html's hero actually shows. */
+            if (!veil) return;
+            document.documentElement.classList.add('loader-active');
+            document.body.classList.add('loader-active');
+            gsap.to(veil, {
+                autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
+                onComplete: function () {
+                    veil.style.display = 'none';
+                    document.documentElement.classList.remove('loader-active');
+                    document.body.classList.remove('loader-active');
+                }
+            });
+        })();
+
+        /* ── Header entrance — ported verbatim from index.html: nav links
+           split into per-letter spans (shared style.css already carries the
+           hover-wave/sweep-line/logo-pulse CSS site-wide, it just had
+           nothing to animate on this page yet), plus the richer staggered
+           choreography (logo elastic pop-in, nav links blur-fade one by
+           one, buttons bounce in, hamburger pops last) instead of the
+           header just sliding down as one flat block. ── */
+        document.querySelectorAll('.nav-center a').forEach(link => {
+            const text = link.textContent;
+            link.textContent = '';
+            link.removeAttribute('data-text');
+            [...text].forEach((ch, i) => {
+                const span = document.createElement('span');
+                span.className = 'ltr';
+                span.style.setProperty('--i', i);
+                span.textContent = ch === ' ' ? ' ' : ch;
+                link.appendChild(span);
+            });
+        });
+
+        (function(){
+            const header = document.querySelector('.main-header');
+            if(!header) return;
+            const logo = header.querySelector('.logo');
+            const navLinks = header.querySelectorAll('.nav-center a');
+            const buttons = header.querySelectorAll('.header-buttons > a');
+            const hamburgerEl = header.querySelector('.hamburger');
+
+            gsap.set(header, { opacity:0, y:-26, filter:'blur(14px)' });
+            gsap.set(logo, { opacity:0, scale:0.4, rotate:-8 });
+            gsap.set(navLinks, { opacity:0, y:14, filter:'blur(6px)' });
+            gsap.set(buttons, { opacity:0, scale:0.5, y:8 });
+            gsap.set(hamburgerEl, { opacity:0, scale:0.6 });
+
+            const headerTL = gsap.timeline({ delay:0.15 });
+            headerTL.to(header, { opacity:1, y:0, filter:'blur(0px)', duration:1.1, ease:'power3.out' })
+                .to(logo, { opacity:1, scale:1, rotate:0, duration:0.9, ease:'elastic.out(1,0.55)' }, '-=0.75')
+                .to(navLinks, { opacity:1, y:0, filter:'blur(0px)', duration:0.6, ease:'power2.out', stagger:0.08 }, '-=0.55')
+                .to(buttons, { opacity:1, scale:1, y:0, duration:0.7, ease:'back.out(2.2)', stagger:0.12 }, '-=0.4')
+                .to(hamburgerEl, { opacity:1, scale:1, duration:0.5, ease:'back.out(2)' }, '-=0.4');
+        })();
+
+        /* ── Hero entrance ── */
+        gsap.set('.hero-title', { y: 50, autoAlpha: 0 });
+        gsap.set('.hero-list > li', { x: -30, autoAlpha: 0 });
+        gsap.to('.hero-title', { y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out', delay: 0.3 });
+        gsap.to('.hero-list > li', { x: 0, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: 0.6 });
+
+        /* ── Agent Stack: header reveal ── */
+        gsap.from('.agent-stack-label', {
+            x: -30, opacity: 0, duration: 0.6, ease: 'power2.out',
+            scrollTrigger: { trigger: '.agent-stack-header', start: 'top 85%' }
+        });
+        gsap.from('.agent-stack-title', {
+            y: 40, opacity: 0, duration: 0.8, ease: 'power3.out',
+            scrollTrigger: { trigger: '.agent-stack-header', start: 'top 85%' }
+        });
+
+        /* ── Agent Stack: cards reveal ONE BY ONE, driven directly by scroll position ── */
+        const agentCards = gsap.utils.toArray('.agent-card');
+        const agentArrows = gsap.utils.toArray('.agent-arrow');
+
+        gsap.set(agentCards, { y: 70, opacity: 0, rotateX: -12, scale: 0.94 });
+        gsap.set(agentArrows, { scaleX: 0, opacity: 0, transformOrigin: 'left center' });
+
+        const agentStackTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: '.agent-cards-wrap',
+                start: 'top 80%',
+                end: 'bottom 55%',
+                scrub: 0.6
+            }
+        });
+
+        agentCards.forEach((card, i) => {
+            agentStackTl.to(card, {
+                y: 0, opacity: 1, rotateX: 0, scale: 1,
+                duration: 0.6, ease: 'power2.out'
+            }, i);
+            if (agentArrows[i]) {
+                agentStackTl.to(agentArrows[i], {
+                    scaleX: 1, opacity: 1, duration: 0.4, ease: 'power2.out'
+                }, i + 0.3);
+            }
+        });
+
+        agentCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, { y: -8, scale: 1.03, duration: 0.35, ease: 'power2.out' });
+            });
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, { y: 0, scale: 1, duration: 0.4, ease: 'power2.out' });
+            });
+        });
+
+        /* ── Agent Stack: feedback loop canvas fades in after the cards ── */
+        gsap.from('#feedback-loop-canvas', {
+            opacity: 0, duration: 1, ease: 'power2.out',
+            scrollTrigger: { trigger: '.agent-cards-wrap', start: 'top 70%' },
+            delay: 0.5
+        });
+
+        /* ── Agent Stack: tag pills type-on stagger ── */
+        gsap.from('.agent-tags > span', {
+            y: 15, opacity: 0, stagger: 0.05, duration: 0.4, ease: 'power2.out',
+            scrollTrigger: { trigger: '.agent-tags', start: 'top 92%' }
+        });
+
+        /* ── Cognitive Infra: heading block reveal ── */
+        gsap.from('.ci-label', {
+            x: -30, opacity: 0, duration: 0.6, ease: 'power2.out',
+            scrollTrigger: { trigger: '.ci-inner', start: 'top 82%' }
+        });
+        gsap.from('.ci-heading', {
+            y: 40, opacity: 0, duration: 0.8, ease: 'power3.out',
+            scrollTrigger: { trigger: '.ci-inner', start: 'top 80%' }
+        });
+        gsap.from('.ci-sublayers-title', {
+            y: 25, opacity: 0, duration: 0.6, ease: 'power2.out', delay: 0.15,
+            scrollTrigger: { trigger: '.ci-inner', start: 'top 78%' }
+        });
+
+        /* ── Cognitive Infra: 8-dimension grid — staggered scale-pop in reading order ── */
+        gsap.fromTo('.ci-card',
+            { y: 35, opacity: 0, scale: 0.85 },
+            {
+                y: 0, opacity: 1, scale: 1,
+                duration: 0.6, ease: 'back.out(1.6)', delay: 0.6,
+                stagger: 0.2,
+                scrollTrigger: { trigger: '.ci-grid', start: 'top 85%' }
+            }
+        );
+        gsap.utils.toArray('.ci-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, { y: -6, scale: 1.04, duration: 0.3, ease: 'power2.out' });
+            });
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, { y: 0, scale: 1, duration: 0.35, ease: 'power2.out' });
+            });
+        });
+
+        /* ── Cognitive Infra: closing banner — expand from center ──
+           Tied to the SAME trigger as the 8-card grid above (not its own
+           '.ci-banner' position) with a fixed delay long enough to outlast
+           the cards' full staggered sequence (0.6s delay + 8×0.2s stagger
+           + 0.6s duration ≈ 2.6s). Previously it used its own, much closer
+           trigger point, so on a normal scroll the banner could start (and
+           even finish) animating in before the cards above it were done —
+           reading as "the banner appears before the cards." Anchoring both
+           to the same trigger point guarantees correct order regardless of
+           scroll speed, instead of depending on scroll timing lining up. */
+        gsap.fromTo('.ci-banner',
+            { scaleX: 0, opacity: 0 },
+            {
+                scaleX: 1, opacity: 1, duration: 0.8, ease: 'power3.out', transformOrigin: 'center',
+                delay: 2.8,
+                scrollTrigger: { trigger: '.ci-grid', start: 'top 85%' }
+            }
+        );
+
+        /* ── Footer reveal (matches 100K-Challenge.html) ── */
+        gsap.from('#site-footer', {
+            y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
+            scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
+        });
+        gsap.from('.footer-brand-column', {
+            x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
+            scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+        });
+        gsap.from('.footer-link-group', {
+            y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+            scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
+        });
+        gsap.from('.footer-actions-column', {
+            x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+            scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+        });
+        gsap.from('.footer-bottom-bar', {
+            y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
+            scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runHeaderFooterAnims);
+    } else {
+        runHeaderFooterAnims();
+    }
+})();
+</script>
+<script>
+(function () {
+  var veil = document.getElementById('page-transition');
+  if (!veil) return;
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+    var url;
+    try { url = new URL(href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin) return;
+    if (url.href === window.location.href) return;
+    e.preventDefault();
+    veil.style.display = 'block';
+    document.documentElement.classList.add('loader-active');
+    document.body.classList.add('loader-active');
+    gsap.to(veil, {
+      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
+      onComplete: function () { window.location.href = url.href; }
+    });
+  });
+})();
+</script>
+</body>
+</html>

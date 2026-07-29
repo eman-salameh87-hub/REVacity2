@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVacity | Before Judging us</title>
+<link rel="icon" type="image/png" href="media/icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── BEFORE JUDGING US — page-specific overrides ── */
+:root{--pink:#e63888;--purple:#9b5de5;--gold:#f4a135;--white:#ffffff;--dim:rgba(255,255,255,0.6);--bg:#0e0819}
+body{background:#030208;color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+/* ══════════════════════════════════════════════════════════════
+   Real background — same skybox + near/far twinkling star-point
+   fields used on index.html/about.html/start-a-warrent.html, standard
+   #030208 tone. #hero and .judging-section below are made transparent
+   (their opaque #0e0819 fills removed) so the starfield shows through
+   continuously down the whole page, matching start-a-warrent.html.
+   ══════════════════════════════════════════════════════════════ */
+.stage{position:fixed;inset:0;overflow:hidden;width:100vw;height:100vh;height:100dvh;z-index:0;pointer-events:none}
+canvas#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
+.vignette{position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(ellipse at 50% 55%,rgba(3,2,8,0) 35%,rgba(3,2,8,0.6) 100%),
+  linear-gradient(to bottom,rgba(3,2,8,0.4) 0%,rgba(3,2,8,0) 20%,rgba(3,2,8,0) 70%,rgba(3,2,8,0.55) 100%);
+  z-index:5}
+
+/* Header sits directly over the starfield — match its tone so there's
+   no visible seam against the shared stylesheet's default purple-tinted
+   rgba(10,3,21,0.85). */
+.main-header{background:rgba(3,2,8,0.85)}
+
+/* .judging-section carries its own opaque #0e0819 fill in the shared
+   stylesheet (confirmed exclusive to this page) — override to transparent
+   here so the starfield shows through it too. */
+.judging-section{background-color:transparent}
+
+/* Hero */
+#hero{width:100%;position:relative;z-index:1;padding-top:80px}
+.dlg-wrap{width:100%;max-width:1140px;margin:0 auto;padding:0 1%;height:685px}
+.dlg-canvas{position:relative;width:100%;padding-bottom:85%;background:transparent;overflow:hidden}
+.dlg-face{position:absolute;height:auto;mix-blend-mode:screen;z-index:2;height:175px}
+.dlg-face1{width:184px;height:227px}
+.dlg-face2{width:182px;height:227px}
+.dlg-face3{width:288px;height:328px}
+.dlg-face4{width:288px;height:376px}
+.dlg-face5{width:288px;height:340px}
+.dlg-face6{width:288px;height:257px}
+#df1{top:1.2%;left:35%}
+#df2{top:12.4%;left:45%}
+#df3{top:19.5%;left:33%}
+#df4{top:30.3%;left:45%}
+#df5{top:37%;left:36%}
+#df6{top:49%;left:41%}
+.dlg-item{position:absolute;width:26%;display:flex;flex-direction:column;gap:12px;z-index:3;opacity:0;transition:opacity 0.6s ease,transform 0.6s ease}
+.dlg-item.visible{opacity:1 !important;transform:translate(0,0) !important}
+.di-r1{top:2%;left:8.5%;transform:translateX(-30px);align-items:flex-end;text-align:right}
+.di-r2{top:5.4%;right:15.5%;text-align:left;transform:translateX(30px)}
+.di-r3{top:22%;left:6%;transform:translateX(-30px);align-items:flex-end;text-align:right}
+.di-r4{top:30%;right:13%;align-items:flex-start;transform:translateX(30px);text-align:left}
+.di-r5{top:44%;left:7%;align-items:flex-end;transform:translateX(-30px);text-align:right}
+.di-r6{top:52%;right:11%;align-items:flex-start;transform:translateX(30px);text-align:left}
+.dlg-bubble{position:relative;border-radius:20px;padding:clamp(10px,1.1vw,15px) clamp(13px,1.4vw,15px);font-family:'Syne',sans-serif;font-weight:700;font-size:clamp(0.8rem,1.25vw,0.95rem);line-height:1.25;display:inline-block;max-width:fit-content;border:3px solid #f4d020;box-shadow:0 0 16px rgba(244,208,32,0.22),0 4px 22px rgba(0,0,0,0.58);margin-bottom:6px}
+.dlg-bubble::before{content:'';position:absolute;bottom:-11px;width:18px;height:18px;border-right:3px solid #f4d020;border-bottom:3px solid #f4d020;transform:rotate(45deg);z-index:3}
+.dlg-bubble::after{content:'';position:absolute;bottom:-2px;width:24px;height:8px;z-index:4}
+.bbl-R::before{right:26px}
+.bbl-R::after{right:23px}
+.bbl-L::before{left:26px}
+.bbl-L::after{left:23px}
+.bbl-orange{background:#fa8500;color:#fff}
+.bbl-orange::before,.bbl-orange::after{background:#fa8500}
+.bbl-cyan{background:#00ccee;color:#fff;left:-25%}
+.bbl-cyan::before,.bbl-cyan::after{background:#00ccee}
+.bbl-magenta{background:#e800ee;color:#fff;left:21px}
+.bbl-magenta::before,.bbl-magenta::after{background:#e800ee}
+.bbl-red{background:#e63030;color:#fff;left:-32px}
+.bbl-red::before,.bbl-red::after{background:#e63030}
+.bbl-yellow{background:#2658fe;color:#fff;left:25px}
+.bbl-yellow::before,.bbl-yellow::after{background:#2658fe}
+.bbl-green{background:#ff914d;color:#fff;left:-20px}
+.bbl-green::before,.bbl-green::after{background:#ff914d}
+.dlg-resp{font-family:'DM Sans',sans-serif;font-size:clamp(0.65rem,0.95vw,0.82rem);color:rgba(255,255,255,0.82);line-height:1.3;font-weight:300}
+.judging-container2{align-items:start}
+.judging-container2 .judging-col2{align-self:start;height:auto !important;min-height:0 !important}
+.judging-container2 .skeptical-section{height:auto !important;min-height:0 !important;display:flex;flex-direction:column;justify-content:flex-start !important;align-items:flex-start !important}
+.judging-container2 .skeptical-container{height:auto !important;margin-bottom:0 !important}
+
+@media (max-width: 768px) {
+  .dlg-face{
+    height: 120px;
+  }
+}
+
+@media (max-width: 590px) {
+  .dlg-resp{
+    display:none;
+  }
+  #df2 {
+    top: 11%;
+    left: 53%;
+  }
+  #df3 {
+    top: 16%;
+    left: 25%;
+  }
+  #df4 {
+    top: 25%;
+    left: 51%;
+  }
+  #df5 {
+    top: 30%;
+    left: 25%;
+  }
+  #df6
+  {
+    top: 39%;
+    left: 42%;
+  }
+  .bbl-cyan{
+    left: 20%;
+  }
+  .di-r3 {
+    top: 11%;
+  }
+  .bbl-magenta{
+    left: 0px;
+  }
+  .bbl-red{
+    left: 36px;
+  }
+  .di-r4{
+    top: 18%;
+    right: 12%;
+  }
+  .bbl-yellow{
+    left: 0px;
+  }
+  .di-r5 {
+    top: 22%;
+  }
+  .di-r6 {
+    top: 32%;
+    right: 10%;
+  }
+  .dlg-bubble{
+    min-width: 100px;
+    text-align: center;
+    font-weight: 500;
+    font-size: clamp(0.7rem, 1.25vw, 0.95rem);
+  }
+  .dlg-wrap{
+    height: 500px;
+  }
+  #df1{
+    left: 30%;
+  }
+  .bbl-green{
+    left:25px;
+  }
+}
+
+#page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #030208;
+  pointer-events: none;
+}
+#page-transition::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
+}
+</style>
+</head>
+<body>
+
+<div id="page-transition"></div>
+
+<div class="stage">
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Background + stars — ported verbatim from about.html/start-a-warrent.html,
+   the site-standard #030208 starfield.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+try {
+  const canvas = document.getElementById('gl');
+  if (!canvas) { console.warn('[bg-stars] #gl canvas not found in DOM'); return; }
+  if (typeof THREE === 'undefined') { console.warn('[bg-stars] THREE is not defined — three.js CDN script failed to load'); return; }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#030208');
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 700);
+  const CAM_BASE = { x: 0, y: 0, z: 40 };
+  camera.position.set(CAM_BASE.x, CAM_BASE.y, CAM_BASE.z);
+  camera.lookAt(0, 0, 24);
+
+  const fog = new THREE.FogExp2(new THREE.Color('#030208').getHex(), 0.0055);
+  scene.fog = fog;
+
+  function resizeGL() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeGL);
+  resizeGL();
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Galaxy skybox (ported verbatim from index.html) ---- */
+  const SKY_BASE = '#030208';
+  function skyLightFrom(hex, peak, whiten) {
+    const r = parseInt(hex.substr(1, 2), 16),
+          g = parseInt(hex.substr(3, 2), 16),
+          b = parseInt(hex.substr(5, 2), 16);
+    const k = peak / (Math.max(r, g, b) || 1);
+    const mix = (v) => Math.round(v * k + (255 - v * k) * whiten);
+    return mix(r) + ',' + mix(g) + ',' + mix(b);
+  }
+  const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
+  const SKY_MONOCHROME = true;
+  const SKY_GLOW = 0.30;
+
+  function buildGalaxySkyTexture() {
+    const W = 1600, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = SKY_MONOCHROME ? SKY_BASE : '#050208';
+    ctx.fillRect(0, 0, W, H);
+
+    const bandRGB = SKY_MONOCHROME ? SKY_LIGHT : '150,90,200';
+    const bandA = 0.045 * (SKY_MONOCHROME ? SKY_GLOW : 1);
+    const band = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.72);
+    band.addColorStop(0, 'rgba(' + bandRGB + ',0)');
+    band.addColorStop(0.5, 'rgba(' + bandRGB + ',' + bandA + ')');
+    band.addColorStop(1, 'rgba(' + bandRGB + ',0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, H * 0.26, W, H * 0.48);
+
+    const blobDefs = [
+      { x: 0.12, y: 0.40, r: 220, rgb: '200,90,220', a: 0.07 },
+      { x: 0.32, y: 0.60, r: 190, rgb: '110,90,235', a: 0.06 },
+      { x: 0.58, y: 0.34, r: 260, rgb: '150,80,255', a: 0.065 },
+      { x: 0.80, y: 0.56, r: 190, rgb: '230,110,200', a: 0.05 },
+      { x: 0.46, y: 0.20, r: 160, rgb: '180,150,255', a: 0.03 },
+      { x: 0.94, y: 0.30, r: 140, rgb: '90,110,255', a: 0.045 },
+    ];
+    const blobs = blobDefs.map(function (b) {
+      const rgb = SKY_MONOCHROME ? SKY_LIGHT : b.rgb;
+      const a = b.a * (SKY_MONOCHROME ? SKY_GLOW : 1);
+      return { x: b.x, y: b.y, r: b.r, c: 'rgba(' + rgb + ',' + a + ')' };
+    });
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(b => {
+      const g = ctx.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+
+    for (let i = 0; i < 1200; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const inBand = y > H * 0.28 && y < H * 0.72;
+      const r = Math.random() * (inBand ? 1.7 : 1.1) + 0.2;
+      const a = Math.random() * 0.8 + 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const skyGeo = new THREE.SphereGeometry(320, 40, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: buildGalaxySkyTexture(), side: THREE.BackSide, fog: false });
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  scene.add(skyMesh);
+
+  /* ---- Star point-fields (ported verbatim from index.html) ---- */
+  function starTexture() {
+    const s = 128;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.12, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const STAR_TEX = starTexture();
+
+  function buildStars(count, radius, zSpan, size, opacity) {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.6;
+      positions[i * 3 + 2] = 45 - Math.random() * zSpan;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size, map: STAR_TEX, color: 0xffffff, transparent: true, opacity,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+  function makeStarField(layers, countEach, radius, zSpan, size, baseOpacity) {
+    const group = new THREE.Group();
+    const list = [];
+    for (let i = 0; i < layers; i++) {
+      const mesh = buildStars(countEach, radius, zSpan, size, baseOpacity);
+      group.add(mesh);
+      list.push({ mesh, baseOpacity, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.9 });
+    }
+    scene.add(group);
+    return { group, layers: list };
+  }
+  const nearStarField = makeStarField(4, 163, 34, 150, 0.055, 0.85);
+  const farStarField  = makeStarField(3, 133, 130, 220, 0.045, 0.4);
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const elapsed = clock.getElapsedTime();
+    if (!reducedMotion) {
+      [...nearStarField.layers, ...farStarField.layers].forEach((l) => {
+        const twinkle = 0.78 + 0.22 * Math.sin(elapsed * l.speed + l.phase);
+        l.mesh.material.opacity = l.baseOpacity * twinkle;
+      });
+      nearStarField.group.rotation.z = elapsed * 0.003;
+      farStarField.group.rotation.z = -elapsed * 0.0015;
+      skyMesh.rotation.y = elapsed * 0.004;
+      camera.position.x = CAM_BASE.x + Math.sin(elapsed * 0.05) * 1.4;
+      camera.position.y = CAM_BASE.y + Math.sin(elapsed * 0.037) * 0.8;
+      camera.lookAt(0, 0, 24);
+    }
+    renderer.render(scene, camera);
+  })();
+} catch (err) {
+  console.error('[bg-stars] failed:', err);
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:6px;left:6px;z-index:99999;background:#3a0000;'
+    + 'color:#ff8080;font:11px/1.4 monospace;padding:8px 10px;border:1px solid #ff4444;'
+    + 'border-radius:6px;max-width:92vw;white-space:pre-wrap;';
+  banner.textContent = '[bg-stars] ' + (err && err.message ? err.message : err);
+  document.body.appendChild(banner);
+}
+})();
+</script>
+
+<header class="main-header">
+  <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+  <nav class="nav-center">
+      <a href="index.html" data-text="The Collapse">The Collapse</a>
+      <a href="about.html" data-text="About Us">About Us</a>
+      <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+      <a href="compare.html" data-text="Compare">Compare</a>
+      <a href="blog.html" data-text="Blog">Blog</a>
+  </nav>
+
+  <div style="display: flex; align-items: center; gap: 20px;">
+
+      <div class="header-buttons">
+          <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+              <span>Start a Warrant</span>
+          </a>
+          <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+              <span>$100k Reward</span>
+          </a>
+      </div>
+      <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+      </div>
+  </div>
+</header>
+
+<div class="mobile-slide-menu" id="mobile-menu">
+  <div class="close-menu" id="close-menu">
+      <span></span>
+      <span></span>
+  </div>
+
+  <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+  <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+  <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+  <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+  <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+  <div class="mobile-menu-cta" style="--i: 6;">
+      <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+      <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+  </div>
+</div>
+
+<!-- ═══ DIALOGUE HERO ═══ -->
+<section id="hero">
+  <div class="dlg-wrap">
+    <div class="dlg-canvas">
+      <div class="dlg-item di-r1">
+        <div class="dlg-bubble bbl-orange bbl-R">"You sound <br />arrogant."</div>
+        <div class="dlg-resp">We sound confident. There's a difference. Arrogance is claiming you can do something you can't. Confidence is refusing to pretend you can't do something you've done 203 times.</div>
+      </div>
+      <div class="dlg-item di-r2">
+        <div class="dlg-bubble bbl-cyan bbl-L">"You're just  <br /> AI agency."</div>
+        <div class="dlg-resp">We existed before the term 'AI agency' was coined. We've been engineering revenue for 18 years. AI is a tool we use — not an identity we wear. We were doing this when it was called 'Complex &amp; Impossible.' Now everyone calls it 'AI' and pretends they invented it.</div>
+      </div>
+      <div class="dlg-item di-r3">
+        <div class="dlg-bubble bbl-magenta bbl-R">"We already have <br /> an agency."</div>
+        <div class="dlg-resp">Great. Ask them one question: 'What revenue did you generate for us last quarter?' If the answer involves impressions, reach, or engagement — you don't have an agency. You have a content subscription.</div>
+      </div>
+      <div class="dlg-item di-r4">
+        <div class="dlg-bubble bbl-red bbl-L">"We don't <br /> need growth <br /> we're doing fine."</div>
+        <div class="dlg-resp">Satisfaction is the first stage of decline. 'Fine' means you're comparing yourself to your past. What if you compared yourself to your potential? Take the $100K Challenge and prove it.</div>
+      </div>
+      <div class="dlg-item di-r5">
+        <div class="dlg-bubble bbl-yellow bbl-R">"Why is your tone so aggressive?"</div>
+        <div class="dlg-resp">Because politeness is how mediocrity survives. Every agency that failed you was polite. They were polite when they missed an opportunity. Polite when they presented vanity metrics. Polite when they asked for the next retainer.</div>
+      </div>
+      <div class="dlg-item di-r6">
+        <div class="dlg-bubble bbl-green bbl-L">"What if you can't deliver?"</div>
+        <div class="dlg-resp">Then we don't get paid. That's the warrant. We don't have escape clauses, scope-change fees, or 'market conditions' excuses. The outcome is defined, measured, and guaranteed. If we fail, we eat the cost.</div>
+      </div>
+      <img class="dlg-face" id="df1" src="media/face1.png" />
+      <img class="dlg-face" id="df2" src="media/face2.png" />
+      <img class="dlg-face" id="df3" src="media/face3.png" />
+      <img class="dlg-face" id="df4" src="media/face4.png" />
+      <img class="dlg-face" id="df5" src="media/face5.png" />
+      <img class="dlg-face" id="df6" src="media/face8.png" />
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BEFORE JUDGING US SECTION ═══ -->
+<section class="judging-section">
+  <div class="judging-header">
+    <a href="#" class="scroll-indicator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <polyline points="19 12 12 19 5 12"></polyline>
+      </svg>
+    </a>
+    <h2 class="judging-main-title">Before Judging Us</h2>
+  </div>
+
+  <div class="judging-container">
+    <img src="media/brain.png" alt="" class="brain-graphic" onerror="this.style.display='none'">
+
+    <!-- LEFT COLUMN -->
+    <div class="judging-col judging-col1">
+      <h3 class="column-heading col-left-title">Our Bizarre Facts</h3>
+      <div class="fact-block">
+        <h4 class="fact-headline txt-purple">We learned by doing the wrong many times, not by avoiding it</h4>
+        <p class="fact-desc">We Embrace being mistaken, as success for us is Dealing with the Unknown as a value.</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline txt-coral">The Expiration of the Expert</h4>
+        <p class="fact-desc">Which simply expose anyone "There is a lot" claiming they are Expert, at the same time the senior's, Founders that are not embracing and transforming with AI are expired, That's why we become Radical skepticism and cognitive elasticity, We Dont hide truths, if the client doesn't match the needed we will tell them, and this might make them look for us as a Risk Mitigation or Snitchy partner, They choose</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline txt-purple">Our agency architected to fill the industry gap:</h4>
+        <p class="fact-desc">we are in "Trust Deficit" status, caused by The Disbelieving of DM's and Dishonesty from other agencies, and It Didn't stopped there, we also in "trust recession" Times caused by the explosion of AI-generated content. Consumers become skeptical and overwhelmed, they no longer buy from brands that simply promote; they buy from brands they believe in.</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline txt-blue">Real Decision makers Look for Outcomes and Deliveries,</h4>
+        <p class="fact-desc">Not for how many agents we used or Automation, Same for us, we are open to work with Zero Ai or agents, and this might applied in any needed workflows and outcomes</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline txt-green">We Love Money, and yes it is the only language we understand</h4>
+        <p class="fact-desc">No Love or Forced Client preferences), as we get paid when the customer collect.</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline txt-coral">We Never Worked Based on our capabilities or Expertise,</h4>
+        <p class="fact-desc">Well, Which Top Notch enterprise did!! We Learned by doing the wrong many times and make it Phenomenal, not by avoiding do it again, We Master working with assumptions and ambiguities, We're not a newcomer to complex, Multi-Dimensional Workflows or systems — we're just extending our experience into the "Now Future"</p>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="judging-col judging-col2">
+      <h3 class="col-right-title-exact">The Market:</h3>
+      <div class="fact-block">
+        <h4 class="fact-headline text-white">The chaos is real. This year has the Highest Lies ROI:</h4>
+        <p class="fact-desc">and yes it becomes a proffision, Just open one of the platforms.</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline text-white">The "Jagged Frontier":</h4>
+        <p class="fact-desc">Agents Solve PhD Math equation but not real-world</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline text-white">Process Amplification:</h4>
+        <p class="fact-desc">if logic or business workflow is messy, the agent doesn't fix it; it just automates the mess.</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline text-white">(20%) is the success rate delivering measurable</h4>
+        <p class="fact-desc">88% of companies have adopted AI,<br>only about 1 in 5 ROI. Gartner</p>
+      </div>
+      <div class="fact-block">
+        <h4 class="fact-headline text-white">80–90% of AI projects never exit pilots,</h4>
+        <p class="fact-desc">vulnerable to cancellation due to poor ROI clarity and risk management burden</p>
+      </div>
+      <img src="media/monkey.png" alt="" class="monkey-graphic-exact">
+      <div class="frog-section">
+        <div class="fact-block" style="margin-top:40px">
+          <h4 class="fact-headline text-white">"Agent washing"</h4>
+          <p class="fact-desc">the hype and the gap between marketing and reality, The enterprise market is heavily saturated with what analysts are now calling "agentwashing"—vendors taking rigidly programmed, predefined workflow wrappers and rebranding them as "autonomous agents."</p>
+        </div>
+        <div class="fact-block">
+          <h4 class="fact-headline text-white">The system is designed to fail vaguely</h4>
+          <p class="fact-desc">blaming the user's rather than its own fragile architecture, adding layers of "agentic" middleware just introduces latency and degradation.</p>
+        </div>
+        <div class="fact-block">
+          <h4 class="fact-headline text-white">The industry is suffering from semantic collapse,</h4>
+          <p class="fact-desc">This is perhaps the most destructive aspect of the current hype cycle, A Noise, no single source of truth, anyone can twist the terms", The Puffed and fake industry Cluster, make the Client Almost Rigid and Static, they are in Requirements, Pains, chaos, with No trust-worthy validation</p>
+        </div>
+        <img src="media/frog.png" alt="" class="frog-graphic">
+      </div>
+    </div>
+  </div>
+
+  <div class="judging-container2">
+    <!-- LEFT COLUMN -->
+    <div class="judging-col judging-col1">
+      <div class="purpose-section">
+        <div class="purpose-container">
+          <div class="purpose-intro">
+            <h3 class="purpose-blue-title">Dont Forget The First Purpose of Ai:</h3>
+            <p class="purpose-lead">The Ai is weren't created to help us in life, and let us do our work easier!</p>
+            <p class="purpose-text">It's here to generate more money, for Continuous innovation, transforming Complexity to Context, Data to Decision, Decision to Money, Money to intelligence, then starting over again</p>
+          </div>
+          <div class="principles-wrapper">
+            <div class="principle-item">
+              <h4 class="principle-heading">We will Have all the needed, when it become needed Not before:</h4>
+              <ul class="principle-list">
+                <li>JIT (Just-in-Time) Learning, Ensuring Capability Bias Doctrine, Applying Latest practices (your differentiator),</li>
+              </ul>
+            </div>
+            <div class="principle-item">
+              <h4 class="principle-heading">No Experience Or Mastery Trap:</h4>
+              <ul class="principle-list">
+                <li>We are not bias for any previous or current technology, model, pattern, engine or language (Experience/Skills, Ready Product Trap), in AI, knowing why something works will always outlast knowing how to run it.</li>
+              </ul>
+            </div>
+            <div class="principle-item">
+              <h4 class="principle-heading">We Know your rights:</h4>
+              <ul class="principle-list">
+                <li>Reports is not an outcome, Quality is not an outcome, Latest and best practices is not an outcome, working hard is not an Outcome, Full Client desire implementation is not an outcome</li>
+              </ul>
+            </div>
+            <div class="principle-item">
+              <h4 class="principle-heading">There's no shortcut.</h4>
+              <ul class="principle-list">
+                <li>It takes strategy, technology, and people moving together. Focus on needs before technology Embrace innovation as the only constant</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- RIGHT COLUMN -->
+    <div class="judging-col judging-col2">
+      <div class="skeptical-section">
+        <div class="skeptical-container">
+          <h3 class="skeptical-title">Still skeptical?</h3>
+          <p class="skeptical-subtitle">Good. Skeptics make the best clients.</p>
+          <a href="compare.html" class="skeptical-link-block">
+            <div class="skeptical-link-text">
+              <span>Compare us with others</span>
+              <span>o you can know more</span>
+            </div>
+            <div class="skeptical-go-btn">
+              <span class="go-text">GO</span>
+              <div class="go-arrow-circle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="url(#orange-grad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="7 17 12 12 7 7"></polyline>
+                  <polyline points="14 17 19 12 14 7"></polyline>
+                </svg>
+                <svg style="width:0;height:0;position:absolute">
+                  <defs>
+                    <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#ff7300"/>
+                      <stop offset="100%" stop-color="#fe3b00"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<div class="creative-footer-reveal-container" id="site-footer">
+  <footer class="creative-tech-footer">
+    <div class="footer-top-glow-line"></div>
+
+    <div class="footer-grid-inner">
+      <div class="footer-brand-column">
+        <img src="media/REVacity.png" alt="Revacity" style="width:180px; height:auto;" />
+        <p class="footer-brand-tagline">
+          Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.
+        </p>
+      </div>
+
+      <div class="footer-links-grid">
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+            <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+            <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+        </div>
+
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">04 //</span> Before Judging</a>
+            <a href="compare.html" class="footer-link-item"><span class="link-num">05 //</span> Compare</a>
+            <a href="blog.html" class="footer-link-item"><span class="link-num">06 //</span>Blog</a>
+        </div>
+      </div>
+
+      <div class="footer-actions-column">
+        <h4 class="group-title">SYSTEM INTERACTION</h4>
+        <div class="footer-subscribe-wrapper">
+          <input type="email" placeholder="Enter operator email..." class="footer-input-field" />
+          <button type="button" class="footer-submit-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+          <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom-bar">
+        <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+        <div class="footer-legal-links">
+            <a href="privacy.html">PRIVACY DECREE</a>
+            <span class="divider">/</span>
+            <a href="terms.html">TERMINAL TERMS</a>
+            <span class="divider">/</span>
+            <a href="security-clearance.html">SECURITY CLEARANCE</a>
+        </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<script>
+(function () {
+  if (!window.gsap) return;
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+  /* ── Header entrance ── */
+  gsap.set('.main-header', { y: -80, autoAlpha: 0 });
+  gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out', delay: 0.1 });
+
+  /* Page-transition veil — fade out on arrival */
+  (function(){
+    var veil = document.getElementById('page-transition');
+    if (!veil) return;
+    document.documentElement.classList.add('loader-active');
+    document.body.classList.add('loader-active');
+    gsap.to(veil, {
+      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
+      onComplete: function () {
+        veil.style.display = 'none';
+        document.documentElement.classList.remove('loader-active');
+        document.body.classList.remove('loader-active');
+      }
+    });
+  })();
+
+  /* ── Footer reveal ── */
+  gsap.from('#site-footer', {
+    y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
+  });
+  gsap.from('.footer-brand-column', {
+    x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+  });
+  gsap.from('.footer-link-group', {
+    y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
+  });
+  gsap.from('.footer-actions-column', {
+    x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+  });
+  gsap.from('.footer-bottom-bar', {
+    y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
+    scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
+  });
+
+  /* ── Nav link hover underline ── */
+  document.querySelectorAll('.nav-center a').forEach(link => {
+    link.addEventListener('mouseenter', () => {
+      gsap.to(link, { letterSpacing: '0.03em', duration: 0.2, ease: 'power1.out' });
+    });
+    link.addEventListener('mouseleave', () => {
+      gsap.to(link, { letterSpacing: 'normal', duration: 0.3, ease: 'power1.out' });
+    });
+  });
+
+  /* ── Social icons bounce on hover ── */
+  document.querySelectorAll('.social-icon-btn').forEach(icon => {
+    icon.addEventListener('mouseenter', () => {
+      gsap.to(icon, { scale: 1.3, rotation: 10, duration: 0.3, ease: 'back.out(2)' });
+    });
+    icon.addEventListener('mouseleave', () => {
+      gsap.to(icon, { scale: 1, rotation: 0, duration: 0.4, ease: 'elastic.out(1, 0.4)' });
+    });
+  });
+
+  ScrollTrigger.refresh();
+})();
+</script>
+
+<script>
+(function () {
+  if (!window.gsap) return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Pre-hide states (prevents flash before GSAP fires) ── */
+  const preHide = document.createElement('style');
+  preHide.textContent = `
+    .judging-main-title{opacity:0}
+    .brain-graphic{opacity:0;transform:translateX(-160px) scale(0.85) rotate(-12deg);filter:blur(10px)}
+    .col-left-title,.col-right-title-exact{opacity:0}
+    .judging-col1 .fact-headline{clip-path:inset(0 100% 0 0)}
+    .judging-col1 .fact-desc{opacity:0;filter:blur(6px)}
+    .judging-col2 .fact-block{opacity:0}
+    .frog-graphic{opacity:0}
+    .purpose-blue-title,.purpose-lead,.purpose-text{opacity:0}
+    .principle-item{opacity:0}
+    .skeptical-container{opacity:0}
+    .judging-glow{position:absolute;width:420px;height:420px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle, rgba(230,56,136,0.10) 0%, transparent 70%);transform:translate(-50%,-50%);}
+    .dlg-item,.dlg-face{transition:none !important}
+  `;
+  document.head.appendChild(preHide);
+
+  /* ── Cursor-reactive ink glow drifting through the section ── */
+  const judgingSection = document.querySelector('.judging-section');
+  if (judgingSection) {
+    if (getComputedStyle(judgingSection).position === 'static') {
+      judgingSection.style.position = 'relative';
+    }
+    const glow = document.createElement('div');
+    glow.className = 'judging-glow';
+    judgingSection.appendChild(glow);
+    judgingSection.addEventListener('mousemove', (e) => {
+      const rect = judgingSection.getBoundingClientRect();
+      gsap.to(glow, { left: e.clientX - rect.left, top: e.clientY - rect.top, duration: 0.7, ease: 'power2.out' });
+    });
+  }
+
+  /* ── Title: elastic reveal + scroll-indicator bounce ── */
+  gsap.timeline({ scrollTrigger: { trigger: '.judging-header', start: 'top 85%' } })
+    .fromTo('.judging-main-title',
+      { autoAlpha: 0, y: 50, scale: 0.85, letterSpacing: '-0.05em' },
+      { autoAlpha: 1, y: 0, scale: 1, letterSpacing: 'normal', duration: 1, ease: 'back.out(1.6)' });
+
+  gsap.set('.scroll-indicator', { autoAlpha: 1 });
+  gsap.to('.scroll-indicator', { y: 10, duration: 1.1, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  /* ── Scroll cue: was a bare href="#" (jumped to page top instead of scrolling down) ── */
+  const scrollCue = document.querySelector('.scroll-indicator');
+  if (scrollCue) {
+    scrollCue.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector('.judging-container') || scrollCue.closest('.judging-section');
+      if (target) {
+        gsap.to(window, { scrollTo: { y: target, offsetY: 20 }, duration: 1.1, ease: 'power2.inOut' });
+      }
+    });
+  }
+
+  /* ── Brain graphic: elastic pop-in + ambient parallax drift ── */
+  const brain = document.querySelector('.brain-graphic');
+  if (brain) {
+    gsap.fromTo(brain,
+      { autoAlpha: 0, x: -160, scale: 0.85, rotation: -12, filter: 'blur(10px)' },
+      { autoAlpha: 1, x: 0, scale: 1, rotation: 0, filter: 'blur(0px)', duration: 1.4, ease: 'power3.out',
+        scrollTrigger: { trigger: brain, start: 'top 85%' } });
+    gsap.to(brain, {
+      yPercent: 14, ease: 'none',
+      scrollTrigger: { trigger: '.judging-container', start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  }
+
+  /* ── Column titles slide in from opposite sides ── */
+  gsap.from('.col-left-title', { x: -50, autoAlpha: 0, duration: 0.8, ease: 'power3.out',
+    scrollTrigger: { trigger: '.col-left-title', start: 'top 85%' } });
+  gsap.from('.col-right-title-exact', { x: 50, autoAlpha: 0, duration: 0.8, ease: 'power3.out',
+    scrollTrigger: { trigger: '.col-right-title-exact', start: 'top 85%' } });
+
+  /* ── Left column facts: ink-wipe headline reveal + blurred fade-up body ── */
+  document.querySelectorAll('.judging-col1 .fact-block').forEach((block) => {
+    const head = block.querySelector('.fact-headline');
+    const desc = block.querySelector('.fact-desc');
+    if (desc) gsap.set(desc, { y: 16 });
+    ScrollTrigger.create({
+      trigger: block, start: 'top 88%', once: true,
+      onEnter: () => {
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        if (head) tl.to(head, { clipPath: 'inset(0 0% 0 0)', duration: 0.9 });
+        if (desc) tl.to(desc, { autoAlpha: 1, filter: 'blur(0px)', y: 0, duration: 0.7 }, '-=0.5');
+      }
+    });
+  });
+
+  /* ── Right column facts: glitch-slide settle, alternating tilt ── */
+  document.querySelectorAll('.judging-col2 .fact-block').forEach((block, i) => {
+    gsap.fromTo(block,
+      { x: 60, autoAlpha: 0, rotation: i % 2 === 0 ? 3 : -3 },
+      { x: 0, autoAlpha: 1, rotation: 0, duration: 0.7, ease: 'power3.out',
+        scrollTrigger: { trigger: block, start: 'top 90%' } });
+  });
+
+  /* ── Frog graphic: sway entrance + idle wobble ── */
+  const frog = document.querySelector('.frog-graphic');
+  if (frog) {
+    gsap.fromTo(frog,
+      { autoAlpha: 0, x: -40, rotation: -10 },
+      { autoAlpha: 1, x: 0, rotation: 0, duration: 0.9, ease: 'back.out(1.6)',
+        scrollTrigger: { trigger: frog, start: 'top 90%' } });
+    gsap.to(frog, { x: 10, rotation: 6, duration: 2.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1 });
+  }
+
+  /* ── Purpose section: blur-focus title + sequential fade-up copy ── */
+  gsap.timeline({ scrollTrigger: { trigger: '.purpose-intro', start: 'top 85%' } })
+    .fromTo('.purpose-blue-title', { autoAlpha: 0, y: 30, filter: 'blur(8px)' },
+      { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, ease: 'power3.out' })
+    .fromTo('.purpose-lead', { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.4')
+    .fromTo('.purpose-text', { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.35');
+
+  /* ── Principle cards: staggered pop with hover lift (per-item trigger, more reliable than container trigger) ── */
+  ScrollTrigger.batch('.principle-item', {
+    start: 'top 92%',
+    once: true,
+    onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, stagger: 0.15, duration: 0.7, ease: 'power3.out' })
+  });
+  document.querySelectorAll('.principle-item').forEach((item) => {
+    gsap.set(item, { y: 40, autoAlpha: 0 });
+    item.addEventListener('mouseenter', () => gsap.to(item, { y: -6, duration: 0.3, ease: 'power2.out' }));
+    item.addEventListener('mouseleave', () => gsap.to(item, { y: 0, duration: 0.4, ease: 'power2.out' }));
+  });
+
+  /* ── Skeptical block: elastic pop ── */
+  ScrollTrigger.create({
+    trigger: '.skeptical-container', start: 'top 88%', once: true,
+    onEnter: () => {
+      gsap.timeline()
+        .fromTo('.skeptical-container', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 })
+        .fromTo('.skeptical-title', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.7, ease: 'elastic.out(1, 0.4)' }, '-=0.2')
+        .fromTo('.skeptical-subtitle', { x: 30, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.5, ease: 'power2.out' }, '-=0.3')
+        .fromTo('.skeptical-link-block', { y: 20, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power2.out' }, '-=0.25');
+    }
+  });
+
+  ScrollTrigger.refresh();
+
+  /* ── Reliability net: recalc trigger positions once images finish loading,
+     and guarantee nothing is left permanently invisible ── */
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+  setTimeout(() => ScrollTrigger.refresh(), 1200);
+
+  setTimeout(() => {
+    document.querySelectorAll(
+      '.judging-main-title,.scroll-indicator,.brain-graphic,.col-left-title,.col-right-title-exact,' +
+      '.judging-col1 .fact-headline,.judging-col1 .fact-desc,.judging-col2 .fact-block,' +
+      '.frog-graphic,.purpose-blue-title,.purpose-lead,.purpose-text,' +
+      '.principle-item,.skeptical-container,.skeptical-title,.skeptical-subtitle,.skeptical-link-block'
+    ).forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const seen = rect.top < window.innerHeight && rect.bottom > 0;
+      const style = getComputedStyle(el);
+      const stuckHidden = style.opacity === '0' || style.visibility === 'hidden';
+      if (seen && stuckHidden) {
+        gsap.to(el, { autoAlpha: 1, x: 0, y: 0, scale: 1, rotation: 0, clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.6, ease: 'power2.out' });
+      }
+    });
+  }, 2500);
+})();
+
+</script>
+
+<script>
+(function () {
+  const canvas = document.querySelector('.dlg-canvas');
+  if (!canvas || !window.gsap) return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  const faces    = ['df1','df2','df3','df4','df5','df6'].map(id => document.getElementById(id));
+  const allItems = Array.from(canvas.querySelectorAll('.dlg-item'));
+  const pairs = [[faces[0], allItems[0]], [faces[1], allItems[1]], [faces[2], allItems[2]], [faces[3], allItems[3]], [faces[4], allItems[4]], [faces[5], allItems[5]]];
+
+  /* Direction each bubble slides in from, matching its original CSS offset */
+  const xOffsets = [-30, 30, -30, 30, -30, 30];
+
+  /* Set initial hidden state, fully under GSAP control */
+  pairs.forEach(([face, item], i) => {
+    if (item) gsap.set(item, { autoAlpha: 0, x: xOffsets[i] });
+    if (face) gsap.set(face, { autoAlpha: 0, y: 18, scale: 0.96 });
+  });
+
+  const hero = document.getElementById('hero');
+
+  /* Block scrolling while the auto-play sequence runs */
+  function lockScroll() {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+  }
+  function unlockScroll() {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  let started = false;
+  let released = false;
+  let st; /* the ScrollTrigger pin instance, created below */
+
+  /* Release exactly once, whether triggered by the timeline finishing normally
+     or by the failsafe timeout below. Guards against the page being left
+     permanently unscrollable if onComplete ever fails to fire. */
+  function release() {
+    if (released) return;
+    released = true;
+    unlockScroll();
+    if (st) st.kill(); /* release the pin so normal scrolling resumes */
+    ScrollTrigger.refresh();
+  }
+
+  /* Auto-play timeline: timed, NOT tied to scroll position */
+  const tl = gsap.timeline({
+    paused: true,
+    onComplete: release
+  });
+
+  pairs.forEach(([face, item], i) => {
+    tl.to(item, { autoAlpha: 1, x: 0, duration: 0.55, ease: 'power2.out' }, i ? '+=0.25' : 0)
+      .to(face, { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: 'power2.out' }, '<');
+  });
+
+  /* Failsafe: never leave the page scroll-locked. The intro sequence takes
+     ~5s; if onComplete somehow never fires (backgrounded tab, a stalled
+     tween, etc.) force the release after a generous margin. */
+  function armFailsafe() {
+    setTimeout(release, 8000);
+  }
+
+  st = ScrollTrigger.create({
+    trigger: hero,
+    start: 'top top',
+    end: '+=6000', /* generous safety buffer; actual release happens on tl.onComplete */
+    pin: true,
+    pinSpacing: true,
+    anticipatePin: 1,
+    onEnter: () => {
+      if (started) return;
+      started = true;
+      lockScroll();
+      armFailsafe();
+      tl.play();
+    },
+    onEnterBack: () => {
+      if (started) return;
+      started = true;
+      lockScroll();
+      armFailsafe();
+      tl.play();
+    }
+  });
+
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+
+  /* Hero is the first section, so it's already "at the top" on load —
+     don't wait for a scroll event to kick things off. */
+  requestAnimationFrame(() => {
+    if (!started && hero.getBoundingClientRect().top <= 1) {
+      started = true;
+      lockScroll();
+      armFailsafe();
+      tl.play();
+    }
+  });
+})();
+</script>
+<script>
+(function () {
+  var veil = document.getElementById('page-transition');
+  if (!veil) return;
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+    var url;
+    try { url = new URL(href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin) return;
+    if (url.href === window.location.href) return;
+    e.preventDefault();
+    veil.style.display = 'block';
+    document.documentElement.classList.add('loader-active');
+    document.body.classList.add('loader-active');
+    gsap.to(veil, {
+      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
+      onComplete: function () { window.location.href = url.href; }
+    });
+  });
+})();
+</script>
+</body>
+</html>

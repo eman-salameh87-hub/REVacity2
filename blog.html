@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVacity | Intelligence Dispatches — Blog</title>
+<meta name="description" content="REVacity's intelligence blog: contrarian takes on AI shifts, human-machine dynamics, and the versioning world. AEO, GEO, and SEO engineered.">
+<meta name="keywords" content="revenue intelligence blog, AI marketing 2026, human-first AI, agentic commerce, revenue engineering">
+<link rel="canonical" href="https://revacity.com/blog">
+<link rel="icon" type="image/png" href="media/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+/* Header uses the shared stylesheet's default purple-tinted
+   rgba(10,3,21,0.85) — blog.html's page background is rgba(3,2,8,*)
+   (same as start-a-warrent.html), so re-tint the header to match and
+   avoid a visible seam at the top of the page. */
+.blog-page .main-header{background:rgba(3,2,8,0.85)}
+</style>
+</head>
+<body class="blog-page">
+
+<!-- HEADER -->
+ <header class="main-header">
+    <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+    <nav class="nav-center">
+        <a href="index.html" data-text="The Collapse">The Collapse</a>
+        <a href="about.html" data-text="About Us">About Us</a>
+        <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+        <a href="compare.html" data-text="Compare">Compare</a>
+        <a href="blog.html" data-text="Blog">Blog</a>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+
+        <div class="header-buttons">
+            <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+                <span>Start a Warrant</span>
+            </a>
+            <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+                <span>$100k Reward</span>
+            </a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</header>
+
+<div class="mobile-slide-menu" id="mobile-menu">
+    <div class="close-menu" id="close-menu">
+        <span></span>
+        <span></span>
+    </div>
+
+    <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+    <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+    <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+    <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+    <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+    <div class="mobile-menu-cta" style="--i: 6;">
+        <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+        <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+    </div>
+</div>
+
+<div class="bp-layout">
+
+<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<aside class="bp-sidebar">
+  <div class="bp-sidebar-top">
+    <p class="bp-dispatch-label">Intelligence Dispatches</p>
+    <p class="bp-dispatch-title">Where the industry<br><span>breaks & rebuilds.</span></p>
+  </div>
+
+  <div class="bp-nav-sections" id="bpNav">
+
+    <!-- ALL -->
+    <div class="bp-sec-item active" style="--bp-sec-color:#e63888"
+         data-filter="all" onclick="filterSection(this)">
+      <div class="bp-sec-head">
+        <div class="bp-sec-info">
+          <div class="bp-sec-name">All Dispatches <span class="bp-sec-count">8 articles</span></div>
+          <div class="bp-sec-desc">Every intelligence article across all three sections</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE SHIFT -->
+    <div class="bp-sec-item" style="--bp-sec-color:#e63888"
+         data-filter="shift" onclick="filterSection(this)">
+      <div class="bp-sec-head">
+        <div class="bp-sec-info">
+          <div class="bp-sec-name">The Shift <span class="bp-sec-count">3 articles</span></div>
+          <div class="bp-sec-desc">Strategic pivot points — fixing failures, pioneering standards</div>
+        </div>
+      </div>
+      <div class="bp-sub-links">
+        <div class="bp-sub-link" data-sub="wrongs" onclick="filterSub(event,'shift','wrongs')">
+          Latest Wrongs — The Debunk Phase
+        </div>
+        <div class="bp-sub-link" data-sub="rights" onclick="filterSub(event,'shift','rights')">
+          Latest Rights — The Engineering Phase
+        </div>
+      </div>
+    </div>
+
+    <!-- THE BATTLE -->
+    <div class="bp-sec-item" style="--bp-sec-color:#9b5de5"
+         data-filter="battle" onclick="filterSection(this)">
+      <div class="bp-sec-head">
+        <div class="bp-sec-info">
+          <div class="bp-sec-name">The Battle <span class="bp-sec-count">3 articles</span></div>
+          <div class="bp-sec-desc">Human vs machine — where new competencies rise and fall</div>
+        </div>
+      </div>
+      <div class="bp-sub-links">
+        <div class="bp-sub-link" data-sub="human" onclick="filterSub(event,'battle','human')">
+          Human — The Curator Edge
+        </div>
+        <div class="bp-sub-link" data-sub="machine" onclick="filterSub(event,'battle','machine')">
+          Machine — The Heavy Lifting Edge
+        </div>
+      </div>
+    </div>
+
+    <!-- THE VERSIONING -->
+    <div class="bp-sec-item" style="--bp-sec-color:#f4a135"
+         data-filter="version" onclick="filterSection(this)">
+      <div class="bp-sec-head">
+        <div class="bp-sec-info">
+          <div class="bp-sec-name">The Versioning <span class="bp-sec-count">2 articles</span></div>
+          <div class="bp-sec-desc">Players, products, publications — the unsettled frontier</div>
+        </div>
+      </div>
+      <div class="bp-sub-links">
+        <div class="bp-sub-link" data-sub="players" onclick="filterSub(event,'version','players')">
+          Players — OpenAI · Nvidia · Anthropic · Qwen
+        </div>
+        <div class="bp-sub-link" data-sub="products" onclick="filterSub(event,'version','products')">
+          Products — New Ideas &amp; Startups
+        </div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ════════════════════ MAIN ════════════════════ -->
+<main class="bp-main">
+
+  <div class="bp-content-bar">
+    <div class="bp-active-crumb">
+      <span>Blog</span>
+      <span class="bp-crumb-sep">/</span>
+      <span class="bp-crumb-current" id="crumbCurrent">All Dispatches</span>
+    </div>
+    <span class="bp-count-badge" id="visibleCount">8 dispatches</span>
+  </div>
+
+  <!-- ARTICLE GRID -->
+  <div class="bp-grid" id="bpGrid">
+
+    <!-- ARTICLE 1 — Shift / Wrongs -->
+    <article class="bp-article"
+             data-section="shift" data-sub="wrongs"
+             data-id="uncanny"
+             onclick="openReader('uncanny')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="uv1" cx="25%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#2a0018"/>
+      <stop offset="100%" stop-color="#050008"/>
+    </radialGradient>
+    <radialGradient id="uv2" cx="75%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#080025"/>
+      <stop offset="100%" stop-color="#050008" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="uvdiv" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e63888" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#e63888" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#e63888" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#e63888" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="320" fill="#050008"/>
+  <rect width="480" height="320" fill="url(#uv1)"/>
+  <rect width="480" height="320" fill="url(#uv2)"/>
+
+  <!-- LEFT SIDE: Human warmth -->
+  <!-- Chat bubbles — warm, personal -->
+  <rect x="24" y="32" width="168" height="36" rx="18" rx="4" fill="rgba(230,56,136,0.12)" stroke="#e63888" stroke-width="1" opacity="0.9"/>
+  <text x="108" y="48" text-anchor="middle" fill="rgba(255,255,255,0.75)" font-family="'DM Sans',sans-serif" font-size="9.5">"Hey — saw your post about</text>
+  <text x="108" y="61" text-anchor="middle" fill="rgba(255,255,255,0.75)" font-family="'DM Sans',sans-serif" font-size="9.5">pricing strategy. Loved it."</text>
+
+  <rect x="40" y="82" width="130" height="26" rx="4" fill="rgba(230,56,136,0.08)" stroke="#e63888" stroke-width="0.8" opacity="0.7"/>
+  <text x="105" y="99" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="'DM Sans',sans-serif" font-size="9">"Genuinely curious about your work"</text>
+
+  <rect x="24" y="122" width="155" height="26" rx="4" fill="rgba(230,56,136,0.08)" stroke="#e63888" stroke-width="0.8" opacity="0.7"/>
+  <text x="101" y="139" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="'DM Sans',sans-serif" font-size="9">"Would love 20 mins of your time"</text>
+
+  <!-- Trust signal -->
+  <rect x="24" y="162" width="90" height="20" rx="10" fill="rgba(34,197,94,0.12)" stroke="#22c55e" stroke-width="0.8"/>
+  <circle cx="36" cy="172" r="4" fill="#22c55e" opacity="0.8"/>
+  <text x="95" y="176" text-anchor="middle" fill="#22c55e" font-family="monospace" font-size="7.5" letter-spacing="1">TRUST: HIGH</text>
+
+  <!-- Human label -->
+  <text x="108" y="210" text-anchor="middle" fill="rgba(230,56,136,0.5)" font-family="monospace" font-size="7" letter-spacing="3">HUMAN OUTREACH</text>
+
+  <!-- DIVIDER -->
+  <rect x="234" y="0" width="1" height="320" fill="url(#uvdiv)"/>
+  <text x="240" y="165" text-anchor="middle" fill="rgba(230,56,136,0.6)" font-family="'Syne',sans-serif" font-size="9" font-weight="800" transform="rotate(-90 240 160)">VS</text>
+
+  <!-- RIGHT SIDE: AI cold perfection -->
+  <!-- Perfectly formatted AI outreach -->
+  <rect x="288" y="32" width="168" height="36" rx="4" fill="rgba(155,93,229,0.1)" stroke="#9b5de5" stroke-width="1" opacity="0.9"/>
+  <text x="372" y="48" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-family="monospace" font-size="8.5">"Hi [FIRST_NAME], I noticed</text>
+  <text x="372" y="61" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-family="monospace" font-size="8.5">you work at [COMPANY]..."</text>
+
+  <rect x="288" y="82" width="168" height="26" rx="4" fill="rgba(155,93,229,0.07)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <text x="372" y="95" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="7.5">"As a leader in [INDUSTRY], you</text>
+  <text x="372" y="106" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="7.5">understand [PAIN_POINT]..."</text>
+
+  <rect x="288" y="122" width="168" height="26" rx="4" fill="rgba(155,93,229,0.07)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <text x="372" y="135" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="7.5">"Our AI solution can help you</text>
+  <text x="372" y="146" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="7.5">achieve [DESIRED_OUTCOME]..."</text>
+
+  <!-- Detection warning -->
+  <rect x="288" y="162" width="168" height="22" rx="3" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="1"/>
+  <text x="372" y="177" text-anchor="middle" fill="#ef4444" font-family="monospace" font-size="7.5" letter-spacing="1">⚠ AI DETECTED · GHOSTED</text>
+
+  <!-- AI label -->
+  <text x="372" y="210" text-anchor="middle" fill="rgba(155,93,229,0.5)" font-family="monospace" font-size="7" letter-spacing="3">AI OUTREACH</text>
+
+  <!-- BOTTOM: outcome stats -->
+  <line x1="24" y1="228" x2="456" y2="228" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Left stat -->
+  <text x="108" y="248" text-anchor="middle" fill="rgba(34,197,94,0.9)" font-family="'Syne',sans-serif" font-size="20" font-weight="800">68%</text>
+  <text x="108" y="264" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="monospace" font-size="7" letter-spacing="1">REPLY RATE</text>
+
+  <!-- Right stat -->
+  <text x="372" y="248" text-anchor="middle" fill="#ef4444" font-family="'Syne',sans-serif" font-size="20" font-weight="800">3%</text>
+  <text x="372" y="264" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="monospace" font-size="7" letter-spacing="1">REPLY RATE</text>
+
+  <!-- Conversion arrows -->
+  <rect x="24" y="275" width="90" height="8" rx="4" fill="#22c55e" opacity="0.7"/>
+  <rect x="288" y="275" width="14" height="8" rx="4" fill="#ef4444" opacity="0.7"/>
+
+  <!-- Bottom label -->
+  <text x="240" y="305" text-anchor="middle" fill="rgba(230,56,136,0.3)" font-family="monospace" font-size="7.5" letter-spacing="3">UNCANNY VALLEY · TRUST COLLAPSE</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Shift</span>
+          <span class="bp-card-sub-tag">Latest Wrongs</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">The "Uncanny Valley" of Sales Automation — Why Near-Human AI Destroys Trust</h2>
+        <p class="bp-card-lead">When AI agents are realistic enough to appear human but flawed enough to trigger distrust, conversion collapses. 78% of buyers view 100% AI outreach as inauthentic.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">Jun 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 2 — Shift / Wrongs -->
+    <article class="bp-article"
+             data-section="shift" data-sub="wrongs"
+             data-id="aislop"
+             onclick="openReader('aislop')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="ag1" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#1a0030"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+    <linearGradient id="ag2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e63888" stop-opacity="0.8"/><stop offset="100%" stop-color="#9b5de5" stop-opacity="0.8"/></linearGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#ag1)"/>
+  <!-- Identical email blocks flooding screen -->
+  <g opacity="0.85">
+    <rect x="30" y="24" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.6"/>
+    <line x1="40" y1="35" x2="100" y2="35" stroke="#e63888" stroke-width="1" opacity="0.5"/>
+    <line x1="40" y1="44" x2="130" y2="44" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+    <line x1="40" y1="51" x2="115" y2="51" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
+
+    <rect x="170" y="24" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.6"/>
+    <line x1="180" y1="35" x2="240" y2="35" stroke="#e63888" stroke-width="1" opacity="0.5"/>
+    <line x1="180" y1="44" x2="270" y2="44" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+    <line x1="180" y1="51" x2="255" y2="51" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
+
+    <rect x="310" y="24" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.6"/>
+    <line x1="320" y1="35" x2="380" y2="35" stroke="#e63888" stroke-width="1" opacity="0.5"/>
+    <line x1="320" y1="44" x2="410" y2="44" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+    <line x1="320" y1="51" x2="395" y2="51" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
+
+    <rect x="30" y="78" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.5"/>
+    <line x1="40" y1="89" x2="100" y2="89" stroke="#e63888" stroke-width="1" opacity="0.4"/>
+    <line x1="40" y1="98" x2="130" y2="98" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+    <line x1="40" y1="105" x2="115" y2="105" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+
+    <rect x="170" y="78" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.5"/>
+    <line x1="180" y1="89" x2="240" y2="89" stroke="#e63888" stroke-width="1" opacity="0.4"/>
+    <line x1="180" y1="98" x2="270" y2="98" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+    <line x1="180" y1="105" x2="255" y2="105" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+
+    <rect x="310" y="78" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.5"/>
+    <line x1="320" y1="89" x2="380" y2="89" stroke="#e63888" stroke-width="1" opacity="0.4"/>
+    <line x1="320" y1="98" x2="410" y2="98" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+    <line x1="320" y1="105" x2="395" y2="105" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+
+    <rect x="30" y="132" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.35"/>
+    <rect x="170" y="132" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.35"/>
+    <rect x="310" y="132" width="120" height="36" rx="3" fill="rgba(230,56,136,0.07)" stroke="#e63888" stroke-width="0.8" opacity="0.35"/>
+  </g>
+  <!-- AI GENERATED stamp -->
+  <rect x="145" y="160" width="190" height="70" rx="4" fill="rgba(230,56,136,0.12)" stroke="#e63888" stroke-width="1.5"/>
+  <text x="240" y="190" text-anchor="middle" fill="#e63888" font-family="monospace" font-size="11" font-weight="bold" letter-spacing="3">AI GENERATED</text>
+  <text x="240" y="210" text-anchor="middle" fill="rgba(230,56,136,0.6)" font-family="monospace" font-size="8" letter-spacing="2">DETECTED · REJECTED</text>
+  <!-- Warning icon -->
+  <polygon points="240,168 252,185 228,185" fill="none" stroke="#e63888" stroke-width="1.5"/>
+  <text x="240" y="183" text-anchor="middle" fill="#e63888" font-size="8" font-family="monospace">!</text>
+  <!-- Ghost leaving -->
+  <text x="370" y="220" fill="rgba(255,255,255,0.15)" font-size="40">👻</text>
+  <text x="130" y="285" fill="rgba(230,56,136,0.3)" font-family="monospace" font-size="8" letter-spacing="3">PIPELINE DAMAGE: ACTIVE</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Shift</span>
+          <span class="bp-card-sub-tag">Latest Wrongs</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">AI Slop Fatigue: Why Buyers Are Ghosting "Perfect" Outreach in 2026</h2>
+        <p class="bp-card-lead">Flawlessly written, soullessly generic. The outreach hack that worked in 2024 is now actively damaging your pipeline.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">May 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 3 — Shift / Rights -->
+    <article class="bp-article"
+             data-section="shift" data-sub="rights"
+             data-id="humanloop"
+             onclick="openReader('humanloop')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="hl1" cx="50%" cy="50%" r="65%"><stop offset="0%" stop-color="#150030"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#hl1)"/>
+  <!-- Circular loop -->
+  <circle cx="240" cy="155" r="100" fill="none" stroke="#9b5de5" stroke-width="1" stroke-dasharray="8 4" opacity="0.35"/>
+  <circle cx="240" cy="155" r="68" fill="none" stroke="#9b5de5" stroke-width="0.8" opacity="0.2"/>
+  <!-- Human node top -->
+  <circle cx="240" cy="55" r="22" fill="rgba(155,93,229,0.12)" stroke="#9b5de5" stroke-width="2"/>
+  <circle cx="240" cy="48" r="8" fill="#9b5de5" opacity="0.7"/>
+  <path d="M224 68 Q240 78 256 68" fill="none" stroke="#9b5de5" stroke-width="1.5" opacity="0.8"/>
+  <text x="240" y="92" text-anchor="middle" fill="rgba(155,93,229,0.6)" font-family="monospace" font-size="7" letter-spacing="2">HUMAN</text>
+  <!-- AI agent right -->
+  <circle cx="340" cy="195" r="22" fill="rgba(230,56,136,0.1)" stroke="#e63888" stroke-width="2"/>
+  <rect x="328" y="183" width="24" height="20" rx="3" fill="none" stroke="#e63888" stroke-width="1.2"/>
+  <circle cx="334" cy="190" r="2.5" fill="#e63888" opacity="0.8"/>
+  <circle cx="346" cy="190" r="2.5" fill="#e63888" opacity="0.8"/>
+  <line x1="334" y1="196" x2="346" y2="196" stroke="#e63888" stroke-width="1.2" stroke-linecap="round"/>
+  <text x="340" y="228" text-anchor="middle" fill="rgba(230,56,136,0.6)" font-family="monospace" font-size="7" letter-spacing="2">AI AGENT</text>
+  <!-- Data node left -->
+  <circle cx="140" cy="195" r="22" fill="rgba(244,161,53,0.1)" stroke="#f4a135" stroke-width="2"/>
+  <rect x="128" y="185" width="24" height="18" rx="2" fill="none" stroke="#f4a135" stroke-width="1.2"/>
+  <line x1="133" y1="191" x2="147" y2="191" stroke="#f4a135" stroke-width="1" opacity="0.7"/>
+  <line x1="133" y1="196" x2="143" y2="196" stroke="#f4a135" stroke-width="1" opacity="0.7"/>
+  <text x="140" y="228" text-anchor="middle" fill="rgba(244,161,53,0.6)" font-family="monospace" font-size="7" letter-spacing="2">REVENUE</text>
+  <!-- Arrows on loop -->
+  <path d="M258 62 Q320 80 338 173" fill="none" stroke="#9b5de5" stroke-width="1.5" opacity="0.7" marker-end="url(#arr1)"/>
+  <path d="M318 208 Q240 250 162 210" fill="none" stroke="#e63888" stroke-width="1.5" opacity="0.7"/>
+  <path d="M160 173 Q170 100 222 65" fill="none" stroke="#f4a135" stroke-width="1.5" opacity="0.7"/>
+  <!-- Arrowheads manual -->
+  <polygon points="338,173 328,165 342,163" fill="#9b5de5" opacity="0.8"/>
+  <polygon points="162,210 172,204 168,218" fill="#e63888" opacity="0.8"/>
+  <polygon points="222,65 218,78 230,72" fill="#f4a135" opacity="0.8"/>
+  <!-- Center label -->
+  <text x="240" y="148" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="'Syne',sans-serif" font-size="10" font-weight="700" letter-spacing="1">HUMAN</text>
+  <text x="240" y="163" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="'Syne',sans-serif" font-size="10" letter-spacing="1">IN THE</text>
+  <text x="240" y="178" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="'Syne',sans-serif" font-size="10" font-weight="700" letter-spacing="1">LOOP</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Shift</span>
+          <span class="bp-card-sub-tag">Latest Rights</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">Human-in-the-Loop Is Not a Compromise — It Is the Revenue Architecture</h2>
+        <p class="bp-card-lead">The organisations hitting targets in 2026 kept humans in the decision loop deliberately. Not as a fallback — as a structural advantage.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">Jun 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 4 — Battle / Human -->
+    <article class="bp-article"
+             data-section="battle" data-sub="human"
+             data-id="human"
+             onclick="openReader('human')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="hm1" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#1a0040"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+    <radialGradient id="hm2" cx="50%" cy="40%" r="45%"><stop offset="0%" stop-color="#f4a135" stop-opacity="0.12"/><stop offset="100%" stop-color="transparent" stop-opacity="0"/></radialGradient>
+    <radialGradient id="hm3" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#9b5de5" stop-opacity="0.1"/><stop offset="100%" stop-color="transparent" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#hm1)"/>
+  <rect width="480" height="320" fill="url(#hm2)"/>
+  <rect width="480" height="320" fill="url(#hm3)"/>
+
+  <!-- Ambient glow rings -->
+  <circle cx="240" cy="155" r="130" fill="none" stroke="#9b5de5" stroke-width="0.5" opacity="0.12"/>
+  <circle cx="240" cy="155" r="100" fill="none" stroke="#9b5de5" stroke-width="0.5" opacity="0.08"/>
+
+  <!-- DNA double helix left side -->
+  <path d="M60 30 C75 55 55 80 70 105 C85 130 65 155 80 180 C95 205 75 230 90 255 C105 280 85 305 100 330" fill="none" stroke="#9b5de5" stroke-width="1.5" opacity="0.7"/>
+  <path d="M90 30 C75 55 95 80 80 105 C65 130 85 155 70 180 C55 205 75 230 60 255 C45 280 65 305 50 330" fill="none" stroke="#e63888" stroke-width="1.5" opacity="0.7"/>
+  <!-- DNA rungs -->
+  <line x1="62" y1="46" x2="88" y2="46" stroke="#f4a135" stroke-width="1" opacity="0.6"/>
+  <line x1="60" y1="68" x2="90" y2="68" stroke="#f4a135" stroke-width="1" opacity="0.5"/>
+  <line x1="64" y1="90" x2="86" y2="90" stroke="#f4a135" stroke-width="1" opacity="0.6"/>
+  <line x1="68" y1="112" x2="82" y2="112" stroke="#f4a135" stroke-width="1" opacity="0.5"/>
+  <line x1="65" y1="134" x2="85" y2="134" stroke="#f4a135" stroke-width="1" opacity="0.6"/>
+  <line x1="62" y1="156" x2="88" y2="156" stroke="#f4a135" stroke-width="1" opacity="0.5"/>
+  <line x1="66" y1="178" x2="84" y2="178" stroke="#f4a135" stroke-width="1" opacity="0.6"/>
+  <line x1="64" y1="200" x2="86" y2="200" stroke="#f4a135" stroke-width="1" opacity="0.5"/>
+  <line x1="62" y1="222" x2="88" y2="222" stroke="#f4a135" stroke-width="1" opacity="0.6"/>
+
+  <!-- Central: fingerprint / identity mark -->
+  <circle cx="240" cy="148" r="70" fill="none" stroke="#9b5de5" stroke-width="0.8" opacity="0.25"/>
+  <circle cx="240" cy="148" r="55" fill="none" stroke="#9b5de5" stroke-width="0.8" opacity="0.3"/>
+  <circle cx="240" cy="148" r="42" fill="none" stroke="#9b5de5" stroke-width="0.8" opacity="0.35"/>
+  <circle cx="240" cy="148" r="30" fill="none" stroke="#9b5de5" stroke-width="1" opacity="0.4"/>
+  <circle cx="240" cy="148" r="18" fill="none" stroke="#9b5de5" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="240" cy="148" r="7"  fill="#9b5de5" opacity="0.5"/>
+  <!-- Fingerprint break = uniqueness -->
+  <path d="M240 78 A70 70 0 0 1 303 118" fill="none" stroke="#f4a135" stroke-width="2" opacity="0.9" stroke-linecap="round"/>
+  <path d="M240 93 A55 55 0 0 1 292 125" fill="none" stroke="#f4a135" stroke-width="1.8" opacity="0.8" stroke-linecap="round"/>
+  <path d="M240 106 A42 42 0 0 1 280 133" fill="none" stroke="#f4a135" stroke-width="1.5" opacity="0.7" stroke-linecap="round"/>
+
+  <!-- Neural nodes radiating out -->
+  <circle cx="170" cy="90"  r="5" fill="#e63888" opacity="0.8"/>
+  <circle cx="310" cy="90"  r="5" fill="#e63888" opacity="0.8"/>
+  <circle cx="148" cy="155" r="4" fill="#9b5de5" opacity="0.7"/>
+  <circle cx="332" cy="155" r="4" fill="#9b5de5" opacity="0.7"/>
+  <circle cx="170" cy="218" r="5" fill="#e63888" opacity="0.8"/>
+  <circle cx="310" cy="218" r="5" fill="#e63888" opacity="0.8"/>
+  <circle cx="240" cy="68"  r="4" fill="#f4a135" opacity="0.8"/>
+  <circle cx="240" cy="228" r="4" fill="#f4a135" opacity="0.8"/>
+
+  <!-- Node connectors -->
+  <line x1="175" y1="93"  x2="233" y2="141" stroke="#e63888" stroke-width="0.8" opacity="0.4"/>
+  <line x1="305" y1="93"  x2="247" y2="141" stroke="#e63888" stroke-width="0.8" opacity="0.4"/>
+  <line x1="152" y1="155" x2="222" y2="148" stroke="#9b5de5" stroke-width="0.8" opacity="0.4"/>
+  <line x1="328" y1="155" x2="258" y2="148" stroke="#9b5de5" stroke-width="0.8" opacity="0.4"/>
+  <line x1="175" y1="215" x2="233" y2="155" stroke="#e63888" stroke-width="0.8" opacity="0.4"/>
+  <line x1="305" y1="215" x2="247" y2="155" stroke="#e63888" stroke-width="0.8" opacity="0.4"/>
+  <line x1="240" y1="72"  x2="240" y2="118" stroke="#f4a135" stroke-width="0.8" opacity="0.5"/>
+  <line x1="240" y1="178" x2="240" y2="224" stroke="#f4a135" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- Right: value badge -->
+  <rect x="340" y="108" width="118" height="80" rx="3" fill="rgba(244,161,53,0.05)" stroke="#f4a135" stroke-width="1" opacity="0.8"/>
+  <line x1="340" y1="126" x2="458" y2="126" stroke="#f4a135" stroke-width="0.5" opacity="0.3"/>
+  <text x="399" y="122" text-anchor="middle" fill="rgba(244,161,53,0.45)" font-family="monospace" font-size="7" letter-spacing="3">MARKET VALUE</text>
+  <text x="399" y="150" text-anchor="middle" fill="#f4a135" font-family="'Syne',sans-serif" font-size="22" font-weight="800" opacity="0.9">∞</text>
+  <text x="399" y="170" text-anchor="middle" fill="rgba(244,161,53,0.5)" font-family="monospace" font-size="7" letter-spacing="2">UNCOMPUTABLE</text>
+  <line x1="303" y1="148" x2="340" y2="148" stroke="#f4a135" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+
+  <!-- Bottom label -->
+  <text x="240" y="286" text-anchor="middle" fill="rgba(155,93,229,0.35)" font-family="monospace" font-size="8" letter-spacing="4">HUMAN · THE PREMIUM ASSET</text>
+
+  <!-- DNA right side -->
+  <path d="M390 30 C405 55 385 80 400 105 C415 130 395 155 410 180 C425 205 405 230 420 255" fill="none" stroke="#9b5de5" stroke-width="1.5" opacity="0.5"/>
+  <path d="M420 30 C405 55 425 80 410 105 C395 130 415 155 400 180 C385 205 405 230 390 255" fill="none" stroke="#e63888" stroke-width="1.5" opacity="0.5"/>
+  <line x1="392" y1="46" x2="418" y2="46" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <line x1="390" y1="68" x2="420" y2="68" stroke="#f4a135" stroke-width="1" opacity="0.35"/>
+  <line x1="394" y1="90" x2="416" y2="90" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <line x1="398" y1="112" x2="412" y2="112" stroke="#f4a135" stroke-width="1" opacity="0.35"/>
+  <line x1="395" y1="134" x2="415" y2="134" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <line x1="392" y1="156" x2="418" y2="156" stroke="#f4a135" stroke-width="1" opacity="0.35"/>
+  <line x1="396" y1="178" x2="414" y2="178" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <line x1="394" y1="200" x2="416" y2="200" stroke="#f4a135" stroke-width="1" opacity="0.35"/>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Battle</span>
+          <span class="bp-card-sub-tag">Human Edge</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">"Human" Is the Premium Asset — The Luxury of Inefficiency in 2026</h2>
+        <p class="bp-card-lead">The very flaws that define human existence — our need to sleep, our emotional volatility — have become the ultimate luxury good in an automated world.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">Jun 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 5 — Battle / Human -->
+    <article class="bp-article"
+             data-section="battle" data-sub="human"
+             data-id="techniques"
+             onclick="openReader('techniques')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="tq1" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1a0c00"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+    <radialGradient id="tq2" cx="50%" cy="40%" r="30%"><stop offset="0%" stop-color="#f4a135" stop-opacity="0.18"/><stop offset="100%" stop-color="transparent" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#tq1)"/>
+  <rect width="480" height="320" fill="url(#tq2)"/>
+  <!-- Central brain outline -->
+  <path d="M200 80 Q170 75 155 95 Q138 116 142 140 Q130 155 135 175 Q140 198 162 205 Q168 230 190 232 Q205 240 220 235 Q238 245 255 235 Q275 230 278 205 Q298 198 302 178 Q310 155 295 140 Q302 116 285 95 Q270 75 240 80 Q228 65 215 68 Q205 63 200 80 Z"
+    fill="rgba(244,161,53,0.07)" stroke="#f4a135" stroke-width="1.8" opacity="0.75"/>
+  <!-- Brain fold lines -->
+  <path d="M200 80 Q218 88 235 82" fill="none" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <path d="M175 110 Q195 120 215 108 Q230 100 245 112" fill="none" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <path d="M160 148 Q180 140 200 150 Q220 160 240 148 Q258 138 272 150" fill="none" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <path d="M168 185 Q190 176 210 185 Q228 193 248 182" fill="none" stroke="#f4a135" stroke-width="1" opacity="0.4"/>
+  <!-- Vertical divider (left=human, right=AI) -->
+  <line x1="220" y1="70" x2="220" y2="240" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- Left side: organic spark ideas -->
+  <circle cx="115" cy="105" r="18" fill="rgba(244,161,53,0.1)" stroke="#f4a135" stroke-width="1.2" opacity="0.8"/>
+  <text x="115" y="111" text-anchor="middle" fill="#f4a135" font-size="16">💡</text>
+  <circle cx="90" cy="170" r="14" fill="rgba(244,161,53,0.08)" stroke="#f4a135" stroke-width="1" opacity="0.6"/>
+  <text x="90" y="176" text-anchor="middle" fill="#f4a135" font-size="12">✦</text>
+  <circle cx="118" cy="230" r="11" fill="rgba(244,161,53,0.08)" stroke="#f4a135" stroke-width="1" opacity="0.5"/>
+  <text x="118" y="235" text-anchor="middle" fill="#f4a135" font-size="10">★</text>
+  <line x1="133" y1="110" x2="155" y2="125" stroke="#f4a135" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+  <line x1="104" y1="170" x2="142" y2="165" stroke="#f4a135" stroke-width="1" stroke-dasharray="3 2" opacity="0.4"/>
+  <!-- Right side: AI grid output -->
+  <rect x="300" y="90" width="80" height="12" rx="2" fill="rgba(155,93,229,0.2)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <rect x="300" y="110" width="80" height="12" rx="2" fill="rgba(155,93,229,0.2)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <rect x="300" y="130" width="80" height="12" rx="2" fill="rgba(155,93,229,0.2)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <rect x="300" y="150" width="80" height="12" rx="2" fill="rgba(155,93,229,0.2)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <rect x="300" y="170" width="80" height="12" rx="2" fill="rgba(155,93,229,0.2)" stroke="#9b5de5" stroke-width="0.8" opacity="0.7"/>
+  <text x="340" y="205" text-anchor="middle" fill="rgba(155,93,229,0.4)" font-family="monospace" font-size="7" letter-spacing="1">1000 IDEAS/SEC</text>
+  <text x="340" y="218" text-anchor="middle" fill="rgba(155,93,229,0.25)" font-family="monospace" font-size="7" letter-spacing="1">0 GENUINE ONES</text>
+  <!-- Label -->
+  <text x="240" y="282" text-anchor="middle" fill="rgba(244,161,53,0.35)" font-family="monospace" font-size="8" letter-spacing="3">SIGNAL VS VOLUME</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Battle</span>
+          <span class="bp-card-sub-tag">Human Edge</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">Techniques for Producing Ideas That AI Cannot Generate for You</h2>
+        <p class="bp-card-lead">In a world where AI generates 1,000 ideas in seconds, producing one genuinely novel idea is the rarest market skill. Here is the method that still works.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">May 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 6 — Battle / Machine -->
+    <article class="bp-article"
+             data-section="battle" data-sub="machine"
+             data-id="machine"
+             onclick="openReader('machine')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="mc1" cx="50%" cy="50%" r="65%"><stop offset="0%" stop-color="#00081a"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#mc1)"/>
+  <!-- Main chip -->
+  <rect x="150" y="90" width="180" height="140" rx="6" fill="rgba(59,130,246,0.07)" stroke="#3b82f6" stroke-width="2" opacity="0.85"/>
+  <!-- Inner die -->
+  <rect x="170" y="108" width="60" height="50" rx="3" fill="rgba(59,130,246,0.12)" stroke="#3b82f6" stroke-width="1"/>
+  <rect x="250" y="108" width="60" height="50" rx="3" fill="rgba(59,130,246,0.12)" stroke="#3b82f6" stroke-width="1"/>
+  <rect x="170" y="172" width="140" height="40" rx="3" fill="rgba(59,130,246,0.08)" stroke="#3b82f6" stroke-width="1"/>
+  <!-- Die labels -->
+  <text x="200" y="137" text-anchor="middle" fill="rgba(59,130,246,0.7)" font-family="monospace" font-size="8">CPU</text>
+  <text x="280" y="137" text-anchor="middle" fill="rgba(59,130,246,0.7)" font-family="monospace" font-size="8">GPU</text>
+  <text x="240" y="196" text-anchor="middle" fill="rgba(59,130,246,0.5)" font-family="monospace" font-size="7">MEMORY / CACHE</text>
+  <!-- Left pins -->
+  <line x1="110" y1="110" x2="150" y2="110" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="110" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="110" y1="125" x2="150" y2="125" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="125" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="110" y1="140" x2="150" y2="140" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="140" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="110" y1="155" x2="150" y2="155" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="155" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="110" y1="170" x2="150" y2="170" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="170" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="110" y1="185" x2="150" y2="185" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="185" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="110" y1="200" x2="150" y2="200" stroke="#3b82f6" stroke-width="1.5"/><circle cx="108" cy="200" r="3" fill="#3b82f6" opacity="0.8"/>
+  <!-- Right pins -->
+  <line x1="330" y1="110" x2="370" y2="110" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="110" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="330" y1="125" x2="370" y2="125" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="125" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="330" y1="140" x2="370" y2="140" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="140" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="330" y1="155" x2="370" y2="155" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="155" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="330" y1="170" x2="370" y2="170" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="170" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="330" y1="185" x2="370" y2="185" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="185" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="330" y1="200" x2="370" y2="200" stroke="#3b82f6" stroke-width="1.5"/><circle cx="372" cy="200" r="3" fill="#3b82f6" opacity="0.8"/>
+  <!-- Top/bottom pins -->
+  <line x1="175" y1="55" x2="175" y2="90" stroke="#3b82f6" stroke-width="1.5"/><circle cx="175" cy="53" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="205" y1="55" x2="205" y2="90" stroke="#3b82f6" stroke-width="1.5"/><circle cx="205" cy="53" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="235" y1="55" x2="235" y2="90" stroke="#3b82f6" stroke-width="1.5"/><circle cx="235" cy="53" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="265" y1="55" x2="265" y2="90" stroke="#3b82f6" stroke-width="1.5"/><circle cx="265" cy="53" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="295" y1="55" x2="295" y2="90" stroke="#3b82f6" stroke-width="1.5"/><circle cx="295" cy="53" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="175" y1="230" x2="175" y2="265" stroke="#3b82f6" stroke-width="1.5"/><circle cx="175" cy="267" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="205" y1="230" x2="205" y2="265" stroke="#3b82f6" stroke-width="1.5"/><circle cx="205" cy="267" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="235" y1="230" x2="235" y2="265" stroke="#3b82f6" stroke-width="1.5"/><circle cx="235" cy="267" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="265" y1="230" x2="265" y2="265" stroke="#3b82f6" stroke-width="1.5"/><circle cx="265" cy="267" r="3" fill="#3b82f6" opacity="0.8"/>
+  <line x1="295" y1="230" x2="295" y2="265" stroke="#3b82f6" stroke-width="1.5"/><circle cx="295" cy="267" r="3" fill="#3b82f6" opacity="0.8"/>
+  <!-- Speed label -->
+  <text x="240" y="296" text-anchor="middle" fill="rgba(59,130,246,0.35)" font-family="monospace" font-size="8" letter-spacing="3">MACHINE EDGE</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Battle</span>
+          <span class="bp-card-sub-tag">Machine Edge</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">Where Machines Should Be Left Alone — And Where Automation Destroys Revenue</h2>
+        <p class="bp-card-lead">The agencies outperforming in 2026 did not automate the most. They automated the right things. The line is more precise than most admit.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">Jun 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 7 — Version / Players -->
+    <article class="bp-article"
+             data-section="version" data-sub="players"
+             data-id="chinaus"
+             onclick="openReader('chinaus')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="cu1" cx="30%" cy="50%" r="55%"><stop offset="0%" stop-color="#1a0005"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+    <radialGradient id="cu2" cx="70%" cy="50%" r="55%"><stop offset="0%" stop-color="#00081a"/><stop offset="100%" stop-color="#050008" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="480" height="320" fill="#050008"/>
+  <rect width="480" height="320" fill="url(#cu1)"/>
+  <rect width="480" height="320" fill="url(#cu2)"/>
+  <!-- Globe wireframe -->
+  <circle cx="240" cy="155" r="110" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <ellipse cx="240" cy="155" rx="110" ry="36" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <ellipse cx="240" cy="155" rx="80" ry="110" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <ellipse cx="240" cy="155" rx="42" ry="110" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="130" y1="155" x2="350" y2="155" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <!-- US marker left -->
+  <circle cx="155" cy="130" r="16" fill="rgba(230,56,136,0.15)" stroke="#e63888" stroke-width="2"/>
+  <text x="155" y="135" text-anchor="middle" fill="#e63888" font-family="'Syne',sans-serif" font-size="10" font-weight="800">US</text>
+  <!-- China marker right -->
+  <circle cx="325" cy="130" r="16" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2"/>
+  <text x="325" y="135" text-anchor="middle" fill="#3b82f6" font-family="'Syne',sans-serif" font-size="10" font-weight="800">CN</text>
+  <!-- Data packets flying between -->
+  <circle cx="200" cy="118" r="4" fill="#e63888" opacity="0.9"/>
+  <circle cx="230" cy="110" r="3" fill="#9b5de5" opacity="0.8"/>
+  <circle cx="260" cy="116" r="4" fill="#3b82f6" opacity="0.9"/>
+  <circle cx="290" cy="108" r="3" fill="#3b82f6" opacity="0.7"/>
+  <!-- Data lines -->
+  <path d="M171 124 Q213 100 242 110 Q270 120 309 125" fill="none" stroke="rgba(230,56,136,0.5)" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <path d="M171 136 Q213 150 242 145 Q270 140 309 134" fill="none" stroke="rgba(59,130,246,0.5)" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <!-- VS center -->
+  <text x="240" y="162" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-family="'Syne',sans-serif" font-size="20" font-weight="800">VS</text>
+  <!-- Model labels -->
+  <text x="110" y="200" fill="rgba(230,56,136,0.6)" font-family="monospace" font-size="8" letter-spacing="1">OpenAI · Claude</text>
+  <text x="290" y="200" fill="rgba(59,130,246,0.6)" font-family="monospace" font-size="8" letter-spacing="1">Qwen · DeepSeek</text>
+  <!-- Bottom geopolitics label -->
+  <text x="240" y="288" text-anchor="middle" fill="rgba(255,255,255,0.15)" font-family="monospace" font-size="8" letter-spacing="3">AI GEOPOLITICS 2026</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Versioning</span>
+          <span class="bp-card-sub-tag">Players</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">China vs. US: The AI War That Is Deciding Your Agency's Relevance in 2026</h2>
+        <p class="bp-card-lead">Qwen-3 matches GPT-4o on revenue tasks at a fraction of the cost. Anthropic dominates agentic workflows. Nvidia holds the real moat. What the player map means for how you build.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">Jun 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ARTICLE 8 — Version / Products -->
+    <article class="bp-article"
+             data-section="version" data-sub="products"
+             data-id="price"
+             onclick="openReader('price')"
+             itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="bp-card-img">
+        <svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <radialGradient id="pr1" cx="50%" cy="55%" r="60%"><stop offset="0%" stop-color="#150c00"/><stop offset="100%" stop-color="#050008"/></radialGradient>
+  </defs>
+  <rect width="480" height="320" fill="url(#pr1)"/>
+  <!-- Bar chart -->
+  <line x1="70" y1="250" x2="420" y2="250" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="70" y1="250" x2="70" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <!-- Bars -->
+  <rect x="90"  y="190" width="40" height="60" rx="2" fill="rgba(244,161,53,0.3)" stroke="#f4a135" stroke-width="1"/>
+  <rect x="150" y="155" width="40" height="95" rx="2" fill="rgba(244,161,53,0.4)" stroke="#f4a135" stroke-width="1"/>
+  <rect x="210" y="170" width="40" height="80" rx="2" fill="rgba(244,161,53,0.35)" stroke="#f4a135" stroke-width="1"/>
+  <rect x="270" y="115" width="40" height="135" rx="2" fill="rgba(244,161,53,0.55)" stroke="#f4a135" stroke-width="1.5"/>
+  <rect x="330" y="85"  width="40" height="165" rx="2" fill="#f4a135" opacity="0.75"/>
+  <rect x="390" y="95"  width="40" height="155" rx="2" fill="rgba(244,161,53,0.5)" stroke="#f4a135" stroke-width="1"/>
+  <!-- Trend line -->
+  <polyline points="110,188 170,153 230,168 290,113 350,83 410,93" fill="none" stroke="#e63888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="110" cy="188" r="4" fill="#e63888"/>
+  <circle cx="170" cy="153" r="4" fill="#e63888"/>
+  <circle cx="230" cy="168" r="4" fill="#e63888"/>
+  <circle cx="290" cy="113" r="4" fill="#e63888"/>
+  <circle cx="350" cy="83"  r="5" fill="#e63888"/>
+  <circle cx="410" cy="93"  r="4" fill="#e63888"/>
+  <!-- Price tag icon -->
+  <path d="M340 30 L370 30 L385 45 L370 60 L340 60 L340 30 Z" fill="rgba(244,161,53,0.1)" stroke="#f4a135" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="352" cy="42" r="4" fill="none" stroke="#f4a135" stroke-width="1.5"/>
+  <text x="363" y="50" fill="#f4a135" font-family="'Syne',sans-serif" font-size="14" font-weight="800">$</text>
+  <!-- Labels -->
+  <text x="85"  y="264" fill="rgba(255,255,255,0.2)" font-family="monospace" font-size="7">Q1</text>
+  <text x="145" y="264" fill="rgba(255,255,255,0.2)" font-family="monospace" font-size="7">Q2</text>
+  <text x="205" y="264" fill="rgba(255,255,255,0.2)" font-family="monospace" font-size="7">Q3</text>
+  <text x="265" y="264" fill="rgba(255,255,255,0.2)" font-family="monospace" font-size="7">Q4</text>
+  <text x="325" y="264" fill="rgba(255,255,255,0.2)" font-family="monospace" font-size="7">Q5</text>
+  <text x="385" y="264" fill="rgba(255,255,255,0.2)" font-family="monospace" font-size="7">Q6</text>
+  <text x="240" y="292" text-anchor="middle" fill="rgba(244,161,53,0.3)" font-family="monospace" font-size="8" letter-spacing="3">PRICE AS BRAND SIGNAL</text>
+</svg>
+        <div class="bp-card-img-overlay"></div>
+      </div>
+      <div class="bp-card-body">
+        <div class="bp-card-rule"></div>
+        <div class="bp-card-meta">
+          <span class="bp-card-section-tag">The Versioning</span>
+          <span class="bp-card-sub-tag">Products</span>
+        </div>
+        <h2 class="bp-card-title" itemprop="headline">Price as a Brand Idea: Strategic Positioning Beyond Cost in 2026</h2>
+        <p class="bp-card-lead">Price is not a number. It is a statement about who you are and who your customer is. The brands winning in 2026 know this — most are leaving it completely unexplored.</p>
+        <div class="bp-card-footer">
+          <span class="bp-card-read">Read dispatch →</span>
+          <span class="bp-card-date">May 2026</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Empty state -->
+    <div class="bp-empty" id="bpEmpty">
+      <p class="bp-empty-title">No dispatches in this filter yet.</p>
+      <p class="bp-empty-sub">Check back on the next 72-hour cycle.</p>
+    </div>
+
+  </div><!-- /bp-grid -->
+</main>
+</div><!-- /bp-layout -->
+
+<!-- ════════════════════ READER ════════════════════ -->
+<div class="bp-reader" id="bpReader" role="dialog" aria-modal="true" aria-label="Article reader">
+  <div class="bp-reader-topbar">
+    <button class="bp-reader-back" onclick="closeReader()">
+      ← Back to dispatches
+    </button>
+    <span class="bp-reader-section-tag" id="readerTag"></span>
+  </div>
+  <div class="bp-reader-body-wrap">
+    <img class="bp-reader-hero-img" id="readerHeroImg" src="" alt="">
+    <p class="bp-reader-eyebrow" id="readerEyebrow"></p>
+    <h1 class="bp-reader-title" id="readerTitle"></h1>
+    <div class="bp-reader-meta">
+      <span class="bp-reader-vibe" id="readerVibe"></span>
+      <span class="bp-reader-date" id="readerDate"></span>
+    </div>
+    <div class="bp-reader-content" id="readerContent"></div>
+    <div class="bp-reader-seo" id="readerSeo"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="creative-footer-reveal-container" id="site-footer">
+<footer class="creative-tech-footer">
+<div class="footer-grid-inner">
+<div class="footer-brand-column">
+<img src="media/REVacity.png" alt="REVacity" style="width:180px;height:auto"/>
+<p class="footer-brand-tagline">Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.</p>
+</div>
+<div class="footer-links-grid">
+  <div class="footer-link-group">
+      <h4 class="group-title">STRUCTURE</h4>
+      <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+      <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+      <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+  </div>
+
+  <div class="footer-link-group">
+      <h4 class="group-title">STRUCTURE</h4>
+      <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">04 //</span> Before Judging</a>
+      <a href="compare.html" class="footer-link-item"><span class="link-num">05 //</span> Compare</a>
+      <a href="blog.html" class="footer-link-item"><span class="link-num">06 //</span>Blog</a>
+  </div>
+</div>
+<div class="footer-actions-column"><h4 class="group-title">SYSTEM INTERACTION</h4>
+<div class="footer-subscribe-wrapper">
+<input type="email" placeholder="Enter operator email..." class="footer-input-field"/>
+<button type="button" class="footer-submit-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+</div>
+  <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+</div>
+</div>
+<div class="footer-bottom-bar">
+    <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+    <div class="footer-legal-links">
+        <a href="privacy.html">PRIVACY DECREE</a>
+        <span class="divider">/</span>
+        <a href="terms.html">TERMINAL TERMS</a>
+        <span class="divider">/</span>
+        <a href="security-clearance.html">SECURITY CLEARANCE</a>
+    </div>
+</div>
+</footer>
+</div>
+
+<style>.bp-card-img{overflow:hidden;}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+/* ── Header & Footer entrance animations ── */
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── Header entrance — ported verbatim from start-a-warrent.html:
+   nav links split into per-letter spans (so the shared style.css
+   hover-wave animation has .ltr children to animate), plus the
+   richer staggered choreography (logo elastic pop-in, nav links
+   blur-fade one by one, buttons bounce in, hamburger pops last)
+   instead of the header just sliding down as one flat block. ── */
+document.querySelectorAll('.nav-center a').forEach(link => {
+  const text = link.textContent;
+  link.textContent = '';
+  link.removeAttribute('data-text');
+  [...text].forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.className = 'ltr';
+    span.style.setProperty('--i', i);
+    span.textContent = ch === ' ' ? ' ' : ch;
+    link.appendChild(span);
+  });
+});
+
+(function(){
+  const header = document.querySelector('.main-header');
+  if(!header) return;
+  const logo = header.querySelector('.logo');
+  const navLinks = header.querySelectorAll('.nav-center a');
+  const buttons = header.querySelectorAll('.header-buttons > a');
+  const hamburgerEl = header.querySelector('.hamburger');
+
+  gsap.set(header, { opacity:0, y:-26, filter:'blur(14px)' });
+  gsap.set(logo, { opacity:0, scale:0.4, rotate:-8 });
+  gsap.set(navLinks, { opacity:0, y:14, filter:'blur(6px)' });
+  gsap.set(buttons, { opacity:0, scale:0.5, y:8 });
+  gsap.set(hamburgerEl, { opacity:0, scale:0.6 });
+
+  const headerTL = gsap.timeline({ delay:0.15 });
+  headerTL.to(header, { opacity:1, y:0, filter:'blur(0px)', duration:1.1, ease:'power3.out' })
+    .to(logo, { opacity:1, scale:1, rotate:0, duration:0.9, ease:'elastic.out(1,0.55)' }, '-=0.75')
+    .to(navLinks, { opacity:1, y:0, filter:'blur(0px)', duration:0.6, ease:'power2.out', stagger:0.08 }, '-=0.55')
+    .to(buttons, { opacity:1, scale:1, y:0, duration:0.7, ease:'back.out(2.2)', stagger:0.12 }, '-=0.4')
+    .to(hamburgerEl, { opacity:1, scale:1, duration:0.5, ease:'back.out(2)' }, '-=0.4');
+})();
+
+/* Footer reveal */
+gsap.from('#site-footer', {
+  y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
+  scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
+});
+gsap.from('.footer-brand-column', {
+  x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
+  scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+});
+gsap.from('.footer-link-group', {
+  y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+  scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
+});
+gsap.from('.footer-actions-column', {
+  x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+  scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+});
+gsap.from('.footer-bottom-bar', {
+  y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
+  scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
+});
+
+/* ── Blog content scroll animations ── */
+
+/* Sidebar slides in from the left, content bar fades down */
+gsap.from('.bp-sidebar', {
+  x: -50, opacity: 0, duration: 0.9, ease: 'power3.out', delay: 0.15
+});
+gsap.from('.bp-content-bar', {
+  y: -20, opacity: 0, duration: 0.7, ease: 'power2.out', delay: 0.35
+});
+
+/* Sidebar nav items stagger in */
+gsap.from('.bp-sec-item', {
+  x: -25, opacity: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out', delay: 0.4
+});
+
+/* Article cards — creative tilted reveal with image zoom-out, triggered on scroll */
+gsap.utils.toArray('.bp-article').forEach((card, i) => {
+  const img = card.querySelector('.bp-card-img');
+  const tag = card.querySelector('.bp-card-section-tag');
+  const title = card.querySelector('.bp-card-title');
+  const lead = card.querySelector('.bp-card-lead');
+  const rule = card.querySelector('.bp-card-rule');
+
+  const tl = gsap.timeline({
+    scrollTrigger: { trigger: card, start: 'top 88%' }
+  });
+
+  tl.fromTo(card,
+    { y: 70, opacity: 0, rotateX: 8, scale: 0.94, transformPerspective: 800, transformOrigin: 'top center' },
+    { y: 0, opacity: 1, rotateX: 0, scale: 1, duration: 0.8, ease: 'power3.out' }
+  );
+
+  if (img) {
+    tl.fromTo(img, { scale: 1.25 }, { scale: 1, duration: 1.1, ease: 'power2.out' }, '<');
+  }
+  if (rule) {
+    tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'power2.out', transformOrigin: 'left center' }, '-=0.5');
+  }
+  if (tag) {
+    tl.fromTo(tag, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.35');
+  }
+  if (title) {
+    tl.fromTo(title, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out' }, '-=0.3');
+  }
+  if (lead) {
+    tl.fromTo(lead, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.25');
+  }
+
+  /* subtle magnetic lift on hover */
+  card.addEventListener('mouseenter', () => {
+    gsap.to(card, { y: -8, scale: 1.015, boxShadow: '0 18px 40px rgba(0,0,0,0.45)', duration: 0.35, ease: 'power2.out' });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { y: 0, scale: 1, boxShadow: 'none', duration: 0.4, ease: 'power2.out' });
+  });
+});
+
+</script>
+
+<script>
+/* ── Mobile menu ── */
+(function(){
+  const h=document.getElementById('hamburger'),m=document.getElementById('mobile-menu'),c=document.getElementById('close-menu');
+  if(!h)return;
+  h.addEventListener('click',()=>{h.classList.add('active');m.classList.add('active');});
+  const cl=()=>{h.classList.remove('active');m.classList.remove('active');};
+  c.addEventListener('click',cl);
+  m.querySelectorAll('a').forEach(a=>a.addEventListener('click',cl));
+})();
+
+/* ── Section / sub filtering ── */
+let currentSection='all', currentSub=null;
+
+function filterSection(el){
+  // Update active state
+  document.querySelectorAll('.bp-sec-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  currentSection = el.dataset.filter;
+  currentSub = null;
+  // Clear sub link actives
+  document.querySelectorAll('.bp-sub-link').forEach(l=>l.classList.remove('active'));
+  // Update crumb
+  const names={'all':'All Dispatches','shift':'The Shift','battle':'The Battle','version':'The Versioning'};
+  document.getElementById('crumbCurrent').textContent = names[currentSection]||currentSection;
+  applyFilter();
+}
+
+function filterSub(e, sec, sub){
+  e.stopPropagation();
+  // Activate parent section if not already
+  const parent = document.querySelector(`[data-filter="${sec}"]`);
+  if(parent){
+    document.querySelectorAll('.bp-sec-item').forEach(i=>i.classList.remove('active'));
+    parent.classList.add('active');
+    currentSection = sec;
+  }
+  // Toggle sub
+  const subEl = e.currentTarget;
+  if(currentSub===sub && currentSection===sec){
+    currentSub=null;
+    subEl.classList.remove('active');
+  } else {
+    document.querySelectorAll('.bp-sub-link').forEach(l=>l.classList.remove('active'));
+    subEl.classList.add('active');
+    currentSub=sub;
+  }
+  const subNames={'wrongs':'Latest Wrongs','rights':'Latest Rights','human':'Human Edge','machine':'Machine Edge','players':'Players','products':'Products'};
+  const secNames={'shift':'The Shift','battle':'The Battle','version':'The Versioning'};
+  document.getElementById('crumbCurrent').textContent = currentSub ? secNames[sec]+' — '+subNames[sub] : secNames[sec];
+  applyFilter();
+}
+
+function applyFilter(){
+  const articles = document.querySelectorAll('.bp-article');
+  let visible = 0;
+  articles.forEach(art=>{
+    const sec = art.dataset.section;
+    const sub = art.dataset.sub;
+    let show = false;
+    if(currentSection==='all') show=true;
+    else if(currentSection===sec){
+      if(!currentSub) show=true;
+      else show=(sub===currentSub);
+    }
+    art.classList.toggle('hidden',!show);
+    if(show){
+      visible++;
+      // Reliability net: cards filtered into view may never have crossed
+      // their ScrollTrigger threshold (e.g. they were hidden or off-screen
+      // at load), leaving them stuck at opacity:0 from the entrance
+      // animation's initial state. Force them fully visible/settled here.
+      if (window.gsap) {
+        gsap.set(art, { opacity:1, y:0, rotateX:0, scale:1 });
+        const img = art.querySelector('.bp-card-img');
+        const tag = art.querySelector('.bp-card-section-tag');
+        const title = art.querySelector('.bp-card-title');
+        const lead = art.querySelector('.bp-card-lead');
+        const rule = art.querySelector('.bp-card-rule');
+        if (img) gsap.set(img, { scale:1 });
+        if (tag) gsap.set(tag, { opacity:1, y:0 });
+        if (title) gsap.set(title, { opacity:1, y:0 });
+        if (lead) gsap.set(lead, { opacity:1, y:0 });
+        if (rule) gsap.set(rule, { scaleX:1 });
+      }
+    }
+  });
+  document.getElementById('visibleCount').textContent = visible+' dispatch'+(visible!==1?'es':'');
+  const empty=document.getElementById('bpEmpty');
+  empty.classList.toggle('visible',visible===0);
+  // Layout just reflowed (cards shown/hidden) — recalc scroll-trigger
+  // positions so future scrolling/filtering stays in sync.
+  if (window.ScrollTrigger) ScrollTrigger.refresh();
+}
+
+/* ── Article data ── */
+const ARTICLES = {
+  uncanny:{
+    section:'The Shift · Latest Wrongs',color:'#e63888',date:'Jun 2026',
+    img:'',
+    imgAlt:'AI face uncanny valley — sales automation trust problem',
+    eyebrow:'Section A · The Shift — Latest Wrongs / Debunk Phase',
+    title:'The "Uncanny Valley" of Sales Automation',
+    vibe:'Why near-human AI destroys trust faster than obviously robotic AI',
+    tags:['AI sales automation 2026','uncanny valley chatbot','chatbot trust issues','human AI interaction','AEO SEO content strategy'],
+    body:`<p>The "Uncanny Valley" of sales automation — where AI agents are realistic enough to appear human but flawed enough to trigger distrust — is the single most underrated conversion killer in 2026. When automated, near-human interactions lack contextual awareness or emotional nuance, they create a sense of being manipulated rather than helped. Trust collapses. Pipelines stall. Deals ghost.</p>
+<div class="bp-reader-pull" style="border-color:#e63888;color:#e63888">78% of consumers now view 100% AI-generated outreach as inauthentic. This is not a perception gap — it is a revenue gap.</div>
+<h3>Why "Almost Human" Is Worse Than "Clearly Machine"</h3>
+<p>The uncanny valley is not about bad AI — it is about AI that is too good at mimicking humans without understanding them. <strong>Contextual Inappropriateness:</strong> The AI is grammatically perfect but emotionally tone-deaf, creating a trust gap precisely when empathy is most needed. <strong>Forced Familiarity:</strong> Tools default to over-familiar, scripted language that triggers buyer cynicism within the first exchange. <strong>The Eerie Factor:</strong> Slightly off timing, unnatural phrasing, and generic personalization signal "machine" to trained buyers instantly.</p>
+<h3>The Real Cost: Revenue, Not Just Experience</h3>
+<p>High-intent prospects stop responding when messages feel "almost human" but not quite. When a customer finally escapes a chatbot loop to reach a human, they arrive already frustrated. The human's job is now exponentially harder. Low adoption rates follow: 78% of B2B organisations have adopted AI tools but struggle to see ROI because customers disengage at the exact moment they matter most.</p>
+<h3>The 2026 Fix: Useful Over Human</h3>
+<p>The solution is not to make AI more human — it is to make it more useful and transparent. Disclose AI involvement explicitly. Engineer seamless handoffs at high-intent moments. Focus AI on data-heavy, non-emotional tasks. Prioritise resolution rate over automation rate. The goal is 100% successful resolution, not 100% automation.</p>`
+  },
+  aislop:{
+    section:'The Shift · Latest Wrongs',color:'#e63888',date:'May 2026',
+    img:'',
+    imgAlt:'Inbox flooded with generic emails — AI slop fatigue 2026',
+    eyebrow:'Section A · The Shift — Latest Wrongs / Debunk Phase',
+    title:'AI Slop Fatigue: Why Buyers Are Ghosting "Perfect" Outreach',
+    vibe:'Direct, data-driven, contrarian',
+    tags:['AI slop 2026','buyer fatigue AI','authentic outreach strategy','human content value','AI content detection'],
+    body:`<p>The flood of flawlessly written but soullessly generic AI content has created a market-wide immune response. In 2026, buyers can spot AI-generated content as easily as they once spotted low-quality stock photos. The outreach hack that "worked" in 2024 is now actively damaging your pipeline.</p>
+<div class="bp-reader-pull" style="border-color:#e63888;color:#e63888">In a noisy 2026 market flooded with perfectly written but impersonal AI outreach, potential buyers crave authentic, human-authored signal. Human scarcity is at an all-time high.</div>
+<h3>The Anatomy of AI Slop Detection</h3>
+<p>Buyers in 2026 have developed sophisticated pattern recognition. <strong>Contextual over-smoothness:</strong> Real human communication has friction, specificity, and imperfection. AI content is too contextually coherent. <strong>Missing Perspective:</strong> AI slop does not have a worldview — it has an aggregated position. Buyers feel this instantly and disengage.</p>
+<h3>What Survives the Filter</h3>
+<p>Outreach that includes a genuine observation specific to the recipient's actual situation. Outreach that takes a real position the sender is willing to defend. Outreach that references something specific and verifiable from the sender's own experience. These are things AI cannot authentically produce — and buyers now know it.</p>
+<h3>The Correct Response</h3>
+<p>The solution is not better AI — it is more human. Use AI for research, synthesis, and first-pass drafts. Use humans for the final signal layer — the perspective, the specificity, the position. This is not a workflow limitation; it is the competitive advantage that scales.</p>`
+  },
+  humanloop:{
+    section:'The Shift · Latest Rights',color:'#e63888',date:'Jun 2026',
+    img:'',
+    imgAlt:'Human and AI working together — human-in-the-loop revenue architecture',
+    eyebrow:'Section A · The Shift — Latest Rights / Engineering Phase',
+    title:'Human-in-the-Loop Is Not a Compromise — It Is the Revenue Architecture',
+    vibe:'Technical, strategic, revenue-focused',
+    tags:['human in the loop AI','HITL strategy 2026','AI co-pilot revenue','hybrid AI human teams','revenue engineering architecture'],
+    body:`<p>The organisations hitting revenue targets in 2026 are not the ones that automated everything. They are the ones that deliberately kept humans in the decision loop — not as a fallback, but as an intentional architectural choice that produces measurably better revenue outcomes.</p>
+<div class="bp-reader-pull" style="border-color:#e63888;color:#e63888">Human-in-the-loop is not a concession to AI's limitations. It is the recognition that certain decisions require a form of intelligence that no current model can replicate.</div>
+<h3>Where HITL Produces the Most Revenue</h3>
+<p><strong>High-intent conversion moments:</strong> When a prospect signals genuine buying intent, the handoff from AI to human should be immediate. The AI qualifies and routes. The human closes. <strong>Moral and strategic judgment:</strong> Pricing decisions with long-term brand implications, reputation-adjacent communications, and relationship-critical decisions should not be delegated to any model. <strong>Synthesis from genuinely novel inputs:</strong> When a situation is new — no historical pattern matches — human judgment outperforms any trained model.</p>
+<h3>Building the Architecture</h3>
+<p>HITL architecture is not about inserting humans randomly into an AI workflow. It is about designing the workflow so human touchpoints occur precisely where human judgment produces measurably better outcomes. Map your revenue process. Identify the exact moments where empathy, moral reasoning, or creative synthesis materially affects results. Place humans there. Let machines handle everything else.</p>`
+  },
+  human:{
+    section:'The Battle · Human Edge',color:'#9b5de5',date:'Jun 2026',
+    img:'',
+    imgAlt:'Craftsperson working by hand — human premium asset in AI era',
+    eyebrow:'Section B · The Battle — Human Edge / The Curator',
+    title:'"Human" Is the Premium Asset.',
+    vibe:'Philosophical, empathetic, contrarian',
+    tags:['human value AI era','premium human experience','authenticity economy 2026','human first marketing','human vs AI value'],
+    body:`<p>In an era of artificial intelligence and automated mediocrity, the definition of value is undergoing a radical, almost spiritual, inversion. We are witnessing the Great Reversion: the very inefficiency that defines human existence — our need to sleep, our emotional volatility, our capacity for irrational love — has transformed from a liability into a luxury.</p>
+<div class="bp-reader-pull" style="border-color:#9b5de5;color:#9b5de5">The Turing Test is no longer a challenge; it is a commodity. "Human" has ascended from a biological category to the ultimate luxury good.</div>
+<h3>Why Inefficiency Is Now a Superpower</h3>
+<p>AI can simulate empathy, but it cannot genuinely show up. The premium asset is not the output — it is the hard work of being present, listening, and staying. <strong>The Luxury of Human Labor:</strong> Just as handmade goods became more expensive than mass-produced ones, human judgment and flawed, authentic creativity are now the ultimate status symbols. <strong>Scarcity creates status:</strong> Digital noise is infinite. Physical presence is finite and expensive.</p>
+<h3>The Contrarian Reality</h3>
+<p>We spent decades trying to make robots act like us. Now, the elite are paying handsomely to ensure they don't act like robots. In 2026, being "productive" is a low-status trait — AI is productive. Being "inefficient," "unpredictable," and "emotional" is the height of sophistication. The premium is on the Uncomputable.</p>
+<h3>The Investment Implication</h3>
+<p>In April 2026, you are not competing with AI. You are competing on the capacity to be authentically human — and that, against all early 2020s predictions, is the best investment you can make. Build the human layer deliberately. Protect it fiercely. Price it accordingly.</p>`
+  },
+  techniques:{
+    section:'The Battle · Human Edge',color:'#9b5de5',date:'May 2026',
+    img:'',
+    imgAlt:'Person in deep thought — idea generation techniques human creativity',
+    eyebrow:'Section B · The Battle — Human Edge / The Curator',
+    title:'Techniques for Producing Ideas That AI Cannot Generate for You',
+    vibe:'Creative, generative, contrarian',
+    tags:['idea generation techniques','creative intelligence 2026','human creativity AI','revenue ideation process','creative engineering method'],
+    body:`<p>In a world where AI generates 1,000 ideas in seconds, producing one genuinely novel idea is the rarest skill in the market. Not generating — producing. There is a critical difference, and it is where the human edge is most visible and most valuable.</p>
+<div class="bp-reader-pull" style="border-color:#9b5de5;color:#9b5de5">AI produces volume. Humans produce signal. The technique for producing ideas is the technique for producing signal in a world drowning in noise.</div>
+<h3>The Method That Still Works</h3>
+<p>James Webb Young's 1939 framework remains the most reliable idea-production system in existence: saturate your mind with material, let it incubate, recognise the moment of synthesis when it arrives, shape the raw idea, then put it out for contact with the real world. AI does not incubate. That is the structural edge — and it is not going away.</p>
+<h3>The Contrarian Inputs</h3>
+<p>The best ideas in revenue engineering come from <strong>cross-domain collision:</strong> taking a principle from evolutionary biology and applying it to a sales funnel. Taking a constraint from fashion and applying it to a B2B content strategy. AI cannot make these collisions authentically because it does not have a <em>perspective</em> — only a pattern. A perspective is a worldview shaped by experience, failure, and context. That is the idea-production advantage. Protect and cultivate it accordingly.</p>`
+  },
+  machine:{
+    section:'The Battle · Machine Edge',color:'#9b5de5',date:'Jun 2026',
+    img:'',
+    imgAlt:'Industrial robot arm — machine edge automation revenue tasks',
+    eyebrow:'Section B · The Battle — Machine Edge / The Heavy Lifting',
+    title:'Where Machines Should Be Left Alone — And Where They Destroy Revenue',
+    vibe:'Precise, technical, revenue-focused',
+    tags:['machine vs human tasks 2026','AI task allocation','automation strategy revenue','agentic workflows B2B','revenue engineering AI 2026'],
+    body:`<p>The machine-versus-human debate is largely settled. The real question in 2026 is task allocation: which specific functions should be exclusively machine-operated, and which ones destroy revenue when they are?</p>
+<div class="bp-reader-pull" style="border-color:#9b5de5;color:#9b5de5">The agencies outperforming in 2026 did not automate the most. They automated the right things. The line is more precise than most agencies admit — and knowing exactly where it falls is itself a competitive advantage.</div>
+<h3>Machine Territory: Where AI Wins Definitively</h3>
+<p><strong>Data synthesis at scale:</strong> Pattern recognition across millions of data points — buyer behaviour, churn signals, pricing elasticity — is a machine task. Humans cannot compete. <strong>Lead scoring and qualification:</strong> AI outperforms humans on first-pass qualification by a statistically significant margin. <strong>Scheduling and logistics:</strong> Machines handle this without the cognitive overhead that drains human sellers from work that actually requires them.</p>
+<h3>Human Territory: Where Automation Destroys You</h3>
+<p>Emotional negotiations. Trust-building at high-intent moments. Moral judgment in edge cases. Creative synthesis from genuinely novel cross-domain inputs. And the unmediated human relationship that precedes a signature on a significant contract. These are not areas where AI is "not yet good enough" — they are areas where the attempt to use AI actively damages outcomes. Structurally, permanently, measurably.</p>`
+  },
+  chinaus:{
+    section:'The Versioning · Players',color:'#f4a135',date:'Jun 2026',
+    img:'',
+    imgAlt:'Global data network night — China US AI competition geopolitics 2026',
+    eyebrow:'Section C · The Versioning — Players / Geopolitics',
+    title:'China vs. US: The AI War That Is Deciding Your Agency\'s Relevance',
+    vibe:'Geopolitical, strategic, revenue-critical',
+    tags:['China AI 2026','OpenAI vs Qwen comparison','Anthropic Claude agentic','AI geopolitics revenue','model agnosticism strategy'],
+    body:`<p>Qwen-3 benchmarks are now matching GPT-4o on revenue tasks at a fraction of the cost. Anthropic's Claude is dominating agentic workflows. Nvidia's supply chain remains the real moat. The frontier player map in mid-2026 is more fractured — and more consequential — than most agencies are willing to admit.</p>
+<div class="bp-reader-pull" style="border-color:#f4a135;color:#f4a135">The geopolitical AI race is not an abstraction. It is determining which models you can access, at what cost, and with what reliability — and therefore what you can build for clients.</div>
+<h3>The OpenAI Doctrine vs. Anthropic's Governance Bet</h3>
+<p>OpenAI bets on scale and speed. GPT-4o's multimodal capabilities make it the default for general creative tasks. But the enterprise trust gap is growing — and Anthropic is filling it. Claude's constitutional AI approach and its reliability in agentic workflows is winning the revenue-critical stack. For organisations where a hallucination in a $500k deal is not an option, Claude is the choice. That is a specific and defensible moat.</p>
+<h3>The Qwen Variable</h3>
+<p>China's open-source models are compressing costs faster than anyone projected. For agencies where budget efficiency matters more than brand provenance, Qwen-3 is a real option. The question is not capability — it is trust, compliance, and geopolitical exposure. These are business decisions, not technical ones.</p>
+<h3>What This Means for How You Build</h3>
+<p>Model agnosticism is no longer a technical preference — it is a business survival strategy. The agencies locking into a single model provider are building a fragile stack. Build with interchangeable model layers. The durable architecture is composable, model-agnostic, and outcome-indexed.</p>`
+  },
+  price:{
+    section:'The Versioning · Products',color:'#f4a135',date:'May 2026',
+    img:'',
+    imgAlt:'Brand strategy meeting — price as brand idea positioning',
+    eyebrow:'Section C · The Versioning — Products / Brand Engineering',
+    title:'Price as a Brand Idea: Strategic Positioning Beyond Cost',
+    vibe:'Strategic, brand engineering, contrarian',
+    tags:['price positioning strategy','brand differentiation 2026','pricing as brand signal','value perception engineering','revenue positioning agency'],
+    body:`<p>Price is not a number. It is a statement about who you are and who your customer is. The brands winning in 2026 understand that their pricing model is one of their most powerful communication tools — and most are leaving it completely unexplored.</p>
+<div class="bp-reader-pull" style="border-color:#f4a135;color:#f4a135">Lowering your price is never just a commercial decision. It is a brand decision. And it is usually the wrong one.</div>
+<h3>Price as Signal</h3>
+<p>The luxury market has always known this: price communicates quality, exclusivity, and aspiration. But this principle now applies everywhere, including B2B services, SaaS, and agentic AI solutions. When you warrant an outcome and price accordingly, you signal confidence. That is a brand asset — and it compounds.</p>
+<h3>The Revenue Warrant Model</h3>
+<p>REVacity's pricing is tied to outcomes, not hours. This is not just a commercial model — it is a positioning statement that differentiates us structurally from every retainer-based agency in our space. The price model is the argument. Unordinary ideas in 2026 are ideas that use structure itself as a differentiator — pricing is the most underused structural differentiator available.</p>
+<h3>Practical Application</h3>
+<p>Map your pricing to your positioning statement. If you claim to produce superior outcomes, your pricing should reflect outcome-sharing. If you claim speed, price for speed. Price misalignment is one of the most common and most correctable brand integrity failures in the market today. Fix the price. Fix the brand.</p>`
+  }
+};
+
+function openReader(id){
+  const a=ARTICLES[id];
+  if(!a)return;
+  // Populate reader
+  document.getElementById('readerHeroImg').style.display='none';
+  document.getElementById('readerEyebrow').textContent=a.eyebrow;
+  document.getElementById('readerTitle').textContent=a.title;
+  document.getElementById('readerVibe').textContent=a.vibe;
+  document.getElementById('readerDate').textContent=a.date;
+  document.getElementById('readerContent').innerHTML=a.body;
+  const tag=document.getElementById('readerTag');
+  tag.textContent=a.section;
+  tag.style.borderColor=a.color;
+  tag.style.color=a.color;
+  document.getElementById('readerSeo').innerHTML=a.tags.map(t=>`<span class="bp-seo-tag">${t}</span>`).join('');
+  // Open
+  document.getElementById('bpReader').classList.add('open');
+  document.getElementById('bpReader').scrollTop=0;
+  document.body.style.overflow='hidden';
+}
+
+function closeReader(){
+  document.getElementById('bpReader').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeReader();});
+</script>
+</body>
+</html>

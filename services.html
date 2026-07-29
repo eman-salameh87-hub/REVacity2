@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVacity | Services</title>
+<link rel="icon" type="image/png" href="media/icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ═══════════════════════════════════════════════════
+ Services page — precise overrides for rules in
+ style.css that target shared IDs/elements and
+ break this page's layout. style.css is untouched.
+═══════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   Header theme — ported from index.html's "chrome" header: a
+   continuously-sweeping gradient underline, a slow pulsing glow on
+   the logo, and a per-letter wave on nav-link hover (same treatment
+   already ported onto about.html/about2.html). Scoped to this page
+   only via body.page-services, purely additive on top of style.css's
+   existing header (its own underline/lift/flare hover stays intact;
+   this layers the extra motion in).
+   ══════════════════════════════════════════════════════════════ */
+body.page-services .main-header::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,127,255,0.95), rgba(244,161,53,0.5), transparent);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: servicesHeaderSweep 7s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.8;
+}
+@keyframes servicesHeaderSweep {
+  0%   { background-position: -60% 0; }
+  50%  { background-position: 130% 0; }
+  100% { background-position: -60% 0; }
+}
+body.page-services .main-header .logo img {
+  animation: servicesLogoGlowPulse 4.5s ease-in-out infinite;
+}
+@keyframes servicesLogoGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(168,85,247,0.4)); }
+  50%      { filter: drop-shadow(0 0 26px rgba(216,127,255,0.8)); }
+}
+body.page-services .nav-center a .ltr {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), color 0.35s ease, text-shadow 0.35s ease;
+}
+body.page-services .nav-center a:hover .ltr {
+  animation: servicesNavLetterWave 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation-delay: calc(var(--i) * 28ms);
+}
+@keyframes servicesNavLetterWave {
+  0%   { transform: translateY(0); color: #fff; text-shadow: none; }
+  45%  { transform: translateY(-7px); color: #f4a135; text-shadow: 0 0 10px rgba(244,161,53,0.8); }
+  100% { transform: translateY(0); color: #9b5de5; text-shadow: 0 0 8px rgba(155,93,229,0.5); }
+}
+
+/* style.css puts a purple/orange radial-glow wash behind each hero
+   card and a violet-to-red gradient divider bar between them
+   (.hero-cards::after, .hero-card--reaaS::before, .hero-card--geaaS::before)
+   — removed here so the real starfield behind the cards reads cleanly
+   instead of fighting these flat color washes. */
+.hero-cards::after,
+.hero-card--reaaS::before,
+.hero-card--geaaS::before {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Real background — the same skybox + near/far star-point fields as
+   index.html/about.html, rendered on their own persistent fixed canvas
+   (#gl inside .stage). See the script near the top of body for the
+   Three.js setup; this is just the layout/vignette CSS.
+   ══════════════════════════════════════════════════════════════ */
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+}
+canvas#gl {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(3,2,8,0) 35%, rgba(3,2,8,0.6) 100%),
+    linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
+  z-index: 5;
+}
+
+/* style.css sets #diagnostic-section background to #000 */
+#diagnostic-section {
+ background: #0a0315;
+}
+
+/* style.css sets font to Inter; Services uses DM Sans */
+body {
+ font-family: 'DM Sans', sans-serif;
+ background: #030208;
+}
+
+/* style.css sets #hero to 60vw width, 100vh fixed height,
+ and flex-shrink:0 for the About page horizontal scroll track */
+#hero {
+ flex-shrink: unset;
+ width: 100%;
+ height: auto;
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: flex-start;
+ padding: 120px 6vw 0px;
+ position: relative;
+ z-index: 1;
+}
+
+/* style.css sets .nav-center to flex:1 / justify-content:center
+ (index.html layout). Services needs position:absolute centered. */
+.nav-center {
+ flex: unset;
+ justify-content: center;
+ position: absolute;
+ left: 50%;
+ transform: translateX(-50%);
+ padding: 0;
+ gap: clamp(15px, 3vw, 40px);
+ min-width: unset;
+}
+
+/* style.css slides menu in via translateX from the left side.
+ Services uses right:-100% approach. */
+.mobile-slide-menu {
+ left: auto;
+ right: -100%;
+ transform: none;
+ max-width: 320px;
+ background: rgba(5, 5, 5, 0.95);
+}
+.mobile-slide-menu.active {
+ right: 0;
+ transform: none;
+}
+
+/* style.css makes #pin-wrapper sticky/overflow:hidden
+ (About page scroll-jacking). Not present in Services but
+ defensive reset in case of cascade. */
+#pin-wrapper {
+ position: static;
+ height: auto;
+ overflow: visible;
+}
+
+/* style.css sets .manifesto-body p to opacity:0 + translateY
+ for animation. Not used in Services but prevents hidden text
+ if any <p> inside a .manifesto-body-like parent exists. */
+.manifesto-body p {
+ opacity: 1;
+ transform: none;
+}
+
+@media (max-width: 768px) {
+ #hero { padding: 100px 5vw 60px; }
+ .nav-center { display: none; }
+ .hero-headline-line{
+  font-size: clamp(2rem, 8vw, 2rem);
+ }
+}
+
+@media (max-width: 480px) {
+ .mobile-slide-menu { max-width: 100%; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   "NOT SLIDE DECKS." strike-through — style.css draws the red line as
+   an always-on ::after pseudo-element, which GSAP can't animate (no
+   real DOM node to target). Replaced here with a real .strike-line
+   span (added in the markup) that starts at scaleX(0) so it can be
+   drawn across the text a beat after the words themselves land — see
+   the hero headline timeline in the script near the end of body.
+   ══════════════════════════════════════════════════════════════ */
+.hero-headline-line--strikethrough::after {
+  content: none;
+}
+.hero-headline-line--strikethrough {
+  color: #eef0ff;
+}
+.strike-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 5px;
+  margin-top: -2.5px;
+  background: #e02862;
+  border-radius: 3px;
+  transform-origin: left center;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+/* Disable scroll-reveal animation on this page — elements show immediately */
+[data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+[data-reveal].is-visible {
+  opacity: 1 !important;
+  transform: none !important;
+}
+.hero-body{
+      max-width:100%;
+}
+
+/* Improve legibility of section labels like "When to engage REaaS./GEaaS." */
+.reaas-content-label,
+.geaas-content-label{
+  opacity: 1 !important;
+  font-weight: 700 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+/* Force REaaS/GEaaS panels to behave as true full-screen overlays */
+#reaas-panel,
+#geaas-panel{
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure closed REaaS/GEaaS panels don't linger on screen or block clicks */
+#reaas-panel:not(.active),
+#geaas-panel:not(.active){
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+#reaas-panel.active,
+#geaas-panel.active{
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Checkmark bullets for "When to engage" lists, matching the Warrant tick lists */
+ul.tick-list{
+  list-style: none !important;
+  padding-left: 0 !important;
+}
+ul.tick-list li{
+  position: relative;
+  padding-left: 1.6em;
+}
+ul.tick-list li::before{
+  content: "✓";
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+#reaas-panel ul.tick-list li::before{
+  color: #9b5de5;
+}
+#geaas-panel ul.tick-list li::before{
+  color: #f4a135;
+}
+
+/* Fix: cards in REaaS/GEaaS sidebars were being crushed to a sliver of their
+   content by flexbox shrink — because they have overflow:hidden, their
+   automatic flex min-height resolves to 0, so when the sidebar's total
+   content exceeds the available height, flexbox shrinks only these cards
+   down to fit, clipping/overlapping their description text. Prevent that. */
+.reaas-sidebar .reaas-eng-card,
+.geaas-sidebar .geaas-eng-card{
+  flex-shrink: 0 !important;
+}
+
+/* Mobile/tablet fixes: the site CSS never collapses the REaaS/GEaaS hero
+   cards or the panel sidebar+content grid to a single column on narrow
+   screens, which causes the "NEXT" buttons to get cut off and the panel
+   content to be squeezed into an unreadable sliver next to the sidebar. */
+@media (max-width: 700px){
+  .hero-cards{
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+  .hero-cards::after{
+    display: none !important;
+  }
+  .hero-warrant-footer{
+    flex-wrap: wrap !important;
+  }
+  #reaas-panel,
+  #geaas-panel{
+    overflow-y: auto !important;
+    background: #04000a !important;
+  }
+  #reaas-panel .reaas-universe,
+  #geaas-panel .geaas-universe{
+    position: relative !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+  #reaas-panel .reaas-body,
+  #geaas-panel .geaas-body{
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
+  }
+  #reaas-panel .reaas-sidebar,
+  #geaas-panel .geaas-sidebar{
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  #reaas-panel .reaas-content,
+  #geaas-panel .geaas-content{
+    overflow: visible !important;
+    padding: 28px 22px 50px !important;
+  }
+}
+
+.word-reveal{
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Page transition — a plain veil in the page's own background tone
+   that's already covering the screen on arrival and dissolves once
+   the header is ready, and closes again before any internal link
+   navigates away — same pattern as about.html/the-agent.html, so
+   moving between pages reads as a continuous scroll rather than a
+   hard page-load cut.
+   ══════════════════════════════════════════════════════════════ */
+#page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #030208;
+  pointer-events: none;
+}
+#page-transition::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
+}
+body{
+  overflow: hidden;
+}
+</style>
+</head>
+<body class="page-services">
+<div id="page-transition"></div>
+
+<div class="stage">
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Background + stars — the same skybox and near/far star-point
+   fields as index.html/about.html, at the same camera scale they
+   were built for (camera far out at z≈40, looking back toward the
+   origin). Idle "camera breathing" drift substitutes for a
+   scroll-driven camera path since this page has no chapter/gate
+   system of its own.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('gl');
+  if (!canvas) return;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#030208');
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 700);
+  const CAM_BASE = { x: 0, y: 0, z: 40 };
+  camera.position.set(CAM_BASE.x, CAM_BASE.y, CAM_BASE.z);
+  camera.lookAt(0, 0, 24);
+
+  const fog = new THREE.FogExp2(new THREE.Color('#030208').getHex(), 0.0055);
+  scene.fog = fog;
+
+  function resizeGL() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeGL);
+  resizeGL();
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Galaxy skybox (ported verbatim from index.html) ---- */
+  const SKY_BASE = '#030208';
+  function skyLightFrom(hex, peak, whiten) {
+    const r = parseInt(hex.substr(1, 2), 16),
+          g = parseInt(hex.substr(3, 2), 16),
+          b = parseInt(hex.substr(5, 2), 16);
+    const k = peak / (Math.max(r, g, b) || 1);
+    const mix = (v) => Math.round(v * k + (255 - v * k) * whiten);
+    return mix(r) + ',' + mix(g) + ',' + mix(b);
+  }
+  const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
+  const SKY_MONOCHROME = true;
+  const SKY_GLOW = 0.30;
+
+  function buildGalaxySkyTexture() {
+    const W = 1600, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = SKY_MONOCHROME ? SKY_BASE : '#050208';
+    ctx.fillRect(0, 0, W, H);
+
+    const bandRGB = SKY_MONOCHROME ? SKY_LIGHT : '150,90,200';
+    const bandA = 0.045 * (SKY_MONOCHROME ? SKY_GLOW : 1);
+    const band = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.72);
+    band.addColorStop(0, 'rgba(' + bandRGB + ',0)');
+    band.addColorStop(0.5, 'rgba(' + bandRGB + ',' + bandA + ')');
+    band.addColorStop(1, 'rgba(' + bandRGB + ',0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, H * 0.26, W, H * 0.48);
+
+    const blobDefs = [
+      { x: 0.12, y: 0.40, r: 220, rgb: '200,90,220', a: 0.07 },
+      { x: 0.32, y: 0.60, r: 190, rgb: '110,90,235', a: 0.06 },
+      { x: 0.58, y: 0.34, r: 260, rgb: '150,80,255', a: 0.065 },
+      { x: 0.80, y: 0.56, r: 190, rgb: '230,110,200', a: 0.05 },
+      { x: 0.46, y: 0.20, r: 160, rgb: '180,150,255', a: 0.03 },
+      { x: 0.94, y: 0.30, r: 140, rgb: '90,110,255', a: 0.045 },
+    ];
+    const blobs = blobDefs.map(function (b) {
+      const rgb = SKY_MONOCHROME ? SKY_LIGHT : b.rgb;
+      const a = b.a * (SKY_MONOCHROME ? SKY_GLOW : 1);
+      return { x: b.x, y: b.y, r: b.r, c: 'rgba(' + rgb + ',' + a + ')' };
+    });
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(b => {
+      const g = ctx.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+
+    for (let i = 0; i < 1200; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const inBand = y > H * 0.28 && y < H * 0.72;
+      const r = Math.random() * (inBand ? 1.7 : 1.1) + 0.2;
+      const a = Math.random() * 0.8 + 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const skyGeo = new THREE.SphereGeometry(320, 40, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: buildGalaxySkyTexture(), side: THREE.BackSide, fog: false });
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  scene.add(skyMesh);
+
+  /* ---- Star point-fields (ported verbatim from index.html) ---- */
+  function starTexture() {
+    const s = 128;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.12, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const STAR_TEX = starTexture();
+
+  function buildStars(count, radius, zSpan, size, opacity) {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.6;
+      positions[i * 3 + 2] = 45 - Math.random() * zSpan;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size, map: STAR_TEX, color: 0xffffff, transparent: true, opacity,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+  function makeStarField(layers, countEach, radius, zSpan, size, baseOpacity) {
+    const group = new THREE.Group();
+    const list = [];
+    for (let i = 0; i < layers; i++) {
+      const mesh = buildStars(countEach, radius, zSpan, size, baseOpacity);
+      group.add(mesh);
+      list.push({ mesh, baseOpacity, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.9 });
+    }
+    scene.add(group);
+    return { group, layers: list };
+  }
+  const nearStarField = makeStarField(4, 163, 34, 150, 0.055, 0.85);
+  const farStarField  = makeStarField(3, 133, 130, 220, 0.045, 0.4);
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const elapsed = clock.getElapsedTime();
+    if (!reducedMotion) {
+      [...nearStarField.layers, ...farStarField.layers].forEach((l) => {
+        const twinkle = 0.78 + 0.22 * Math.sin(elapsed * l.speed + l.phase);
+        l.mesh.material.opacity = l.baseOpacity * twinkle;
+      });
+      nearStarField.group.rotation.z = elapsed * 0.003;
+      farStarField.group.rotation.z = -elapsed * 0.0015;
+      skyMesh.rotation.y = elapsed * 0.004;
+      camera.position.x = CAM_BASE.x + Math.sin(elapsed * 0.05) * 1.4;
+      camera.position.y = CAM_BASE.y + Math.sin(elapsed * 0.037) * 0.8;
+      camera.lookAt(0, 0, 24);
+    }
+    renderer.render(scene, camera);
+  })();
+})();
+</script>
+
+ <header class="main-header">
+    <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+    <nav class="nav-center">
+        <a href="index.html" data-text="The Collapse">The Collapse</a>
+        <a href="about.html" data-text="About Us">About Us</a>
+        <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+        <a href="compare.html" data-text="Compare">Compare</a>
+        <a href="blog.html" data-text="Blog">Blog</a>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+
+        <div class="header-buttons">
+            <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+                <span>Start a Warrant</span>
+            </a>
+            <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+                <span>$100k Reward</span>
+            </a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</header>
+
+<div class="mobile-slide-menu" id="mobile-menu">
+    <div class="close-menu" id="close-menu">
+        <span></span>
+        <span></span>
+    </div>
+
+    <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+    <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+    <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+    <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+    <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+    <div class="mobile-menu-cta" style="--i: 6;">
+        <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+        <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+    </div>
+</div>
+
+<section id="hero">
+
+ <div>
+ <span class="hero-headline-line hero-headline-line--white">WE SELL <span class="hero-headline-line--orange">OUTCOMES.</span></span>
+ <span class="hero-headline-line hero-headline-line--strikethrough">NOT SLIDE DECKS.<span class="strike-line"></span></span>
+ </div>
+
+ <p class="services-hero-sub">Two services. One philosophy. Zero legacy. Every engagement is built from first principles for your specific revenue reality.</p>
+
+ <div class="hero-body">
+ <p>Moving beyond"selling services" to"selling outcomes and empathy." our catalog is no longer about deliverables like"blogs" or"ads"—it is about Cognitive Architectures and Value-Driven Ecosystems.</p>
+ <p>our proposal to clients is a promise to bridge the gap between their Super-Intelligent AI capacity and the Human Heart.</p>
+ <p>we don't sell marketing, we sell Financial Certainty.We don't do"ads"; we do Market Capture, Cognitive Intent Engineering, Value-Based Calculator, build Dominance Map with</p>
+ </div>
+
+ <p class="hero-tagline">More Revenue. Or More Customers.</p>
+
+ <div class="hero-cards">
+
+ <div class="hero-card hero-card--reaaS">
+ <div class="hero-card-name">REaaS</div>
+ <div class="hero-card-fullname">Revenue Engineering as a Service</div>
+ <p class="hero-card-tagline"><em>The plumbing of money.</em> When your revenue system has leaks — pricing mismatches, promotion cannibalization, inventory mistiming, channel conflict — we engineer the fix.</p>
+ <ul class="hero-card-list">
+ <li>Pricing Architecture</li>
+ <li>Revenue Leak Detection</li>
+ <li>Demand Sensing &amp; Forecasting</li>
+ <li>Margin Optimization</li>
+ <li>Promotional Engineering</li>
+ <li>Revenue Architecture</li>
+ </ul>
+
+ <div class="hero-warrant">
+ <div class="hero-warrant-title"><span class="warrant-icon">↗</span> REaaS REVENUE WARRANT</div>
+ <p class="hero-warrant-sub">For brands with existing revenue that needs velocity.</p>
+ <div class="hero-warrant-label">What We Warrant</div>
+ <ul class="hero-warrant-list">
+ <li>Specific revenue velocity increase (e.g., +30% in 90 days)</li>
+ <li>Fiction-to-fact ratio improvement</li>
+ <li>Customer acquisition velocity lift</li>
+ </ul>
+ <div class="hero-warrant-meta">
+ <strong>How We Measure:</strong> Your actual bank deposits. Not dashboard metrics.<br>
+ <strong>Typical Timeline:</strong> 60–90 days to first warrant milestone
+ </div>
+ <div class="hero-warrant-footer">
+ <a href="#" class="hero-warrant-link">ENGINEER REVENUE &nbsp;›</a>
+ <button id="reaas-next-btn" class="hero-warrant-btn" onclick="openREaaSPanel()">NEXT &nbsp;»</button>
+ </div>
+ </div>
+ </div>
+
+ <div class="hero-card hero-card--geaaS">
+ <div class="hero-card-name">GEaaS</div>
+ <div class="hero-card-fullname">Growth Engineering as a Service</div>
+ <p class="hero-card-tagline"><em>momentum of ecosystems.</em> When your business is able but stagnant — or growing but not compounding — we engineer the growth loops the market hasn't seen before.</p>
+ <ul class="hero-card-list">
+ <li>Customer Acquisition Architecture</li>
+ <li>Retention &amp; Expansion Engineering</li>
+ <li>Market Entry Engineering</li>
+ <li>Ecosystem Design</li>
+ <li>Attention Arbitrage</li>
+ <li>Compound Growth Systems</li>
+ </ul>
+
+ <div class="hero-warrant">
+ <div class="hero-warrant-title"><span class="warrant-icon">⚡</span> GEaaS OUTCOME WARRANT</div>
+ <p class="hero-warrant-sub">For brands that need something that doesn't exist yet.</p>
+ <div class="hero-warrant-label">What We Warrant</div>
+ <ul class="hero-warrant-list">
+ <li>Delivery of specified novel solution</li>
+ <li>Outcome guarantee post-delivery</li>
+ <li>Scale-readiness from day one</li>
+ </ul>
+ <div class="hero-warrant-meta">
+ <strong>How We Measure:</strong> Solution deployed + outcome metric achieved<br>
+ <strong>Typical Timeline:</strong> 90–180 days to warrant fulfillment
+ </div>
+ <div class="hero-warrant-footer">
+ <a href="#" class="hero-warrant-link">ENGINEER GROWTH &nbsp;›</a>
+ <button id="geaas-next-btn" class="hero-warrant-btn" onclick="openGEaaSPanel()">NEXT &nbsp;»</button>
+ </div>
+ </div>
+ </div>
+
+ </div>
+
+</section>
+
+<section id="diagnostic-section">
+
+ <div class="dtd-quote">
+ <p>Both services share the same operating spine, the same warrant model, and the same first-principles approach. REaaS optimizes the money you already have. GEaaS creates money that doesn't exist yet.</p>
+ <p><strong>"We don't optimize what exists. We engineer what should exist. The difference is the difference between maintenance and creation."</strong></p>
+ <p>Both services share the same operating spine, the same warrant model, the same first-principles approach. The only difference is the vector: REaaS optimizes the money you're already making. GEaaS creates the money you're not making yet.</p>
+ </div>
+
+ <p class="dtd-eyebrow">HOW IT WORKS</p>
+ <h2 class="dtd-headline">From Diagnostic to Dividend.</h2>
+
+ <div -group class="dtd-steps">
+
+ <div class="dtd-step">
+ <div class="dtd-step-num">01</div>
+ <div class="dtd-step-dot"></div>
+ <div class="dtd-step-title">Diagnostic</div>
+ <div class="dtd-step-desc">We map your current signal flow, identify fiction-to-fact gaps, and measure legacy drag. No pitch. Just signal.</div>
+ </div>
+
+ <div class="dtd-step">
+ <div class="dtd-step-num">02</div>
+ <div class="dtd-step-dot"></div>
+ <div class="dtd-step-title">Warrant Design</div>
+ <div class="dtd-step-desc">We design a Revenue Warrant with specific, measurable milestones tied to your bank account. No vague KPIs.</div>
+ </div>
+
+ <div class="dtd-step">
+ <div class="dtd-step-num">03</div>
+ <div class="dtd-step-dot"></div>
+ <div class="dtd-step-title">Engineering</div>
+ <div class="dtd-step-desc">We build from zero. No legacy migration. No template deployment. First-time solutions for your specific reality.</div>
+ </div>
+
+ <div class="dtd-step">
+ <div class="dtd-step-num">04</div>
+ <div class="dtd-step-dot"></div>
+ <div class="dtd-step-title">Validation</div>
+ <div class="dtd-step-desc">Three-Tier Eval: Contextual Fidelity, Semantic Leverage, Warrant Integrity. If it doesn't pass, it doesn't ship.</div>
+ </div>
+
+ <div class="dtd-step">
+ <div class="dtd-step-num">05</div>
+ <div class="dtd-step-dot"></div>
+ <div class="dtd-step-title">Scale</div>
+ <div class="dtd-step-desc">We scale what works. Kill what doesn't. The Warrant continues until outcomes are achieved or we part ways.</div>
+ </div>
+
+ </div>
+
+ <div class="dtd-table-wrap">
+ <table class="dtd-table">
+ <thead>
+ <tr>
+ <th>Dimension</th>
+ <th class="th-reaas">REaaS</th>
+ <th class="th-geaas">GEaaS</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td>Primary Output</td>
+ <td class="td-reaas">Revenue Velocity</td>
+ <td class="td-geaas">Novel Growth Solutions</td>
+ </tr>
+ <tr>
+ <td>When to Choose</td>
+ <td class="td-reaas">You have revenue but it's slow/inefficient</td>
+ <td class="td-geaas">You need something that doesn't exist yet</td>
+ </tr>
+ <tr>
+ <td>Core Question</td>
+ <td class="td-reaas">"How do we make more per signal?"</td>
+ <td class="td-geaas">"What should exist but doesn't?"</td>
+ </tr>
+ <tr>
+ <td>Time to Warrant</td>
+ <td class="td-reaas">60–90 days</td>
+ <td class="td-geaas">90–180 days</td>
+ </tr>
+ <tr>
+ <td>Key Agents</td>
+ <td class="td-reaas">Signal Stalker, Market Twin, Value Engineer</td>
+ <td class="td-geaas">Legacy Sleuth, Novelty Builder, Scale Pilot</td>
+ </tr>
+ <tr>
+ <td>Typical Client</td>
+ <td class="td-reaas">Mature retail/ecommerce with revenue plateaus</td>
+ <td class="td-geaas">Ambitious brands needing differentiation</td>
+ </tr>
+ <tr>
+ <td>Legacy Required</td>
+ <td class="td-reaas">None — we audit and replace</td>
+ <td class="td-geaas">None — we build from zero</td>
+ </tr>
+ <tr>
+ <td>Warrant Type</td>
+ <td class="td-reaas">Revenue Velocity Warrant</td>
+ <td class="td-geaas">Outcome Guarantee Warrant</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+
+</section>
+
+<div class="creative-footer-reveal-container" id="site-footer">
+ <footer class="creative-tech-footer">
+ <div class="footer-top-glow-line"></div>
+
+ <div class="footer-grid-inner">
+ <div class="footer-brand-column">
+ <img src="media/REVacity.png" alt="REVacity" style="width:180px; height:auto;" />
+ <p class="footer-brand-tagline">
+ Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.
+ </p>
+ </div>
+
+<div class="footer-links-grid">
+  <div class="footer-link-group">
+      <h4 class="group-title">STRUCTURE</h4>
+      <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+      <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+      <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+  </div>
+
+  <div class="footer-link-group">
+      <h4 class="group-title">STRUCTURE</h4>
+      <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">04 //</span> Before Judging</a>
+      <a href="compare.html" class="footer-link-item"><span class="link-num">05 //</span> Compare</a>
+      <a href="blog.html" class="footer-link-item"><span class="link-num">06 //</span>Blog</a>
+  </div>
+</div>
+
+ <div class="footer-actions-column">
+ <h4 class="group-title">SYSTEM INTERACTION</h4>
+ <div class="footer-subscribe-wrapper">
+ <input type="email" placeholder="Enter operator email..." class="footer-input-field" />
+ <button type="button" class="footer-submit-btn">
+ <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+ <line x1="5" y1="12" x2="19" y2="12"></line>
+ <polyline points="12 5 19 12 12 19"></polyline>
+ </svg>
+ </button>
+ </div>
+  <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+ </div>
+ </div>
+
+<div class="footer-bottom-bar">
+    <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+    <div class="footer-legal-links">
+        <a href="privacy.html">PRIVACY DECREE</a>
+        <span class="divider">/</span>
+        <a href="terms.html">TERMINAL TERMS</a>
+        <span class="divider">/</span>
+        <a href="security-clearance.html">SECURITY CLEARANCE</a>
+    </div>
+</div>
+
+ </footer>
+</div>
+
+<!-- ═══ REaaS PANEL ═══ -->
+<div id="reaas-panel">
+  <div class="reaas-curtain reaas-curtain--top"></div>
+  <div class="reaas-curtain reaas-curtain--bottom"></div>
+  <canvas id="reaas-canvas"></canvas>
+  <div class="reaas-universe">
+    <div class="reaas-topbar">
+      <div>
+        <div class="reaas-topbar-brand">REaaS</div>
+        <p class="reaas-prose">We don't report on your funnel. We rebuild it from signal.</p>
+      </div>
+      <button class="reaas-x-btn" onclick="closeREaaSPanel()">✕</button>
+    </div>
+    <div class="reaas-tabs">
+      <button class="reaas-tab active" onclick="switchREaaSTab(this,'reaas-overview')">Overview</button>
+      <button class="reaas-tab" onclick="switchREaaSTab(this,'reaas-engineering')">Engineering Areas</button>
+    </div>
+    <div class="reaas-body">
+      <div class="reaas-sidebar">
+        <div class="reaas-eng-card">
+          <div class="reaas-eng-card-name">Revenue Intelligence</div>
+          <div class="reaas-eng-card-desc">Signal extraction from every touchpoint. Not analytics — intelligence. We build systems that detect revenue signals before they become leaks.</div>
+        </div>
+        <div class="reaas-eng-card">
+          <div class="reaas-eng-card-name">Revenue Velocity Engine</div>
+          <div class="reaas-eng-card-desc">Acceleration infrastructure. Every bottleneck identified, engineered out, and replaced with a velocity multiplier.</div>
+        </div>
+        <div class="reaas-eng-card">
+          <div class="reaas-eng-card-name">Warranted Outcomes</div>
+          <div class="reaas-eng-card-desc">We don't project. We warrant. Every REaaS engagement includes a Revenue Warrant with agreed milestones tied to your bank account.</div>
+        </div>
+        <div class="reaas-sidebar-divider"></div>
+        <div class="reaas-metrics-title">REaaS Architecture Flow</div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">01</div>
+          <div class="reaas-metric-name">Signal Stalker</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">02</div>
+          <div class="reaas-metric-name">Ontology Architect</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">03</div>
+          <div class="reaas-metric-name">Value Engineer</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">04</div>
+          <div class="reaas-metric-name">Market Twin</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">05</div>
+          <div class="reaas-metric-name">Warrant Output</div>
+        </div>
+        <div class="reaas-sidebar-divider"></div>
+        <div class="reaas-metrics-title">Metrics We Engineer</div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">01</div>
+          <div class="reaas-metric-name">Customer Acquisition Velocity</div>
+          <div class="reaas-metric-desc">How fast you acquire customers, not how cheaply. Speed compounds.</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">02</div>
+          <div class="reaas-metric-name">Revenue Per Signal</div>
+          <div class="reaas-metric-desc">Every interaction has a revenue coefficient. We optimize it.</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">03</div>
+          <div class="reaas-metric-name">Fiction-to-Fact Ratio</div>
+          <div class="reaas-metric-desc">The delta between what your dashboard says and what your bank says.</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">04</div>
+          <div class="reaas-metric-name">Legacy Drag Coefficient</div>
+          <div class="reaas-metric-desc">How much your existing stack is slowing you down.</div>
+        </div>
+        <div class="reaas-metric-item">
+          <div class="reaas-metric-num">05</div>
+          <div class="reaas-metric-name">Warrant Integrity Score</div>
+          <div class="reaas-metric-desc">Our confidence metric. If it's below 95%, we don't sign.</div>
+        </div>
+      </div>
+      <div class="reaas-content">
+
+        <!-- OVERVIEW TAB -->
+        <div class="reaas-panel-content active" id="reaas-overview">
+          <h2 class="reaas-intro-headline">REaaS — the plumbing <em>of money.</em></h2>
+          <p class="reaas-prose">Your business is making money. But it's leaving more on the table than it realizes. The pricing doesn't match the elasticity. The promotions cannibalize margin. The inventory goes out of stock at peak demand. The channels compete with each other instead of compounding.</p>
+          <p class="reaas-prose"><strong>Revenue Engineering is not marketing.</strong></p>
+          <p class="reaas-prose">It is the structural engineering of how money moves through your business.</p>
+          <p class="reaas-prose">Your revenue has a topology. and a mesh. do you have it ?</p>
+          <div class="reaas-content-label">When to engage REaaS.</div>
+          <ul class="hero-card-list tick-list">
+            <li>Your revenue is growing but margins are shrinking</li>
+            <li>You're running promotions that cannibalize full-price sales</li>
+            <li>Your pricing hasn't been audited in over 12 months</li>
+            <li>You have inventory issues — stockouts or overstock at peak demand</li>
+            <li>Your customer acquisition cost is rising faster than LTV</li>
+            <li>You suspect revenue leaks but can't locate them</li>
+          </ul>
+        </div>
+
+        <!-- ENGINEERING AREAS TAB -->
+        <div class="reaas-panel-content" id="reaas-engineering">
+          <h2 class="reaas-intro-headline">What we <em>engineer:</em></h2>
+          <div class="reaas-eng-grid">
+            <div class="reaas-eng-card">
+              <div class="reaas-eng-card-name">Pricing Architecture</div>
+              <div class="reaas-eng-card-desc">We don't set prices. We engineer pricing systems — dynamic, elastic, context-aware structures that respond to demand signals, competitive positioning, and margin requirements in real time.</div>
+            </div>
+            <div class="reaas-eng-card">
+              <div class="reaas-eng-card-name">Revenue Leak Detection</div>
+              <div class="reaas-eng-card-desc">Most businesses lose 12–18% of potential revenue to invisible leaks: abandoned carts that nobody follows up, pricing gaps between channels, promotional cannibalization. We find them. We fix them.</div>
+            </div>
+            <div class="reaas-eng-card">
+              <div class="reaas-eng-card-name">Demand Sensing & Forecasting</div>
+              <div class="reaas-eng-card-desc">Not trend analysis. Not historical extrapolation. Actual demand sensing — reading the signals that tell you what's about to happen, not what already happened.</div>
+            </div>
+            <div class="reaas-eng-card">
+              <div class="reaas-eng-card-name">Margin Optimization</div>
+              <div class="reaas-eng-card-desc">Revenue without margin is just expensive activity. We engineer the relationship between price, cost, and volume to maximize what actually stays in the bank.</div>
+            </div>
+            <div class="reaas-eng-card">
+              <div class="reaas-eng-card-name">Promotional Engineering</div>
+              <div class="reaas-eng-card-desc">Promotions are not discounts. They are demand-shaping instruments. We engineer promotional architectures that drive volume without destroying margin.</div>
+            </div>
+            <div class="reaas-eng-card">
+              <div class="reaas-eng-card-name">Revenue Architecture</div>
+              <div class="reaas-eng-card-desc">The master blueprint. How all revenue streams connect, reinforce, and compound. Not a dashboard — a living system that evolves with your market.</div>
+            </div>
+          </div>
+          <div class="reaas-final-cta">
+            <a href="start-audit.html" class="reaas-warrant-btn">Start a Warrant</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GEaaS PANEL ═══ -->
+<div id="geaas-panel">
+  <div class="geaas-curtain geaas-curtain--top"></div>
+  <div class="geaas-curtain geaas-curtain--bottom"></div>
+  <canvas id="geaas-canvas"></canvas>
+  <div class="geaas-universe">
+    <div class="geaas-topbar">
+      <div>
+        <div class="geaas-topbar-brand">GEaaS</div>
+        <p class="geaas-prose">Novel outputs. Guaranteed outcomes. If it fits in a template, it's not growth.</p>
+      </div>
+      <button class="geaas-x-btn" onclick="closeGEaaSPanel()">✕</button>
+    </div>
+    <div class="geaas-tabs">
+      <button class="geaas-tab active" onclick="switchGEaaSTab(this,'geaas-overview')">Overview</button>
+      <button class="geaas-tab" onclick="switchGEaaSTab(this,'geaas-engineering')">Engineering Areas</button>
+    </div>
+    <div class="geaas-body">
+      <div class="geaas-sidebar">
+        <div class="geaas-eng-card">
+          <div class="geaas-eng-card-name">Novel Output Generation</div>
+          <div class="geaas-eng-card-desc">First-time solutions for first-time problems. We've built 3D commerce, VTON, sensory retail, digital twins — all from zero.</div>
+        </div>
+        <div class="geaas-eng-card">
+          <div class="geaas-eng-card-name">Guaranteed Outcomes</div>
+          <div class="geaas-eng-card-desc">Not "best efforts." Not "we'll try." We engineer outcomes and warrant them. If we don't hit the mark, we don't get paid.</div>
+        </div>
+        <div class="geaas-eng-card">
+          <div class="geaas-eng-card-name">Scale Pilot</div>
+          <div class="geaas-eng-card-desc">Every solution is built to scale from day one. No "pilot trap" where your proof-of-concept dies in production.</div>
+        </div>
+        <div class="geaas-sidebar-divider"></div>
+        <div class="geaas-signals-title">GEaaS Architecture Flow</div>
+        <div class="geaas-signal-item"><div class="geaas-signal-dot"></div><div class="geaas-signal-text">Legacy Sleuth</div></div>
+        <div class="geaas-signal-item"><div class="geaas-signal-dot"></div><div class="geaas-signal-text">Novelty Builder</div></div>
+        <div class="geaas-signal-item"><div class="geaas-signal-dot"></div><div class="geaas-signal-text">Scale Pilot</div></div>
+        <div class="geaas-signal-item"><div class="geaas-signal-dot"></div><div class="geaas-signal-text">Fidelity Guard</div></div>
+        <div class="geaas-signal-item"><div class="geaas-signal-dot"></div><div class="geaas-signal-text">Warrant Output</div></div>
+      </div>
+      <div class="geaas-content">
+
+        <!-- OVERVIEW TAB -->
+        <div class="geaas-panel-content active" id="geaas-overview">
+          <h2 class="geaas-intro-headline">GEaaS — the momentum of<br><em>ecosystems.</em></h2>
+          <p class="geaas-prose">The business is fine. Revenue is stable. But "stable" is a euphemism for "stuck." The market is moving — new competitors, new channels, new customer expectations — and you're standing still. That's not stability. That's the first stage of decline.</p>
+          <p class="geaas-prose"><strong>Growth Engineering is not marketing.</strong></p>
+          <p class="geaas-prose">It is the structural engineering of how your business creates and captures new value in a moving market.</p>
+          <p class="geaas-prose">We don't run more ads. We don't "optimize your funnel." We engineer new growth loops, new market territory, new customer-meaning. Novel outputs. Guaranteed outcomes. If it fits in a template, it's not growth.</p>
+          <p class="geaas-prose"><strong>Growth Engineering ≠ Growth Hacking.</strong></p>
+          <p class="geaas-prose">Growth hacking is about finding shortcuts. Growth engineering is about building systems. Shortcuts expire. Systems compound. We don't chase viral moments or hack algorithms. We engineer the conditions under which growth becomes inevitable — through meaning, architecture, and relentless signal-reading.</p>
+          <p class="geaas-prose">The output is novel. The outcome is guaranteed. That's the warrant.</p>
+          <div class="geaas-content-label">When to engage GEaaS.</div>
+          <ul class="hero-card-list tick-list">
+            <li>Your revenue has been flat for 2+ consecutive quarters</li>
+            <li>You're spending more on acquisition but getting diminishing returns</li>
+            <li>Your competitors are growing faster with seemingly less effort</li>
+            <li>You've saturated your current market and need new territory</li>
+            <li>Your customer base is aging and you're not attracting new segments</li>
+            <li>You have a great product but nobody knows about it</li>
+          </ul>
+          <div class="geaas-final-cta">
+            <a href="start-audit.html" class="geaas-audit-btn">Start Audit</a>
+          </div>
+        </div>
+
+        <!-- ENGINEERING AREAS TAB -->
+        <div class="geaas-panel-content" id="geaas-engineering">
+          <h2 class="geaas-intro-headline">What we <em>engineer:</em></h2>
+          <div class="geaas-eng-grid">
+            <div class="geaas-eng-card">
+              <div class="geaas-eng-card-name">Customer Acquisition Architecture</div>
+              <div class="geaas-eng-card-desc">Not lead gen. Not ad spend. The structural design of how new customers discover, evaluate, and choose you — engineered as a system, not a campaign.</div>
+            </div>
+            <div class="geaas-eng-card">
+              <div class="geaas-eng-card-name">Retention & Expansion Engineering</div>
+              <div class="geaas-eng-card-desc">Keeping customers is cheaper than finding new ones. Expanding them is more profitable than both. We engineer the systems that make staying and growing the path of least resistance.</div>
+            </div>
+            <div class="geaas-eng-card">
+              <div class="geaas-eng-card-name">Market Entry Engineering</div>
+              <div class="geaas-eng-card-desc">New markets are not conquered by campaigns. They are entered through structural positioning — understanding the demand landscape, the competitive topology, and the trust architecture.</div>
+            </div>
+            <div class="geaas-eng-card">
+              <div class="geaas-eng-card-name">Ecosystem Design</div>
+              <div class="geaas-eng-card-desc">Your business doesn't exist in isolation. It exists in an ecosystem of partners, platforms, channels, and competitors. We design the ecosystem to work for you, not against you.</div>
+            </div>
+            <div class="geaas-eng-card">
+              <div class="geaas-eng-card-name">Attention Arbitrage</div>
+              <div class="geaas-eng-card-desc">Attention is the scarcest resource in the market. We find where it's underpriced and overabundant — and we engineer systems to capture it before your competitors notice.</div>
+            </div>
+            <div class="geaas-eng-card">
+              <div class="geaas-eng-card-name">Compound Growth Systems</div>
+              <div class="geaas-eng-card-desc">Linear growth is a treadmill. Compound growth is an engine. We engineer the loops, flywheels, and reinforcing cycles that make growth accelerate over time.</div>
+            </div>
+          </div>
+          <div class="geaas-final-cta">
+            <a href="start-audit.html" class="geaas-audit-btn">Start Audit</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+(function() {
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Header entrance — in sync with the page-transition veil
+     dissolving (same pattern as about.html/the-agent.html: the veil is
+     already covering the screen on arrival, this fades it away instead
+     of holding on a loading screen, so opening the page reads as a
+     continuation rather than a fresh load). ── */
+  gsap.set('.main-header', { y: -80, autoAlpha: 0 });
+  gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out', delay: 0.1 });
+  (function () {
+    var veil = document.getElementById('page-transition');
+    if (!veil) return;
+    gsap.to(veil, {
+      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
+      onComplete: function () { veil.style.display = 'none'; }
+    });
+  })();
+
+  /* ── Nav link letter-wave hover (ported from index.html) — each letter is
+     wrapped in its own span so hovering triggers a per-letter bounce+color
+     wave (servicesNavLetterWave, staggered by --i). ── */
+  document.querySelectorAll('.nav-center a').forEach(link => {
+    const text = link.textContent;
+    link.innerHTML = text.split('').map((ch, i) =>
+      `<span class="ltr" style="--i:${i}">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('');
+  });
+
+  /* ── Footer reveal ── */
+  gsap.from('#site-footer', {
+    y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
+  });
+  gsap.from('.footer-brand-column', {
+    x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+  });
+  gsap.from('.footer-link-group', {
+    y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
+  });
+  gsap.from('.footer-actions-column', {
+    x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+  });
+  gsap.from('.footer-bottom-bar', {
+    y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
+    scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
+  });
+
+  /* ── Hero headline — line-by-line reveal, then a literal strike-through
+     draws itself across "NOT SLIDE DECKS." a beat after the words land,
+     crossing the idea out on screen instead of just displaying it
+     pre-crossed. The text itself also cools from bright white to the
+     muted strikethrough gray in sync with the line landing, so it
+     visibly reads as "rejected" rather than just decorated. ── */
+  const headlineTl = gsap.timeline({ delay: 0.2 });
+  headlineTl
+    .from('.hero-headline-line', { y: 50, opacity: 0, duration: 0.9, stagger: 0.15, ease: 'power3.out' })
+    .to('.hero-headline-line--strikethrough', { color: '#9d8da9', duration: 0.35, ease: 'power2.out' }, '+=0.15')
+    .fromTo('.strike-line',
+      { scaleX: 0, boxShadow: '0 0 0px rgba(224,40,98,0)' },
+      { scaleX: 1, boxShadow: '0 0 16px rgba(224,40,98,0.9)', duration: 0.5, ease: 'power3.inOut' },
+      '<')
+    .to('.strike-line', { boxShadow: '0 0 6px rgba(224,40,98,0.45)', duration: 0.6, ease: 'power2.out' });
+  gsap.from('.hero-tagline', {
+    y: 20, opacity: 0, duration: 0.7, ease: 'power2.out', delay: 0.6
+  });
+
+  /* ── Hero sub copy & body paragraphs — word-by-word blur reveal ── */
+  const splitIntoWords = (el) => {
+    const text = el.textContent;
+    el.innerHTML = text.split(/(\s+)/).map(part =>
+      part.trim() === '' ? part : `<span class="word-reveal">${part}</span>`
+    ).join('');
+    return el.querySelectorAll('.word-reveal');
+  };
+
+  const heroSub = document.querySelector('.services-hero-sub');
+  if (heroSub) {
+    const words = splitIntoWords(heroSub);
+    gsap.from(words, {
+      opacity: 0, y: 14, filter: 'blur(6px)',
+      duration: 0.6, stagger: 0.018, ease: 'power2.out', delay: 0.45
+    });
+  }
+
+  gsap.utils.toArray('.hero-body p').forEach((p, i) => {
+    const words = splitIntoWords(p);
+    gsap.from(words, {
+      opacity: 0, y: 10, filter: 'blur(5px)',
+      duration: 0.5, stagger: 0.012, ease: 'power2.out',
+      scrollTrigger: { trigger: p, start: 'top 90%' },
+      delay: i * 0.05
+    });
+  });
+
+  /* ── Hero cards — 3D flip-up reveal with cascading internal content ── */
+  gsap.set('.hero-cards', { perspective: 1200 });
+
+  gsap.utils.toArray('.hero-card').forEach((card, i) => {
+    const name = card.querySelector('.hero-card-name');
+    const fullname = card.querySelector('.hero-card-fullname');
+    const tagline = card.querySelector('.hero-card-tagline');
+    const listItems = card.querySelectorAll('.hero-card-list li');
+    const warrant = card.querySelector('.hero-warrant');
+
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: card, start: 'top 85%' },
+      defaults: { ease: 'power3.out' }
+    });
+
+    tl.fromTo(card,
+      { rotateX: -55, y: 90, opacity: 0, transformOrigin: 'top center' },
+      { rotateX: 0, y: 0, opacity: 1, duration: 1, ease: 'power4.out' }
+    )
+    .fromTo(name,
+      { letterSpacing: '0.6em', opacity: 0 },
+      { letterSpacing: '0.05em', opacity: 1, duration: 0.6 }, '-=0.55');
+    if (fullname) tl.fromTo(fullname,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.5 }, '-=0.35');
+    if (tagline) tl.fromTo(tagline,
+      { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.5 }, '-=0.3');
+    if (listItems.length) tl.fromTo(listItems,
+      { opacity: 0, x: -16 },
+      { opacity: 1, x: 0, duration: 0.4, stagger: 0.07 }, '-=0.25');
+
+    /* The warrant box sits near the bottom of a tall card, well below
+       where the card itself first crosses the 85%-viewport trigger
+       above — chaining it onto that same early timeline meant it was
+       still mid-animation (or worse, waiting its turn behind the list
+       stagger) by the time it actually scrolled into view, reading as
+       a slow, laggy pop-in. Giving it its own trigger, tied to ITS
+       OWN position, means it animates in exactly when it's seen —
+       and a plain quick fade+rise (no scale/overshoot) reads faster
+       than the old back.out bounce. */
+    if (warrant) gsap.fromTo(warrant,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out',
+        scrollTrigger: { trigger: warrant, start: 'top 90%' } }
+    );
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const dx = (e.clientX - rect.left - rect.width / 2) / rect.width;
+      const dy = (e.clientY - rect.top - rect.height / 2) / rect.height;
+      gsap.to(card, { rotateY: dx * 6, rotateX: -dy * 6, duration: 0.4, ease: 'power2.out', transformPerspective: 1200 });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { rotateY: 0, rotateX: 0, duration: 0.6, ease: 'power3.out' });
+    });
+  });
+
+  gsap.utils.toArray('.hero-warrant-list li').forEach((li) => {
+    gsap.from(li, {
+      opacity: 0, x: 12, duration: 0.4, ease: 'power2.out',
+      scrollTrigger: { trigger: li, start: 'top 92%' }
+    });
+  });
+
+  /* ── Diagnostic section quote — fade & blur-in ── */
+  gsap.set('.dtd-quote', { filter: 'blur(8px)', opacity: 0, y: 30 });
+  gsap.to('.dtd-quote', {
+    opacity: 1, filter: 'blur(0px)', y: 0, duration: 1, ease: 'power2.out',
+    scrollTrigger: { trigger: '.dtd-quote', start: 'top 85%' }
+  });
+
+  /* ── Eyebrow + headline — pop in ── */
+  gsap.from('.dtd-eyebrow', {
+    letterSpacing: '0.5em', opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '.dtd-eyebrow', start: 'top 88%' }
+  });
+  gsap.from('.dtd-headline', {
+    y: 40, opacity: 0, scale: 0.96, duration: 0.9, ease: 'back.out(1.4)',
+    scrollTrigger: { trigger: '.dtd-headline', start: 'top 85%' }
+  });
+
+  /* ── Diagnostic steps — staggered rise with connecting-line draw ── */
+  gsap.from('.dtd-step', {
+    y: 50, opacity: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out',
+    scrollTrigger: { trigger: '.dtd-steps', start: 'top 85%' }
+  });
+  gsap.from('.dtd-step-dot', {
+    scale: 0, duration: 0.5, stagger: 0.12, ease: 'back.out(3)',
+    scrollTrigger: { trigger: '.dtd-steps', start: 'top 85%' },
+    delay: 0.2
+  });
+  gsap.from('.dtd-step-num', {
+    opacity: 0, x: -15, duration: 0.5, stagger: 0.12, ease: 'power2.out',
+    scrollTrigger: { trigger: '.dtd-steps', start: 'top 85%' },
+    delay: 0.1
+  });
+
+  /* ── Comparison table — wipe-in rows ── */
+  gsap.from('.dtd-table-wrap', {
+    scaleY: 0.9, opacity: 0, transformOrigin: 'top center', duration: 0.7, ease: 'power2.out',
+    scrollTrigger: { trigger: '.dtd-table-wrap', start: 'top 88%' }
+  });
+  gsap.from('.dtd-table tbody tr', {
+    x: -25, opacity: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out',
+    scrollTrigger: { trigger: '.dtd-table', start: 'top 80%' }
+  });
+
+  /* ── Subtle ambient parallax on hero ── */
+  gsap.to('#hero', {
+    backgroundPositionY: '20%',
+    ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+})();
+</script>
+
+<script>
+(function() {
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const closeMenuBtn = document.getElementById('close-menu');
+  if (!hamburger || !mobileMenu || !closeMenuBtn) return;
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.add('active');
+    mobileMenu.classList.add('active');
+  });
+  const closeMenu = () => {
+    hamburger.classList.remove('active');
+    mobileMenu.classList.remove('active');
+  };
+  closeMenuBtn.addEventListener('click', closeMenu);
+  mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+})();
+
+/* ── REaaS Panel ── */
+function openREaaSPanel() {
+  document.getElementById('geaas-panel').classList.remove('active');
+  document.getElementById('reaas-panel').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  initREaaSCanvas();
+}
+function closeREaaSPanel() {
+  document.getElementById('reaas-panel').classList.remove('active');
+  if (!document.getElementById('geaas-panel').classList.contains('active')) {
+    document.body.style.overflow = '';
+  }
+}
+function switchREaaSTab(btn, contentId) {
+  document.querySelectorAll('.reaas-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.reaas-panel-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+/* ── GEaaS Panel ── */
+function openGEaaSPanel() {
+  document.getElementById('reaas-panel').classList.remove('active');
+  document.getElementById('geaas-panel').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  initGEaaSCanvas();
+}
+function closeGEaaSPanel() {
+  document.getElementById('geaas-panel').classList.remove('active');
+  if (!document.getElementById('reaas-panel').classList.contains('active')) {
+    document.body.style.overflow = '';
+  }
+}
+function switchGEaaSTab(btn, contentId) {
+  document.querySelectorAll('.geaas-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.geaas-panel-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(contentId).classList.add('active');
+}
+
+/* Close panels on Escape key */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeREaaSPanel();
+    closeGEaaSPanel();
+  }
+});
+
+/* ── REaaS Canvas — purple particle field ── */
+let reaasAnimId;
+function initREaaSCanvas() {
+  const canvas = document.getElementById('reaas-canvas');
+  if (!canvas || canvas._initialized) return;
+  canvas._initialized = true;
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const particles = Array.from({length: 120}, () => ({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.0003,
+    vy: (Math.random() - 0.5) * 0.0003,
+    r: Math.random() * 1.5 + 0.5
+  }));
+  function draw() {
+    reaasAnimId = requestAnimationFrame(draw);
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > 1) p.vx *= -1;
+      if (p.y < 0 || p.y > 1) p.vy *= -1;
+    });
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = (particles[i].x - particles[j].x) * W;
+        const dy = (particles[i].y - particles[j].y) * H;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 160) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x * W, particles[i].y * H);
+          ctx.lineTo(particles[j].x * W, particles[j].y * H);
+          ctx.strokeStyle = `rgba(155,93,229,${(1 - dist/160) * 0.25})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(192,132,252,0.55)';
+      ctx.fill();
+    });
+  }
+  draw();
+}
+
+/* ── GEaaS Canvas — orange/gold particle field ── */
+let geaasAnimId;
+function initGEaaSCanvas() {
+  const canvas = document.getElementById('geaas-canvas');
+  if (!canvas || canvas._initialized) return;
+  canvas._initialized = true;
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const particles = Array.from({length: 120}, () => ({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.0003,
+    vy: (Math.random() - 0.5) * 0.0003,
+    r: Math.random() * 1.5 + 0.5
+  }));
+  function draw() {
+    geaasAnimId = requestAnimationFrame(draw);
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > 1) p.vx *= -1;
+      if (p.y < 0 || p.y > 1) p.vy *= -1;
+    });
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = (particles[i].x - particles[j].x) * W;
+        const dy = (particles[i].y - particles[j].y) * H;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 160) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x * W, particles[i].y * H);
+          ctx.lineTo(particles[j].x * W, particles[j].y * H);
+          ctx.strokeStyle = `rgba(244,161,53,${(1 - dist/160) * 0.25})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(251,146,60,0.55)';
+      ctx.fill();
+    });
+  }
+  draw();
+}
+</script>
+
+<script>
+/* ── Exit transition — closes the same veil over the screen before any
+   internal link navigates away, so leaving the page feels like a
+   continuation into the next scroll rather than a hard page-load cut.
+   One delegated click listener catches every same-site link on the page
+   (nav, mobile menu, footer) without needing to touch each one
+   individually. External links, anchors, new-tab/modified clicks,
+   mailto/tel, and downloads are left alone. Same pattern as
+   about.html/the-agent.html. ── */
+(function () {
+  var veil = document.getElementById('page-transition');
+  if (!veil) return;
+
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+
+    var url;
+    try { url = new URL(href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin) return;
+    if (url.href === window.location.href) return;
+
+    e.preventDefault();
+    veil.style.display = 'block';
+    gsap.to(veil, {
+      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
+      onComplete: function () { window.location.href = url.href; }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

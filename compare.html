@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REVacity | Compare</title>
+<link rel="icon" type="image/png" href="media/icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+/* Compare page — page-specific overrides */
+:root{--pink:#e63888;--purple:#9b5de5;--gold:#f4a135;--white:#ffffff;--dim:rgba(255,255,255,0.6);--bg:#000000}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+/* ══════════════════════════════════════════════════════════════
+   Real background — the same skybox + near/far twinkling star-point
+   fields as index.html/about.html/services.html/100K-Challenge.html,
+   rendered on their own persistent fixed canvas (#gl inside .stage).
+   See the script right after <body> for the Three.js setup; this is
+   just the layout/vignette CSS. Idle camera-breathing drift, since
+   this page has no chapter/gate system of its own either. */
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+}
+canvas#gl {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(3,2,8,0) 35%, rgba(3,2,8,0.6) 100%),
+    linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
+  z-index: 5;
+}
+/* #hero conflicts with style.css about-page hero — scoped */
+body.page-compare #hero{width:100vw;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 9vw 80px;position:relative;z-index:1;overflow:hidden}
+/* .hero-title conflicts (different font-size/color/gradient) — scoped */
+body.page-compare .hero-title{font-family:'Syne',sans-serif;font-size:clamp(2.4rem,6vw,4rem);font-weight:700;line-height:1.1;letter-spacing:-0.04em;margin-bottom:1.6rem;background:linear-gradient(90deg,#00d4ff 0%,#00b8e6 40%,#a78bfa 75%,#e879f9 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(0,210,255,0.25))}
+/* .hero-subtitle conflicts (style.css has opacity:0 animation) — scoped */
+body.page-compare .hero-subtitle{font-family:'DM Sans',sans-serif;font-size:clamp(0.9rem,1.4vw,1rem);font-weight:300;line-height:1.65;color:rgba(255,255,255,0.6);max-width:480px;margin-bottom:1rem;opacity:1;transform:none}
+@media(max-width:768px){body.page-compare #hero{padding:100px 6vw 60px}}
+
+/* ── Header — matched to index.html's treatment (sweep line under the
+   header, pulsing logo glow, per-letter hover wave) instead of the
+   shared style.css's simpler ghost-lift underline hover. Scoped to this
+   page only via this local <style> block, which loads after style.css
+   so it naturally wins the cascade. ── */
+/* style.css's shared .main-header background is rgba(10,3,21,0.85) — a
+   dark purple tuned for pages with a purple/navy bg. This page's bg is
+   pure black (--bg:#000000 above), so match that instead of showing a
+   purple seam at the header's edge. */
+.main-header{ background: rgba(0,0,0,0.82); }
+.main-header::after{
+  content:'';
+  position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(216,127,255,0.95), rgba(255,208,35,0.5), transparent);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: headerSweep 7s ease-in-out infinite;
+  pointer-events: none;
+  opacity: .8;
+}
+@keyframes headerSweep{
+  0%{ background-position: -60% 0; }
+  50%{ background-position: 130% 0; }
+  100%{ background-position: -60% 0; }
+}
+.main-header .logo img{
+  animation: logoGlowPulse 4.5s ease-in-out infinite;
+}
+@keyframes logoGlowPulse{
+  0%,100%{ filter: drop-shadow(0 0 14px rgba(168,85,247,0.4)); }
+  50%{ filter: drop-shadow(0 0 26px rgba(216,127,255,0.8)); }
+}
+/* Neutralize style.css's ghost-lift ::before/::after underline-sweep hover
+   for this page's nav links — replaced by the per-letter wave below. */
+.nav-center a{ background-image: none; padding: 4px 0; }
+.nav-center a::before, .nav-center a::after{ content: none; }
+.nav-center a .ltr{
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), color 0.35s ease, text-shadow 0.35s ease;
+}
+.nav-center a:hover .ltr{
+  animation: navLetterWave 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation-delay: calc(var(--i) * 28ms);
+}
+@keyframes navLetterWave{
+  0%   { transform: translateY(0); color: #fff; text-shadow: none; }
+  45%  { transform: translateY(-7px); color: var(--pos, #ffc857); text-shadow: 0 0 10px color-mix(in srgb, var(--pos, #ffc857) 80%, transparent); }
+  100% { transform: translateY(0); color: var(--accent, #a855f7); text-shadow: 0 0 8px color-mix(in srgb, var(--accent, #a855f7) 50%, transparent); }
+}
+#page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000000;
+  pointer-events: none;
+}
+#page-transition::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(168,85,247,0.16), rgba(0,0,0,0) 62%);
+}
+</style>
+</head>
+<body class="page-compare">
+
+<div id="page-transition"></div>
+
+<div class="stage">
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Background + stars — the same skybox and near/far star-point
+   fields as index.html/about.html/services.html/100K-Challenge.html,
+   at the same camera scale they were built for (camera far out at
+   z≈40, looking back toward the origin). Idle "camera breathing"
+   drift substitutes for a scroll-driven camera path since this page
+   has no chapter/gate system of its own — ported verbatim.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+try {
+  const canvas = document.getElementById('gl');
+  if (!canvas) { console.warn('[bg-stars] #gl canvas not found in DOM'); return; }
+  if (typeof THREE === 'undefined') { console.warn('[bg-stars] THREE is not defined — three.js CDN script failed to load'); return; }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#030208');
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 700);
+  const CAM_BASE = { x: 0, y: 0, z: 40 };
+  camera.position.set(CAM_BASE.x, CAM_BASE.y, CAM_BASE.z);
+  camera.lookAt(0, 0, 24);
+
+  const fog = new THREE.FogExp2(new THREE.Color('#030208').getHex(), 0.0055);
+  scene.fog = fog;
+
+  function resizeGL() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeGL);
+  resizeGL();
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Galaxy skybox (ported verbatim from index.html) ---- */
+  const SKY_BASE = '#030208';
+  function skyLightFrom(hex, peak, whiten) {
+    const r = parseInt(hex.substr(1, 2), 16),
+          g = parseInt(hex.substr(3, 2), 16),
+          b = parseInt(hex.substr(5, 2), 16);
+    const k = peak / (Math.max(r, g, b) || 1);
+    const mix = (v) => Math.round(v * k + (255 - v * k) * whiten);
+    return mix(r) + ',' + mix(g) + ',' + mix(b);
+  }
+  const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
+  const SKY_MONOCHROME = true;
+  const SKY_GLOW = 0.30;
+
+  function buildGalaxySkyTexture() {
+    const W = 1600, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = SKY_MONOCHROME ? SKY_BASE : '#050208';
+    ctx.fillRect(0, 0, W, H);
+
+    const bandRGB = SKY_MONOCHROME ? SKY_LIGHT : '150,90,200';
+    const bandA = 0.045 * (SKY_MONOCHROME ? SKY_GLOW : 1);
+    const band = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.72);
+    band.addColorStop(0, 'rgba(' + bandRGB + ',0)');
+    band.addColorStop(0.5, 'rgba(' + bandRGB + ',' + bandA + ')');
+    band.addColorStop(1, 'rgba(' + bandRGB + ',0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, H * 0.26, W, H * 0.48);
+
+    const blobDefs = [
+      { x: 0.12, y: 0.40, r: 220, rgb: '200,90,220', a: 0.07 },
+      { x: 0.32, y: 0.60, r: 190, rgb: '110,90,235', a: 0.06 },
+      { x: 0.58, y: 0.34, r: 260, rgb: '150,80,255', a: 0.065 },
+      { x: 0.80, y: 0.56, r: 190, rgb: '230,110,200', a: 0.05 },
+      { x: 0.46, y: 0.20, r: 160, rgb: '180,150,255', a: 0.03 },
+      { x: 0.94, y: 0.30, r: 140, rgb: '90,110,255', a: 0.045 },
+    ];
+    const blobs = blobDefs.map(function (b) {
+      const rgb = SKY_MONOCHROME ? SKY_LIGHT : b.rgb;
+      const a = b.a * (SKY_MONOCHROME ? SKY_GLOW : 1);
+      return { x: b.x, y: b.y, r: b.r, c: 'rgba(' + rgb + ',' + a + ')' };
+    });
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(b => {
+      const g = ctx.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+
+    for (let i = 0; i < 1200; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const inBand = y > H * 0.28 && y < H * 0.72;
+      const r = Math.random() * (inBand ? 1.7 : 1.1) + 0.2;
+      const a = Math.random() * 0.8 + 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const skyGeo = new THREE.SphereGeometry(320, 40, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: buildGalaxySkyTexture(), side: THREE.BackSide, fog: false });
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  scene.add(skyMesh);
+
+  /* ---- Star point-fields (ported verbatim from index.html) ---- */
+  function starTexture() {
+    const s = 128;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.12, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const STAR_TEX = starTexture();
+
+  function buildStars(count, radius, zSpan, size, opacity) {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.6;
+      positions[i * 3 + 2] = 45 - Math.random() * zSpan;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size, map: STAR_TEX, color: 0xffffff, transparent: true, opacity,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+  function makeStarField(layers, countEach, radius, zSpan, size, baseOpacity) {
+    const group = new THREE.Group();
+    const list = [];
+    for (let i = 0; i < layers; i++) {
+      const mesh = buildStars(countEach, radius, zSpan, size, baseOpacity);
+      group.add(mesh);
+      list.push({ mesh, baseOpacity, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.9 });
+    }
+    scene.add(group);
+    return { group, layers: list };
+  }
+  const nearStarField = makeStarField(4, 163, 34, 150, 0.055, 0.85);
+  const farStarField  = makeStarField(3, 133, 130, 220, 0.045, 0.4);
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const elapsed = clock.getElapsedTime();
+    if (!reducedMotion) {
+      [...nearStarField.layers, ...farStarField.layers].forEach((l) => {
+        const twinkle = 0.78 + 0.22 * Math.sin(elapsed * l.speed + l.phase);
+        l.mesh.material.opacity = l.baseOpacity * twinkle;
+      });
+      nearStarField.group.rotation.z = elapsed * 0.003;
+      farStarField.group.rotation.z = -elapsed * 0.0015;
+      skyMesh.rotation.y = elapsed * 0.004;
+      camera.position.x = CAM_BASE.x + Math.sin(elapsed * 0.05) * 1.4;
+      camera.position.y = CAM_BASE.y + Math.sin(elapsed * 0.037) * 0.8;
+      camera.lookAt(0, 0, 24);
+    }
+    renderer.render(scene, camera);
+  })();
+} catch (err) {
+  /* TEMPORARY diagnostic — the background isn't rendering and there's no
+     way to check devtools remotely, so surface whatever actually broke
+     directly on the page instead of guessing at another fix blind. Remove
+     this whole catch block once the real cause is found and fixed. */
+  console.error('[bg-stars] failed:', err);
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:6px;left:6px;z-index:99999;background:#3a0000;'
+    + 'color:#ff8080;font:11px/1.4 monospace;padding:8px 10px;border:1px solid #ff4444;'
+    + 'border-radius:6px;max-width:92vw;white-space:pre-wrap;';
+  banner.textContent = '[bg-stars] ' + (err && err.message ? err.message : err);
+  document.body.appendChild(banner);
+}
+})();
+</script>
+
+<header class="main-header">
+    <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+    <nav class="nav-center">
+        <a href="index.html" data-text="The Collapse">The Collapse</a>
+        <a href="about.html" data-text="About Us">About Us</a>
+        <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+        <a href="compare.html" data-text="Compare">Compare</a>
+        <a href="blog.html" data-text="Blog">Blog</a>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+
+        <div class="header-buttons">
+            <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+                <span>Start a Warrant</span>
+            </a>
+            <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+                <span>$100k Reward</span>
+            </a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</header>
+
+<div class="mobile-slide-menu" id="mobile-menu">
+    <div class="close-menu" id="close-menu">
+        <span></span>
+        <span></span>
+    </div>
+
+    <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+    <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+    <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+    <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+    <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+    <div class="mobile-menu-cta" style="--i: 6;">
+        <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+        <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+    </div>
+</div>
+
+<section id="hero">
+<div class="hero-orb hero-orb-1"></div>
+<div class="hero-orb hero-orb-2"></div>
+<div class="hero-orb hero-orb-3"></div>
+<div class="hero-grid"></div>
+<div class="hero-curtain">
+<video src="media/compare.mp4" autoplay loop muted playsinline preload="auto" disablepictureinpicture disableremoteplayback></video>
+</div>
+<div class="hero-content">
+<h1 class="hero-title">You are where we want you to be</h1>
+<p class="hero-subtitle">Comparing how we do things and what we deliver is way easier than explaining it, choose your way — we are open:</p>
+<p class="hero-sub2">Choose your own way, as we have 3,<br>and yes we are that's much confident</p>
+<div class="hero-cta-row">
+<a href="#" class="cta-btn cta-btn--cyan" id="btn-warrent" onclick="openWarrent(event)">The Warrent</a>
+<a href="#" class="cta-btn cta-btn--gold" id="btn-challenge" onclick="openChallenge(event)">The challenge</a>
+<a href="#" class="cta-btn cta-btn--purple" id="btn-agency" onclick="openAgency(event)"><span class="btn-plus">+</span> Your agency</a>
+</div>
+</div>
+</section>
+<div class="creative-footer-reveal-container" id="site-footer">
+<footer class="creative-tech-footer">
+    <div class="footer-top-glow-line"></div>
+
+    <div class="footer-grid-inner">
+      <div class="footer-brand-column">
+        <img src="media/REVacity.png" alt="REVacity" style="width:180px; height:auto;" />
+        <p class="footer-brand-tagline">
+          Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.
+        </p>
+      </div>
+
+      <div class="footer-links-grid">
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+            <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+            <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+        </div>
+
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">04 //</span> Before Judging</a>
+            <a href="compare.html" class="footer-link-item"><span class="link-num">05 //</span> Compare</a>
+            <a href="blog.html" class="footer-link-item"><span class="link-num">06 //</span>Blog</a>
+        </div>
+      </div>
+
+      <div class="footer-actions-column">
+        <h4 class="group-title">SYSTEM INTERACTION</h4>
+        <div class="footer-subscribe-wrapper">
+          <input type="email" placeholder="Enter operator email..." class="footer-input-field" />
+          <button type="button" class="footer-submit-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+  <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+</div>
+</div>
+<div class="footer-bottom-bar">
+    <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+    <div class="footer-legal-links">
+        <a href="privacy.html">PRIVACY DECREE</a>
+        <span class="divider">/</span>
+        <a href="terms.html">TERMINAL TERMS</a>
+        <span class="divider">/</span>
+        <a href="security-clearance.html">SECURITY CLEARANCE</a>
+    </div>
+</div>
+</footer>
+</div>
+<script>
+(function(){
+const hamburger=document.getElementById('hamburger');
+const mobileMenu=document.getElementById('mobile-menu');
+const closeMenuBtn=document.getElementById('close-menu');
+if(!hamburger||!mobileMenu||!closeMenuBtn)return;
+hamburger.addEventListener('click',()=>{hamburger.classList.add('active');mobileMenu.classList.add('active')});
+const closeMenu=()=>{hamburger.classList.remove('active');mobileMenu.classList.remove('active')};
+closeMenuBtn.addEventListener('click',closeMenu);
+mobileMenu.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeMenu));
+})();
+</script>
+<script>
+(function(){
+const canvases=document.querySelectorAll('.bolt-canvas');
+if(!canvases.length)return;
+const states=Array.from(canvases).map((canvas,i)=>({canvas,ctx:canvas.getContext('2d'),segs:[],alpha:0,timer:8+i*7}));
+function makeBolt(x1,y1,x2,y2,rough,depth){const segs=[];function split(ax,ay,bx,by,d){if(d===0){segs.push([ax,ay,bx,by]);return}const mx=(ax+bx)/2+(Math.random()-0.5)*rough*(d/depth)*1.2;const my=(ay+by)/2+(Math.random()-0.5)*rough*0.6;split(ax,ay,mx,my,d-1);split(mx,my,bx,by,d-1);if(d===2&&Math.random()<0.45){const fLen=rough*(0.3+Math.random()*0.5);const angle=Math.atan2(by-ay,bx-ax)+(Math.random()-0.5)*1.2;segs.push([mx,my,mx+Math.cos(angle)*fLen,my+Math.sin(angle)*fLen]);}}split(x1,y1,x2,y2,depth);return segs;}
+function resizeAll(){states.forEach(({canvas})=>{const rect=canvas.getBoundingClientRect();canvas.width=rect.width||80;canvas.height=rect.height||40;});}
+function drawBolt(ctx,segs,alpha,W,H){if(!segs.length||alpha<=0)return;ctx.save();ctx.globalAlpha=alpha*0.18;ctx.strokeStyle='rgba(180,90,255,1)';ctx.lineWidth=5;ctx.shadowColor='rgba(168,85,247,1)';ctx.shadowBlur=12;ctx.lineCap='round';segs.forEach(([ax,ay,bx,by])=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();});ctx.restore();ctx.save();ctx.globalAlpha=alpha*0.42;ctx.strokeStyle='rgba(200,120,255,1)';ctx.lineWidth=1.8;ctx.shadowColor='rgba(180,90,255,0.9)';ctx.shadowBlur=6;ctx.lineCap='round';segs.forEach(([ax,ay,bx,by])=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();});ctx.restore();ctx.save();ctx.globalAlpha=alpha*0.80;ctx.strokeStyle='rgba(220,170,255,1)';ctx.lineWidth=0.8;ctx.shadowBlur=3;ctx.lineCap='round';segs.forEach(([ax,ay,bx,by])=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();});ctx.restore();ctx.save();ctx.globalAlpha=alpha*0.55;ctx.strokeStyle='rgba(255,248,255,1)';ctx.lineWidth=0.35;ctx.lineCap='round';segs.forEach(([ax,ay,bx,by])=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();});ctx.restore();const tip=W,midY=H/2,aSize=7;ctx.save();ctx.globalAlpha=alpha*0.55;ctx.fillStyle='#c084fc';ctx.shadowColor='rgba(192,132,252,1)';ctx.shadowBlur=14;ctx.beginPath();ctx.moveTo(tip,midY);ctx.lineTo(tip-aSize*1.8,midY-aSize);ctx.lineTo(tip-aSize*1.8,midY+aSize);ctx.closePath();ctx.fill();ctx.restore();ctx.save();ctx.globalAlpha=alpha*0.90;ctx.fillStyle='#e0aaff';ctx.shadowColor='rgba(255,255,255,0.8)';ctx.shadowBlur=6;ctx.beginPath();ctx.moveTo(tip,midY);ctx.lineTo(tip-aSize*1.8,midY-aSize);ctx.lineTo(tip-aSize*1.8,midY+aSize);ctx.closePath();ctx.fill();ctx.restore();}
+function loop(){states.forEach(state=>{const{canvas,ctx}=state,W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);state.timer--;if(state.timer<=0){const rough=Math.min(H*0.35,18);state.segs=makeBolt(0,H/2,W,H/2,rough,4);state.alpha=1.0;state.timer=10+Math.floor(Math.random()*18);}state.alpha=Math.max(0,state.alpha-0.05);drawBolt(ctx,state.segs,state.alpha,W,H);});requestAnimationFrame(loop);}
+window.addEventListener('resize',()=>{resizeAll();states.forEach(s=>{s.segs=[];s.alpha=0;});});
+setTimeout(()=>{resizeAll();loop();},120);
+})();
+</script>
+<script>
+(function(){
+const canvas=document.getElementById('feedback-loop-canvas');
+if(!canvas)return;
+const ctx=canvas.getContext('2d');
+function getCard1(){return document.querySelector('.agent-card--red');}
+function getCard4(){return document.querySelector('.agent-card--green');}
+function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;}
+let dashOffset=0;
+function draw(){const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);const c1=getCard1(),c4=getCard4();if(!c1||!c4){requestAnimationFrame(draw);return;}const c1Rect=c1.getBoundingClientRect(),c4Rect=c4.getBoundingClientRect(),canvasRect=canvas.getBoundingClientRect();const x4=c4Rect.right-canvasRect.left-(c4Rect.width*0.15);const x1=c1Rect.left-canvasRect.left+(c1Rect.width*0.15);const yTop=4,yBot=H-10;const path=[{x:x4,y:yTop},{x:x4,y:yBot},{x:x1,y:yBot},{x:x1,y:yTop}];dashOffset-=0.4;ctx.save();ctx.strokeStyle='rgba(168,85,247,0.35)';ctx.lineWidth=4;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(168,85,247,0.6)';ctx.shadowBlur=10;ctx.setLineDash([6,6]);ctx.lineDashOffset=dashOffset;ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);path.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();ctx.restore();ctx.save();ctx.strokeStyle='rgba(192,132,252,0.75)';ctx.lineWidth=1.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(168,85,247,0.9)';ctx.shadowBlur=5;ctx.setLineDash([6,6]);ctx.lineDashOffset=dashOffset;ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);path.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();ctx.restore();const ax=x1,ay=yTop,arrowSize=7;ctx.save();ctx.fillStyle='#c084fc';ctx.shadowColor='rgba(192,132,252,0.9)';ctx.shadowBlur=10;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax-arrowSize,ay+arrowSize*1.6);ctx.lineTo(ax+arrowSize,ay+arrowSize*1.6);ctx.closePath();ctx.fill();ctx.restore();requestAnimationFrame(draw);}
+window.addEventListener('resize',resize);
+setTimeout(()=>{resize();draw();},150);
+})();
+</script>
+<div id="w-stage">
+<div id="w-backdrop" onclick="closeWarrent()"></div>
+<div class="w-curtain w-curtain--left"></div>
+<div class="w-curtain w-curtain--right"></div>
+<div id="w-content">
+<button class="wc-close" onclick="closeWarrent()">✕</button>
+<div class="wc-banner">
+<h2 class="wc-h1"><span class="line1">We don't sign contracts.</span><span class="line2">We sign revenue warrants.</span></h2>
+<div class="wc-stamp"><img style="width:60px" src="media/exclusive.jpg"/></div>
+</div>
+<div class="wc-2col">
+<div class="wc-cell" data-reveal><p class="wc-cell-label">Our fee is tied to your outcome</p><p class="wc-cell-body">If the revenue doesn't materialize, we don't get paid. This isn't a gimmick — it's the only model that makes sense for reality engineering.</p></div>
+<div class="wc-cell" data-reveal style="transition-delay:.1s"><p class="wc-cell-label">Our pricing is tied to your outcome</p><p class="wc-cell-body">If we don't generate revenue, or the agreed Growth metrics, we don't get paid. That's not expensive — that's the only honest model.</p></div>
+</div>
+<div class="wc-question" data-reveal><p class="q1">The real question is</p><p class="q2">how much is your current agency costing you in missed revenue?</p></div>
+<div class="wc-compare">
+<div class="wc-compare-col wc-compare-col--left" data-reveal>
+<div class="wc-col-head"><span style="color:#ef4444;font-size:.9rem;margin-top:2px">✕</span><div><p class="wc-col-title" style="color:#cdd7ec">Traditional Contract</p><p class="wc-col-sub">What you're used to. What you're tired of.</p></div></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#8d90a3">Payment</p><p class="wc-row-val" style="color:#8d90a3;text-decoration:line-through">Monthly retainer, regardless of outcome</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#8d90a3">Commitment</p><p class="wc-row-val" style="color:#8d90a3;text-decoration:line-through">12-month lock-in, exit penalties</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#8d90a3">Deliverables</p><p class="wc-row-val" style="color:#8d90a3;text-decoration:line-through">Reports, decks, "strategic recommendations"</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#8d90a3">Accountability</p><p class="wc-row-val" style="color:#8d90a3;text-decoration:line-through">"Best efforts" clause — legally meaningless</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#8d90a3">Risk</p><p class="wc-row-val" style="color:#8d90a3;text-decoration:line-through">100% yours. They get paid even if you fail.</p></div>
+</div>
+<div class="wc-compare-col wc-compare-col--right" data-reveal style="transition-delay:.12s">
+<div class="wc-col-head"><span style="color:#ffc700;border:1.5px solid #ffc700;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;margin-top:1px">◎</span><div><p class="wc-col-title" style="color:#ebd798">Revenue Warrant</p><p class="wc-col-sub" style="color:#d4b390">What we invented. What you deserve.</p></div></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#ececec">Payment</p><p class="wc-row-val" style="color:#ececec">✓ &nbsp;Tied to agreed revenue milestones</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#ececec">Commitment</p><p class="wc-row-val" style="color:#ececec">✓ &nbsp;No lock-in. Exit anytime if outcomes stall.</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#ececec">Deliverables</p><p class="wc-row-val" style="color:#ececec">✓ &nbsp;Revenue in your bank account. That's the deck.</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#ececec">Accountability</p><p class="wc-row-val" style="color:#ececec">✓ &nbsp;Warrant terms are binding and measurable</p></div>
+<div class="wc-row"><p class="wc-row-lbl" style="color:#ececec">Risk</p><p class="wc-row-val" style="color:#ececec">✓ &nbsp;Shared. If we don't deliver, we don't eat.</p></div>
+</div>
+</div>
+<div class="wc-milestone">
+<div class="wc-ms wc-ms--left" data-reveal>
+<span class="wc-tag">The risk is ours</span>
+<h3 class="wc-ms-h">What if you don't hit the milestones?</h3>
+<p class="wc-ms-bold">Then we don't get paid. It's that simple.</p>
+<p class="wc-ms-body">The Revenue Warrant is structured so that our compensation is a function of your success. If we miss a milestone, the warrant terms are clear: we either re-engineer at our cost until we hit it, or we part ways with no exit penalty and no hard feelings.</p>
+<p class="wc-ms-body">We've never had to exercise the exit clause. But it's there because trust is built on transparency, not on promises.</p>
+</div>
+<div class="wc-ms wc-ms--right" data-reveal style="transition-delay:.1s">
+<p class="wc-how-lbl">How we get paid</p>
+<p class="wc-ms-body">Traditional agencies sign you to 12-month retainers and pray. We sign Revenue Warrants — binding commitments tied to specific, measurable revenue outcomes. Our fee is a function of your success. If the signal doesn't convert to your bank account, we don't eat.</p>
+<div class="wc-integrity"><span class="wc-integrity-icon"><img src="media/integrity-icon.png" style="width:35px"/></span><p class="wc-integrity-text">If we don't deliver what we warrant, you don't pay. <strong>No fine print. No caveats. Just engineering integrity.</strong></p></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+const wStage=document.getElementById('w-stage');
+function openWarrent(e){if(e)e.preventDefault();document.body.style.overflow='hidden';wStage.classList.add('active');requestAnimationFrame(()=>requestAnimationFrame(()=>{wStage.classList.add('pulling');setTimeout(()=>{wStage.classList.add('open');setTimeout(triggerReveals,550);},700);}));}
+function closeWarrent(){wStage.classList.remove('open');setTimeout(()=>{wStage.classList.remove('pulling');setTimeout(()=>{wStage.classList.remove('active');document.body.style.overflow='';document.querySelectorAll('[data-reveal]').forEach(el=>el.classList.remove('visible'));document.getElementById('w-content').scrollTop=0;},400);},500);}
+function triggerReveals(){document.querySelectorAll('[data-reveal]').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*90);});}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWarrent();});
+</script>
+<div id="c-stage">
+<div id="c-backdrop" onclick="closeChallenge()"></div>
+<div class="c-curtain c-curtain--left"></div>
+<div class="c-curtain c-curtain--right"></div>
+<div id="c-content">
+<div class="cc-card-wrapper">
+<div class="cc-shadow-layer"></div>
+<div class="cc-gold-ring" id="cc-gold-ring">
+<div class="cc-pink-ring" id="cc-pink-ring">
+<div class="cc-card-core">
+<button class="cc-close" onclick="closeChallenge()">✕</button>
+<h2 class="cc-title">How the Challange works</h2>
+<div class="cc-step intro" data-creveal><span class="cc-step-label">Head To head comparision:</span><span class="cc-step-body">You share same brief, same scope and same kick-off</span></div>
+<div class="cc-step" data-creveal><span class="cc-step-label">Step 1 (Audit):</span><span class="cc-step-body">We complete the diagnostic and identify the revenue opportunity.</span></div>
+<div class="cc-step" data-creveal><span class="cc-step-label">Step 2 (Same status):</span><span class="cc-step-body">Specific dollar amount, timeline, specific measurement criteria.</span></div>
+<div class="cc-step" data-creveal><span class="cc-step-label">Step 3 (We design the warrant ):</span><span class="cc-step-body">Both parties sign. The warrant is a legal document.</span></div>
+<div class="cc-step" data-creveal><span class="cc-step-label">Step 4:</span><span class="cc-step-body">We engineer the solution and the Quantified outcomes.</span></div>
+<div class="cc-step" data-creveal><span class="cc-step-label">Step 5:</span><span class="cc-step-body">&nbsp;If the revenue materializes, we get paid. If it doesn't, we don't.</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cc-closing-block" data-creveal>
+<p class="cc-closing-headline">That's it— <strong>No complexity. No escape clauses. Just accountability..</strong></p>
+<p class="cc-closing-sub">We will compete head-to-head against your current agency, consultancy, or internal team. Same brief. Same data. Same timeline. Independent evaluation. Only metric: revenue impact.</p>
+</div>
+</div>
+</div>
+<script>
+const cStage=document.getElementById('c-stage');
+const ccGoldRing=document.getElementById('cc-gold-ring');
+const ccPinkRing=document.getElementById('cc-pink-ring');
+let ccFlickerTimer=null;
+function ccNeonFlicker(){if(!ccGoldRing||!ccPinkRing)return;const p=20+Math.random()*12,ps=48+Math.random()*30,g=12+Math.random()*10;ccPinkRing.style.boxShadow=`0 0 ${p}px #ff1493, 0 0 ${ps}px rgba(255,20,147,0.5), 0 0 80px rgba(255,20,147,0.2), inset 0 0 16px rgba(255,20,147,0.45)`;ccGoldRing.style.boxShadow=`0 0 ${g}px rgba(240,175,40,0.65), 0 0 ${g*2.2}px rgba(240,175,40,0.35), 0 0 55px rgba(240,175,40,0.15), inset 0 0 10px rgba(240,175,40,0.15)`;ccFlickerTimer=setTimeout(ccNeonFlicker,65+Math.random()*120);}
+function openChallenge(e){if(e)e.preventDefault();document.body.style.overflow='hidden';cStage.classList.add('active');ccNeonFlicker();requestAnimationFrame(()=>requestAnimationFrame(()=>{cStage.classList.add('pulling');setTimeout(()=>{cStage.classList.add('open');setTimeout(()=>{document.querySelectorAll('[data-creveal]').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*90);});},550);},700);}));}
+function closeChallenge(){cStage.classList.remove('open');if(ccFlickerTimer){clearTimeout(ccFlickerTimer);ccFlickerTimer=null;}setTimeout(()=>{cStage.classList.remove('pulling');setTimeout(()=>{cStage.classList.remove('active');document.body.style.overflow='';document.querySelectorAll('[data-creveal]').forEach(el=>el.classList.remove('visible'));document.getElementById('c-content').scrollTop=0;},400);},500);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWarrent();closeChallenge();}});
+</script>
+<div id="a-stage">
+<div id="a-backdrop" onclick="closeAgency()"></div>
+<div class="a-curtain a-curtain--left"></div>
+<div class="a-curtain a-curtain--right"></div>
+<div id="a-card-wrap">
+<div id="a-content">
+<button class="ac-close" onclick="closeAgency()">✕</button>
+<h2 class="ac-title">How this work:</h2>
+<ul class="ac-list">
+<li data-areveal>You add you current agency website URL</li>
+<li data-areveal>We scrap and collect all the services and products listed in its website.</li>
+<li data-areveal>We build a detailed, custom comparision report &amp; tables for the common scopes</li>
+</ul>
+<p class="ac-accent ac-accent--bright" data-areveal>Service to service, not agent to agent</p>
+<ul class="ac-list"><li data-areveal>Usually, this will take 2-3 working days</li></ul>
+<p class="ac-accent ac-accent--dim" data-areveal>It's not an Automated or off-the-shelf process</p>
+<ul class="ac-list">
+<li data-areveal>In case, we can't, or the comparision is not real, we will get back to</li>
+<li data-areveal>We will also try to share 1 or 2 incidents report, or other scope of reports</li>
+</ul>
+<p class="ac-gradient-headline" data-areveal><span class="g-pink">Where</span>&nbsp;<span class="g-orange">you</span>&nbsp;<span class="g-yellow">miss</span>&nbsp;<span class="g-orange">and</span>&nbsp;<span class="g-purple">what</span></p>
+<p class="ac-accent-sub" data-areveal>We need access or data from your side</p>
+<div class="ac-footer" data-areveal>
+<a href="#" class="ac-btn-try" onclick="closeAgency();return false">Try others</a>
+<a href="#" class="ac-btn-go">LET'S GO</a>
+</div>
+</div>
+</div>
+</div>
+<script>
+const aStage=document.getElementById('a-stage');
+function openAgency(e){if(e)e.preventDefault();document.body.style.overflow='hidden';aStage.classList.add('active');requestAnimationFrame(()=>requestAnimationFrame(()=>{aStage.classList.add('pulling');setTimeout(()=>{aStage.classList.add('open');setTimeout(()=>{document.querySelectorAll('[data-areveal]').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*80);});},550);},700);}));}
+function closeAgency(){aStage.classList.remove('open');setTimeout(()=>{aStage.classList.remove('pulling');setTimeout(()=>{aStage.classList.remove('active');document.body.style.overflow='';document.querySelectorAll('[data-areveal]').forEach(el=>el.classList.remove('visible'));document.getElementById('a-content').scrollTop=0;},400);},500);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWarrent();closeChallenge();closeAgency();}});
+(function(){var vid=document.querySelector('.hero-curtain video');if(!vid)return;function tryPlay(){var p=vid.play();if(p!==undefined)p.catch(function(){});}tryPlay();['touchstart','touchend','click','scroll'].forEach(function(evt){document.addEventListener(evt,function handler(){tryPlay();document.removeEventListener(evt,handler);},{once:true,passive:true});});})();
+</script>
+
+<!-- GSAP + ScrollTrigger CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof gsap === 'undefined') return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* Header entrance — ported verbatim from index.html: a richer staggered
+     choreography (logo elastic pop-in, nav links blur-fade in one by one,
+     buttons bounce in, hamburger pops last) instead of the header just
+     sliding down as one flat block. */
+  (function(){
+    const header = document.querySelector('.main-header');
+    if(header){
+      const logo = header.querySelector('.logo');
+      const navLinks = header.querySelectorAll('.nav-center a');
+      const buttons = header.querySelectorAll('.header-buttons > a');
+      const hamburgerEl = header.querySelector('.hamburger');
+
+      gsap.set(header, { opacity:0, y:-26, filter:'blur(14px)' });
+      gsap.set(logo, { opacity:0, scale:0.4, rotate:-8 });
+      gsap.set(navLinks, { opacity:0, y:14, filter:'blur(6px)' });
+      gsap.set(buttons, { opacity:0, scale:0.5, y:8 });
+      gsap.set(hamburgerEl, { opacity:0, scale:0.6 });
+
+      const headerTL = gsap.timeline({ delay:0.15 });
+      headerTL.to(header, { opacity:1, y:0, filter:'blur(0px)', duration:1.1, ease:'power3.out' })
+        .to(logo, { opacity:1, scale:1, rotate:0, duration:0.9, ease:'elastic.out(1,0.55)' }, '-=0.75')
+        .to(navLinks, { opacity:1, y:0, filter:'blur(0px)', duration:0.6, ease:'power2.out', stagger:0.08 }, '-=0.55')
+        .to(buttons, { opacity:1, scale:1, y:0, duration:0.7, ease:'back.out(2.2)', stagger:0.12 }, '-=0.4')
+        .to(hamburgerEl, { opacity:1, scale:1, duration:0.5, ease:'back.out(2)' }, '-=0.4');
+    }
+  })();
+
+  /* Page-transition veil — fade out on arrival */
+  (function(){
+    var veil = document.getElementById('page-transition');
+    if (!veil) return;
+    document.documentElement.classList.add('loader-active');
+    document.body.classList.add('loader-active');
+    gsap.to(veil, {
+      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
+      onComplete: function () {
+        veil.style.display = 'none';
+        document.documentElement.classList.remove('loader-active');
+        document.body.classList.remove('loader-active');
+      }
+    });
+  })();
+
+  /* Nav link hover — per-letter wave matching index.html: each letter
+     wrapped in its own span so the .nav-center a:hover .ltr CSS above
+     (navLetterWave keyframes) can bounce/color each letter individually. */
+  document.querySelectorAll('.nav-center a').forEach(link => {
+    const text = link.textContent;
+    link.textContent = '';
+    link.removeAttribute('data-text');
+    [...text].forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'ltr';
+      span.style.setProperty('--i', i);
+      span.textContent = ch === ' ' ? ' ' : ch;
+      link.appendChild(span);
+    });
+  });
+
+  /* Footer reveal */
+  gsap.from('#site-footer', {
+    y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
+  });
+  gsap.from('.footer-brand-column', {
+    x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+  });
+  gsap.from('.footer-link-group', {
+    y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
+  });
+  gsap.from('.footer-actions-column', {
+    x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
+  });
+  gsap.from('.footer-bottom-bar', {
+    y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
+    scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
+  });
+
+  /* ── Hero entrance — staggered reveal ── */
+  const heroTL = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.3 });
+  heroTL
+    .fromTo('.hero-title',    { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9 })
+    .fromTo('.hero-subtitle', { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.7 }, '-=0.55')
+    .fromTo('.hero-sub2',     { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, '-=0.4')
+    .fromTo('.hero-cta-row .cta-btn', { y: 24, autoAlpha: 0, scale: 0.92 },
+      { y: 0, autoAlpha: 1, scale: 1, duration: 0.55, stagger: 0.12, ease: 'back.out(1.6)' }, '-=0.3');
+
+  /* Glowing orbs pop in */
+  gsap.fromTo('.hero-orb', { scale: 0, autoAlpha: 0 },
+    { scale: 1, autoAlpha: 1, duration: 1.2, stagger: 0.15, ease: 'power3.out', delay: 0.1 });
+
+  /* ── Scroll-driven parallax on hero layers ── */
+  gsap.to('.hero-orb-1', {
+    y: -120, x: 40, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+  gsap.to('.hero-orb-2', {
+    y: -70, x: -60, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+  gsap.to('.hero-orb-3', {
+    y: -160, x: 20, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+  gsap.to('.hero-grid', {
+    backgroundPositionY: '40%', ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+  gsap.to('.hero-curtain', {
+    yPercent: 15, scale: 1.08, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+
+  /* Hero content fades and lifts away on scroll */
+  gsap.to('.hero-content', {
+    y: -80, autoAlpha: 0, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: '60% top', scrub: 1 }
+  });
+
+  /* Magnetic hover on hero CTAs */
+  document.querySelectorAll('.hero-cta-row .cta-btn').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const dx = (e.clientX - rect.left - rect.width / 2) * 0.25;
+      const dy = (e.clientY - rect.top - rect.height / 2) * 0.25;
+      gsap.to(btn, { x: dx, y: dy, duration: 0.3, ease: 'power2.out' });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' });
+    });
+  });
+});
+</script>
+<script>
+(function () {
+  var veil = document.getElementById('page-transition');
+  if (!veil) return;
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+    if (a.target && a.target !== '' && a.target !== '_self') return;
+    if (a.hasAttribute('download')) return;
+    var url;
+    try { url = new URL(href, window.location.href); } catch (err) { return; }
+    if (url.origin !== window.location.origin) return;
+    if (url.href === window.location.href) return;
+    e.preventDefault();
+    veil.style.display = 'block';
+    document.documentElement.classList.add('loader-active');
+    document.body.classList.add('loader-active');
+    gsap.to(veil, {
+      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
+      onComplete: function () { window.location.href = url.href; }
+    });
+  });
+})();
+</script>
+</body>
+</html>
