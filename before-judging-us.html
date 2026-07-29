@@ -412,6 +412,21 @@ try {
   </div>
 </div>
 
+<script>
+/* ── Mobile menu — hamburger toggle (missing on this page previously,
+   which is why tapping it did nothing) ── */
+(function(){
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const closeMenuBtn = document.getElementById('close-menu');
+  if(!hamburger || !mobileMenu || !closeMenuBtn) return;
+  hamburger.addEventListener('click', () => { hamburger.classList.add('active'); mobileMenu.classList.add('active'); });
+  const closeMenu = () => { hamburger.classList.remove('active'); mobileMenu.classList.remove('active'); };
+  closeMenuBtn.addEventListener('click', closeMenu);
+  mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+})();
+</script>
+
 <!-- ═══ DIALOGUE HERO ═══ -->
 <section id="hero">
   <div class="dlg-wrap">
