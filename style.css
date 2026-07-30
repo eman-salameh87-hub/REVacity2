@@ -7970,8 +7970,11 @@ body.page-start-audit .hero-body{max-width:800px;font-family:'DM Sans',sans-seri
 .skeptical-subtitle{font-size:clamp(1.1rem,1.6vw,1.1rem);color:#ffffff;font-weight:500;margin-bottom:10px;letter-spacing:-0.01em}
 .skeptical-link-block{display:inline-flex;align-items:center;gap:20px;text-decoration:none;cursor:pointer}
 .skeptical-link-text{display:flex;flex-direction:column;font-size:clamp(1.1rem,1.8vw,1.1rem);font-weight:600;line-height:1.25;color:#c000df}
-.skeptical-go-btn{display:inline-flex;align-items:center;background:#db00db;padding:3px 6px 3px 18px;border-top-left-radius:4px;border-bottom-left-radius:4px;border-top-right-radius:999px;border-bottom-right-radius:999px;height:clamp(42px,5vw,54px);box-shadow:0 3px 15px rgba(219,0,219,0.3);transition:transform 0.3s ease,box-shadow 0.3s ease}
-.skeptical-link-block:hover .skeptical-go-btn{transform:translateX(4px);box-shadow:0 4px 22px rgba(219,0,219,0.5)}
+.skeptical-go-btn{display:inline-flex;align-items:center;background:#db00db;padding:3px 6px 3px 18px;border-top-left-radius:4px;border-bottom-left-radius:4px;border-top-right-radius:999px;border-bottom-right-radius:999px;height:clamp(42px,5vw,54px);box-shadow:0 3px 15px rgba(219,0,219,0.3);transition:transform 0.15s ease,box-shadow 0.3s ease,background 0.3s ease}
+.skeptical-link-block:hover .skeptical-go-btn,
+.skeptical-link-block.is-hovered .skeptical-go-btn{transform:translateX(4px) scale(1.05);box-shadow:0 4px 22px rgba(219,0,219,0.5);background:#f000f0}
+.skeptical-link-block:active .skeptical-go-btn,
+.skeptical-link-block.is-clicked .skeptical-go-btn{transform:translateX(2px) scale(0.94);box-shadow:0 2px 10px rgba(219,0,219,0.6);background:#af00af}
 /* go-text scoped to avoid conflict with global .go-text in style.css */
 .skeptical-go-btn .go-text{color:#ffffff;font-family:'Syne',sans-serif;font-size:clamp(1.1rem,1.6vw,1.2rem);font-weight:700;margin-right:12px;letter-spacing:0.02em;padding:0}
 .go-arrow-circle{width:clamp(34px,4vw,38px);height:clamp(34px,4vw,38px);background:#ffffff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}

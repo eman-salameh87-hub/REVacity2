@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
+<style>html{background:#000000}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <script type="importmap">
@@ -667,11 +669,23 @@ window.scrollTo(0, 0);
   }
   .go-capsule-btn{
     background:#ee45f2;
-    border:none; cursor:pointer; transition:transform 0.2s ease, background .6s ease;
+    border:none; cursor:pointer; transition:transform 0.15s ease, background 0.25s ease, box-shadow 0.25s ease;
     padding:2px; border-radius:30px; display:inline-flex; align-items:center;
     flex-shrink:0;
+    box-shadow:0 3px 15px rgba(238,69,242,0.3);
   }
-  .go-capsule-btn:hover{ transform:scale(1.03); }
+  .go-capsule-btn:hover,
+  .go-capsule-btn.is-hovered{
+    transform:scale(1.08);
+    background:#ff5cff;
+    box-shadow:0 4px 22px rgba(238,69,242,0.6);
+  }
+  .go-capsule-btn:active,
+  .go-capsule-btn.is-clicked{
+    transform:scale(0.92);
+    background:#c000c4;
+    box-shadow:0 2px 10px rgba(238,69,242,0.7);
+  }
   .go-text{ color:#ffffff; font-weight:900; font-size:1rem; padding:0 14px 0 18px; }
   .arrow-icon{
     background-color:#ffffff; color:#1a1420; font-size:1.3rem; font-weight:900;
@@ -694,13 +708,13 @@ window.scrollTo(0, 0);
     display:none; flex-direction:column; gap:10px; width:100%; max-width:640px;
     margin:0 auto; text-align:left;
     padding-top:16px; opacity:0; filter:blur(4px);
-    
+
     transform:translateY(var(--reveal-rise, 16px));
     transition:transform .5s cubic-bezier(.2,.8,.2,1);
     will-change:opacity, transform, filter;
-    
-    pointer-events:auto;
-    
+
+    pointer-events:none;
+
     position:fixed; top:0; left:0; z-index:25;
   }
   .diagnostic-intake-form.js-visible{ display:flex; }
@@ -4776,6 +4790,12 @@ if(els.diagGoBtn){
       firstField.focus({ preventScroll:true });
     }
   });
+  els.diagGoBtn.addEventListener('mouseenter', () => els.diagGoBtn.classList.add('is-hovered'));
+  els.diagGoBtn.addEventListener('mouseleave', () => els.diagGoBtn.classList.remove('is-hovered', 'is-clicked'));
+  els.diagGoBtn.addEventListener('mousedown', () => els.diagGoBtn.classList.add('is-clicked'));
+  els.diagGoBtn.addEventListener('mouseup', () => els.diagGoBtn.classList.remove('is-clicked'));
+  els.diagGoBtn.addEventListener('touchstart', () => els.diagGoBtn.classList.add('is-hovered', 'is-clicked'), { passive:true });
+  els.diagGoBtn.addEventListener('touchend', () => els.diagGoBtn.classList.remove('is-hovered', 'is-clicked'));
 }
 
 
@@ -4787,10 +4807,9 @@ if(els.diagGoBtn){
 
 (function forceFormInteractive(){
   const targets = [];
-  if(els.diagnosticForm) targets.push(els.diagnosticForm);
   if(els.diagGoBtn) targets.push(els.diagGoBtn);
   if(els.diagnosticForm){
-    targets.push(...els.diagnosticForm.querySelectorAll('input, select, textarea, label, .custom-select-wrapper, .form-input-group, .form-grid-row'));
+    targets.push(...els.diagnosticForm.querySelectorAll('input, select, textarea, label, .custom-select-wrapper, .form-input-group, .form-grid-row, .form-grid-row > *'));
   }
   targets.forEach(el => el.style.setProperty('pointer-events', 'auto', 'important'));
 })();

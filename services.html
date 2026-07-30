@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
+<style>html{background:#000000}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REVacity | Services</title>
 <link rel="icon" type="image/png" href="media/icon.png">

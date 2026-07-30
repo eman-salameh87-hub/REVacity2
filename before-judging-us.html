@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REVacity | Before Judging us</title>
 <link rel="icon" type="image/png" href="media/icon.png">
+<!-- Set the background before anything else so there's no white flash
+     while the render-blocking three.min.js script below is downloading —
+     without this, the browser can paint its default white background
+     before the page's own <style> block (further down) ever applies. -->
+<style>html{background:#000000}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -596,7 +601,7 @@ try {
         <div class="skeptical-container">
           <h3 class="skeptical-title">Still skeptical?</h3>
           <p class="skeptical-subtitle">Good. Skeptics make the best clients.</p>
-          <a href="compare.html" class="skeptical-link-block">
+          <a href="compare.html" class="skeptical-link-block" id="compare-go-link">
             <div class="skeptical-link-text">
               <span>Compare us with others</span>
               <span>o you can know more</span>
@@ -1080,6 +1085,19 @@ try {
       onComplete: function () { window.location.href = url.href; }
     });
   });
+})();
+</script>
+<script>
+(function () {
+  var goLink = document.getElementById('compare-go-link');
+  if (!goLink) return;
+  goLink.addEventListener('mouseenter', function () { goLink.classList.add('is-hovered'); });
+  goLink.addEventListener('mouseleave', function () { goLink.classList.remove('is-hovered', 'is-clicked'); });
+  goLink.addEventListener('mousedown', function () { goLink.classList.add('is-clicked'); });
+  goLink.addEventListener('mouseup', function () { goLink.classList.remove('is-clicked'); });
+  goLink.addEventListener('click', function () { goLink.classList.add('is-clicked'); });
+  goLink.addEventListener('touchstart', function () { goLink.classList.add('is-hovered', 'is-clicked'); }, { passive: true });
+  goLink.addEventListener('touchend', function () { goLink.classList.remove('is-hovered', 'is-clicked'); });
 })();
 </script>
 </body>
