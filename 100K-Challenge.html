@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
 <style>html{background:#000000}</style>
+<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
+<script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
+<link rel="stylesheet" href="page-transition.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REVacity | The $100K Challenge</title>
 <script>if (history.scrollRestoration) history.scrollRestoration = 'manual'; window.scrollTo(0,0);</script>
@@ -239,31 +242,12 @@ body.page-100k .skeptical-title{font-family:'Syne',sans-serif;font-size:clamp(1.
   .challenge-modal-box { padding: 28px 22px 24px; }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Page transition — same veil system as about.html/services.html/
-   the-agent.html/index.html: a plain veil in the page's own background
-   tone that's already covering the screen on arrival and dissolves once
-   the page is ready, then closes back over the screen before any
-   internal link navigates away. Makes moving between pages read as one
-   continuous site instead of a hard page-load cut each time.
-   ══════════════════════════════════════════════════════════════ */
-#page-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #0e0819;
-  pointer-events: none;
-}
-#page-transition::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(14,8,25,0) 62%);
-}
+/* Page transition (the cosmic particle overlay + layered content
+   fade) lives entirely in page-transition.js/.css now — it creates
+   and manages its own #page-transition overlay dynamically. */
 </style>
 </head>
 <body class="page-100k">
-<div id="page-transition"></div>
 
 <div class="stage">
   <canvas id="gl"></canvas>
@@ -716,6 +700,7 @@ try {
 <!-- GSAP + ScrollTrigger CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="page-transition.js"></script>
 
 <script>
 (function() {
@@ -785,23 +770,8 @@ try {
     }
   })();
 
-  /* ── 3a. Page-transition entry — dissolves the #page-transition veil
-     (already covering the screen on arrival, see the CSS) once the page
-     is ready, matching about.html/services.html/the-agent.html/index.html. ── */
-  (function(){
-    var veil = document.getElementById('page-transition');
-    if (!veil) return;
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
-      onComplete: function () {
-        veil.style.display = 'none';
-        document.documentElement.classList.remove('loader-active');
-        document.body.classList.remove('loader-active');
-      }
-    });
-  })();
+  /* ── 3a. Page-transition entrance/exit now lives entirely in
+     page-transition.js (its own dynamically-created overlay). ── */
 
   /* ── 3b. Creative headline entrance — split the display headlines into
      individual characters that flip up into focus out of a blur, instead
@@ -1122,44 +1092,6 @@ try {
   }
 
   ScrollTrigger.refresh();
-})();
-</script>
-
-<script>
-/* ── Exit transition — closes the same veil over the screen before any
-   internal link navigates away, matching about.html/services.html/
-   the-agent.html/index.html. One delegated click listener catches every
-   same-site link on the page (nav, mobile menu, footer, CTA buttons,
-   logo) without needing to touch each one individually. External links,
-   anchors (incl. the modal-opening "#" links), new-tab/modified clicks,
-   mailto/tel, and downloads are left alone. ── */
-(function () {
-  var veil = document.getElementById('page-transition');
-  if (!veil) return;
-
-  document.addEventListener('click', function (e) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
-    if (a.target && a.target !== '' && a.target !== '_self') return;
-    if (a.hasAttribute('download')) return;
-
-    var url;
-    try { url = new URL(href, window.location.href); } catch (err) { return; }
-    if (url.origin !== window.location.origin) return;
-    if (url.href === window.location.href) return;
-
-    e.preventDefault();
-    veil.style.display = 'block';
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
-      onComplete: function () { window.location.href = url.href; }
-    });
-  });
 })();
 </script>
 

@@ -1,0 +1,56 @@
+/* ============================================================
+   REVacity — cinematic cosmic page transition
+   ------------------------------------------------------------
+   Pairs with page-transition.js. The overlay markup below is
+   normally created dynamically by that script (see ensureOverlay()),
+   so nothing needs to be hand-placed in index.html / about.html —
+   but the same structure is documented here for clarity:
+
+   <div id="page-transition" aria-hidden="true">
+     <canvas id="transition-canvas"></canvas>
+   </div>
+
+   This is a fully self-contained overlay + its own Canvas 2D particle
+   field — deliberately NOT the site's existing per-page Three.js
+   starfield (canvas#gl inside .stage). Reusing that would mean
+   touching each page's own complex, ScrollTrigger-coupled scene,
+   which is riskier and page-specific; a dedicated overlay canvas
+   works identically on every page and can never interfere with
+   scroll/pin behavior.
+   ============================================================ */
+
+#page-transition{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  background:#050308;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  overflow:hidden;
+}
+#page-transition.pt-active{
+  visibility:visible;
+}
+#page-transition.pt-block{
+  pointer-events:auto;
+}
+
+#transition-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+/* Anti-FOUC for pages arriving via the transition: real content starts
+   hidden so it can be revealed in layered order by page-transition.js
+   instead of popping in all at once before the script has a chance to
+   run. html-level class (not body) because this must apply before
+   <body> necessarily exists yet in a <head>-placed inline script. The
+   overlay itself is excluded so it stays visible while content is
+   hidden underneath it. */
+html.pt-incoming body > *:not(#page-transition){
+  opacity:0 !important;
+}

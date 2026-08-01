@@ -10,6 +10,9 @@
      without this, the browser can paint its default white background
      before the page's own <style> block (further down) ever applies. -->
 <style>html{background:#000000}</style>
+<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
+<script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
+<link rel="stylesheet" href="page-transition.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -166,24 +169,12 @@ canvas#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
   }
 }
 
-#page-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #030208;
-  pointer-events: none;
-}
-#page-transition::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
-}
+/* Page transition (the cosmic particle overlay + layered content
+   fade) lives entirely in page-transition.js/.css now — it creates
+   and manages its own #page-transition overlay dynamically. */
 </style>
 </head>
 <body>
-
-<div id="page-transition"></div>
 
 <div class="stage">
   <canvas id="gl"></canvas>
@@ -719,6 +710,7 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<script src="page-transition.js"></script>
 <script>
 (function () {
   if (!window.gsap) return;
@@ -728,21 +720,8 @@ try {
   gsap.set('.main-header', { y: -80, autoAlpha: 0 });
   gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out', delay: 0.1 });
 
-  /* Page-transition veil — fade out on arrival */
-  (function(){
-    var veil = document.getElementById('page-transition');
-    if (!veil) return;
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
-      onComplete: function () {
-        veil.style.display = 'none';
-        document.documentElement.classList.remove('loader-active');
-        document.body.classList.remove('loader-active');
-      }
-    });
-  })();
+  /* Page-transition entrance/exit now lives entirely in
+     page-transition.js (its own dynamically-created overlay). */
 
   /* ── Footer reveal ── */
   gsap.from('#site-footer', {
@@ -1057,33 +1036,6 @@ try {
       armFailsafe();
       tl.play();
     }
-  });
-})();
-</script>
-<script>
-(function () {
-  var veil = document.getElementById('page-transition');
-  if (!veil) return;
-  document.addEventListener('click', function (e) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
-    if (a.target && a.target !== '' && a.target !== '_self') return;
-    if (a.hasAttribute('download')) return;
-    var url;
-    try { url = new URL(href, window.location.href); } catch (err) { return; }
-    if (url.origin !== window.location.origin) return;
-    if (url.href === window.location.href) return;
-    e.preventDefault();
-    veil.style.display = 'block';
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
-      onComplete: function () { window.location.href = url.href; }
-    });
   });
 })();
 </script>

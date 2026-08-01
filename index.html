@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
 <style>html{background:#000000}</style>
+<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
+<script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
+<link rel="stylesheet" href="page-transition.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <script type="importmap">
@@ -50,16 +53,6 @@ window.scrollTo(0, 0);
   body.is-loading > *{ opacity:0 !important; }
   body:not(.is-loading) > *{ opacity:1; transition:opacity .8s ease; }
   ::selection{ background:rgba(238,240,255,0.25); }
-
-  
-  #page-transition{
-    position:fixed; inset:0; z-index:9999;
-    background:#030208; opacity:0; visibility:hidden; pointer-events:none;
-  }
-  #page-transition::before{
-    content:''; position:absolute; inset:0;
-    background:radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
-  }
 
   .scroll-track{ width:100%; position:relative; }
 
@@ -1069,8 +1062,6 @@ text-transform: none;
 </style>
 </head>
 <body class="is-loading">
-<div id="page-transition"></div>
-
 
 <header class="main-header">
   <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
@@ -2083,6 +2074,7 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="page-transition.js"></script>
 <script type="module">
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.scrollTo(0, 0);
@@ -5555,7 +5547,7 @@ function revealPage(){
   pageRevealed = true;
   document.body.classList.remove('is-loading');
 }
-setTimeout(revealPage, 3000); 
+setTimeout(revealPage, 3000);
 
 
 
@@ -6556,44 +6548,6 @@ requestAnimationFrame(render);
   requestAnimationFrame(loop);
 })();
 </script>
-
-
-
-<script>
-
-
-
-
-
-
-
-(function () {
-  var veil = document.getElementById('page-transition');
-  if (!veil || typeof gsap === 'undefined') return;
-
-  document.addEventListener('click', function (e) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
-    if (a.target && a.target !== '' && a.target !== '_self') return;
-    if (a.hasAttribute('download')) return;
-
-    var url;
-    try { url = new URL(href, window.location.href); } catch (err) { return; }
-    if (url.origin !== window.location.origin) return;
-    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
-
-    e.preventDefault();
-    gsap.to(veil, {
-      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
-      onComplete: function () { window.location.href = url.href; }
-    });
-  });
-})();
-</script>
-
 
 <a class="corner-label corner-label--tr" id="labelAgent" href="the-agent.html">The Agent<span class="corner-label-sub">Revenue is my only language</span></a>
 <a class="corner-label corner-label--bl" id="labelServices" href="services.html">Services<span class="corner-label-sub">Still looking for the standard list?<br>We understand, But not FOLLOW</span></a>

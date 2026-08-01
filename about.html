@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
 <style>html{background:#000000}</style>
+<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
+<script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
+<link rel="stylesheet" href="page-transition.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REVacity | About</title>
 <link rel="icon" type="image/png" href="media/icon.png">
@@ -11,6 +14,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<script src="page-transition.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght=0,300;0,400;1,300&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
@@ -214,33 +218,13 @@ canvas#gl {
   pointer-events: none;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Page transition — replaces the old video loader. A plain veil in
-   the page's own background tone that's already covering the screen
-   on arrival and simply dissolves once the hero is ready, instead of
-   holding on a loading screen — so opening the page reads as "still
-   scrolling the same story" rather than "a new page loaded". The same
-   veil closes over the screen before any internal link navigates away,
-   so leaving the page reads the same way in reverse.
-   ══════════════════════════════════════════════════════════════ */
-#page-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #030208;
-  pointer-events: none;
-}
-#page-transition::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, rgba(155,93,229,0.16), rgba(3,2,8,0) 62%);
-}
+/* Page transition (the cosmic particle overlay + layered content
+   fade) lives entirely in page-transition.js/.css now — it creates
+   and manages its own #page-transition overlay dynamically. */
 </style>
 </head>
 
 <body class="page-about">
-<div id="page-transition"></div>
 
 <div class="stage">
   <canvas id="gl"></canvas>
@@ -258,7 +242,7 @@ canvas#gl {
    per same-z-index stacking order it paints in front of the stars.
    Entrance ("opening dive": particles converge from a scatter + camera
    pulls back) fires via window.__playOpeningDive(), called from
-   playHeaderIn() below as soon as the page-transition veil starts to lift.
+   playHeaderIn() below as soon as the page finishes loading.
    ══════════════════════════════════════════════════════════════ */
 (function () {
   const canvas   = document.getElementById('bg-canvas');
@@ -989,31 +973,16 @@ gsap.ticker.lagSmoothing(1000, 16);
 ScrollTrigger.normalizeScroll(true);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-/* ── Header entrance + page-transition dissolve (replaces the old
-   video-loader gate) — #page-transition is already covering the screen
-   on arrival (see CSS); this fades it away in sync with the header
-   slide-in and the wave-terrain's opening dive, instead of waiting on a
-   loading screen, so opening the page reads as a continuation rather
-   than a fresh load. ── */
+/* ── Header entrance — the page-transition overlay/scroll-lock is
+   now entirely owned by page-transition.js (its playEntrance(), when
+   arriving via the cosmic transition), so this just plays the
+   header's own slide/fade-in and kicks off the wave-terrain's
+   opening dive. On a direct (non-transition) load there's no lock to
+   release here either — none was taken. ── */
 gsap.set('.main-header', { y: -80, autoAlpha: 0 });
-document.documentElement.classList.add('loader-active');
-document.body.classList.add('loader-active');
 (function playHeaderIn() {
   gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out' });
   if (typeof window.__playOpeningDive === 'function') window.__playOpeningDive();
-  var veil = document.getElementById('page-transition');
-  function releaseScroll() {
-    document.documentElement.classList.remove('loader-active');
-    document.body.classList.remove('loader-active');
-  }
-  if (veil) {
-    gsap.to(veil, {
-      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
-      onComplete: function () { veil.style.display = 'none'; releaseScroll(); }
-    });
-  } else {
-    releaseScroll();
-  }
 })();
 
 /* ── Nav link letter-wave hover (ported from index.html) — each letter is
@@ -2422,42 +2391,4 @@ gsap.timeline({ defaults:{ ease:'power3.out' } })
 })();
 </script>
 </body>
-
-<script>
-/* ── Exit transition — closes the same veil over the screen before any
-   internal link navigates away, so leaving the page feels like a
-   continuation into the next scroll rather than a hard page-load cut.
-   One delegated click listener catches every same-site link on the page
-   (nav, mobile menu, footer, CTA buttons, logo) without needing to touch
-   each one individually. External links, anchors, new-tab/modified
-   clicks, mailto/tel, and downloads are left alone. ── */
-(function () {
-  var veil = document.getElementById('page-transition');
-  if (!veil) return;
-
-  document.addEventListener('click', function (e) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
-    if (a.target && a.target !== '' && a.target !== '_self') return;
-    if (a.hasAttribute('download')) return;
-
-    var url;
-    try { url = new URL(href, window.location.href); } catch (err) { return; }
-    if (url.origin !== window.location.origin) return;
-    if (url.href === window.location.href) return;
-
-    e.preventDefault();
-    veil.style.display = 'block';
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
-      onComplete: function () { window.location.href = url.href; }
-    });
-  });
-})();
-</script>
 </html>

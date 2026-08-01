@@ -1,0 +1,79 @@
+/* ============================================================
+   REVacity shared page transition — continuous starfield
+   ------------------------------------------------------------
+   Every page already renders its own real starfield/skybox on
+   .stage (canvas#gl + .vignette) — see makeStarField()/[bg-stars]
+   in each page's own module script. Instead of building another
+   synthetic transition graphic, this transition IS that real
+   starfield: leaving a page fades out everything except .stage,
+   leaving only the black background and the already-twinkling
+   stars on screen; arriving on a page starts the same way (stars
+   visible immediately, everything else hidden) and fades the real
+   content in once the page's own existing ready-hook fires. The
+   starfield itself is never hidden, paused, or restarted, so it
+   reads as one continuous field across the navigation instead of
+   a new page "loading in".
+
+   IMPORTANT — never animate document.body/documentElement, and
+   never use transform here: only opacity/pointer-events on
+   specific real content elements. Transforming an ancestor of any
+   position:fixed element (like .stage) creates a new containing
+   block and once broke GSAP ScrollTrigger's pin/scroll math
+   site-wide — plain opacity toggling has no such effect, which is
+   also why this approach is simpler and safer than the earlier
+   overlay-panel attempts. Likewise navigation (exit) and the
+   scroll unlock (entrance) are driven by a plain setTimeout in
+   transitions.js, never solely by a GSAP/transitionend callback.
+
+   No overlay markup is needed for any of this — it's pure class
+   toggling on <body> (is-loading / pt-exit) picked up below.
+   ============================================================ */
+
+/* ---- Reusable "real content" selector ----
+   Direct children of <body> other than .stage, PLUS the handful of
+   elements that live nested *inside* .stage on some pages (index.html
+   nests its whole scroll-story inside .stage) or as extra decorative
+   canvases living outside .stage on other pages (about.html's
+   wave-terrain + ambient-dust layers, which are separate visual
+   layers, not literally "the starfield"). Everything else that's a
+   plain direct child of body (header, nav, sections, footers, etc.)
+   is already covered generically by the `> *:not(.stage)` part, on
+   any page, without needing to be listed by name. */
+
+body.is-loading > *:not(.stage),
+body.is-loading main.chapter-copy,
+body.is-loading .detail-panel,
+body.is-loading #bg-canvas,
+body.is-loading #ambient-dust-canvas{
+  opacity:0 !important;
+}
+body.is-loading > .stage{ opacity:1 !important; }
+
+/* NOTE: .detail-panel is intentionally excluded from this "reveal"
+   rule. Unlike main.chapter-copy, it isn't always-visible hero
+   content — it's a hover-triggered popup (see .detail-panel /
+   .detail-panel.open a few lines up) that must stay at its own
+   default opacity:0 until the page's existing hover logic opens it.
+   Forcing it to opacity:1 here would leave it permanently visible
+   and overlapping the hero text, which is a real bug this fixes. */
+body:not(.is-loading) > *:not(.stage),
+body:not(.is-loading) main.chapter-copy,
+body:not(.is-loading) #bg-canvas,
+body:not(.is-loading) #ambient-dust-canvas{
+  opacity:1;
+  transition:opacity .7s ease;
+}
+
+body.pt-exit > *:not(.stage),
+body.pt-exit main.chapter-copy,
+body.pt-exit .detail-panel,
+body.pt-exit #bg-canvas,
+body.pt-exit #ambient-dust-canvas{
+  opacity:0 !important;
+  pointer-events:none !important;
+  transition:opacity .45s ease;
+}
+
+/* Scroll lock while a transition is in flight — reuses the site's
+   existing html.loader-active/body.loader-active rule (style.css),
+   toggled from transitions.js and each page's own ready-hook. */

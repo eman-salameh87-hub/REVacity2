@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
 <style>html{background:#000000}</style>
+<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
+<script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
+<link rel="stylesheet" href="page-transition.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REVacity | Glossary</title>
 <link rel="icon" type="image/png" href="media/icon.png">
@@ -37,8 +40,9 @@ canvas#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
    static content needs lifting into its own stacking context. */
 .glossary-page,.creative-footer-reveal-container{position:relative;z-index:1}
 
-#page-transition{position:fixed;inset:0;z-index:9999;background:#0a0315;pointer-events:none}
-#page-transition::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(230,56,136,0.14),rgba(10,3,21,0) 62%)}
+/* Page transition (the cosmic particle overlay + layered content
+   fade) lives entirely in page-transition.js/.css now — it creates
+   and manages its own #page-transition overlay dynamically. */
 
 /* Cursor-follow spotlight over the term grid — subtle generative glow that
    tracks the pointer, set via --mx/--my custom props from JS below. */
@@ -71,8 +75,6 @@ canvas#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
 </style>
 </head>
 <body class="page-glossary">
-
-<div id="page-transition"></div>
 
 <div class="stage">
   <canvas id="gl"></canvas>
@@ -680,26 +682,14 @@ render();
 <!-- GSAP + ScrollTrigger CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="page-transition.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof gsap === 'undefined') return;
   gsap.registerPlugin(ScrollTrigger);
 
-  /* Page-transition veil — fade out on arrival */
-  (function(){
-    var veil = document.getElementById('page-transition');
-    if (!veil) return;
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 0, duration: 1.1, ease: 'power2.out', delay: 0.15,
-      onComplete: function () {
-        veil.style.display = 'none';
-        document.documentElement.classList.remove('loader-active');
-        document.body.classList.remove('loader-active');
-      }
-    });
-  })();
+  /* Page-transition entrance/exit now lives entirely in
+     page-transition.js (its own dynamically-created overlay). */
 
   /* Header entrance — ported verbatim from index.html: nav links split
      into per-letter spans (so the shared style.css hover-wave animation
@@ -909,33 +899,6 @@ document.addEventListener('DOMContentLoaded', function () {
     .fromTo('.glossary-detail-sidebar .sidebar-link-list li', { autoAlpha: 0, x: 16 },
       { autoAlpha: 1, x: 0, duration: 0.4, stagger: 0.04, ease: 'power2.out' }, '-=0.8');
 });
-</script>
-<script>
-(function () {
-  var veil = document.getElementById('page-transition');
-  if (!veil) return;
-  document.addEventListener('click', function (e) {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
-    if (a.target && a.target !== '' && a.target !== '_self') return;
-    if (a.hasAttribute('download')) return;
-    var url;
-    try { url = new URL(href, window.location.href); } catch (err) { return; }
-    if (url.origin !== window.location.origin) return;
-    if (url.href === window.location.href) return;
-    e.preventDefault();
-    veil.style.display = 'block';
-    document.documentElement.classList.add('loader-active');
-    document.body.classList.add('loader-active');
-    gsap.to(veil, {
-      autoAlpha: 1, duration: 0.55, ease: 'power2.in',
-      onComplete: function () { window.location.href = url.href; }
-    });
-  });
-})();
 </script>
 </body>
 </html>
