@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<!-- Set the background before anything else so there's no white flash while any render-blocking scripts/fonts below are downloading — without this, the browser can paint its default white background before the page's own <style> block (further down) ever applies. -->
+<style>html{background:#000000}</style>
+<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
+<script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
+<link rel="stylesheet" href="page-transition.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REVacity | The Agent</title>
+<link rel="icon" type="image/png" href="media/icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── The Agent — page-specific overrides ── */
+html{height:100%;overflow:hidden}
+html,body{width:100%;background:#000;font-family:"Google Sans Code",monospace;overflow-x:hidden}
+body{height:100%;overflow-y:auto}
+
+/* push the video section down so it clears the fixed header */
+:root{--header-h:80px}
+body.page-agent .main-agent-section{margin-top:var(--header-h)}
+
+/* .menu-item has no font-family of its own in the shared stylesheet — it
+   just inherits from body, which this page sets to the terminal-style
+   "Google Sans Code" monospace for its own content. That's fine for the
+   page itself, but it also made the mobile slide-menu (Collapse/About Us/
+   etc.) render in monospace while every other page's mobile menu inherits
+   a normal sans-serif body font instead. Scoped back to match. */
+body.page-agent .mobile-slide-menu,
+body.page-agent .mobile-slide-menu .menu-item,
+body.page-agent .mobile-slide-menu .btn-warrant,
+body.page-agent .mobile-slide-menu .btn-reward{
+  font-family:'DM Sans',sans-serif;
+}
+
+/* .form-group conflicts with style.css (different layout) — scoped */
+body.page-agent .form-group{display:flex;flex-direction:column;gap:10px}
+body.page-agent .form-group label{font-family:'Space Grotesk','Inter',sans-serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:2px;color:#666;font-weight:600}
+body.page-agent .form-group input{background:transparent;border:1px solid #1f1f2e;padding:clamp(8px,2vh,18px) 20px;color:#fff;font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.3s;width:100%;border-radius:0}
+body.page-agent .form-group input::placeholder{color:#444}
+body.page-agent .form-group input:focus{border-color:#a855f7}
+
+/* ── Chat pills layout ── */
+/* Desktop: pills stay inside the wrapper (default) */
+.chat-pills--mobile{display:none}
+.chat-pills--desktop{display:flex}
+
+/* Mobile: hide pills inside wrapper, show them below as a sibling */
+@media(max-width:768px){
+  .chat-pills--desktop{display:none}
+  .chat-pills--mobile{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:flex-start;
+    padding:10px 16px 0;
+    width:100%;
+    box-sizing:border-box;
+    opacity:0; /* matched to GSAP initial state */
+  }
+  .need-help-container{
+    margin-top: 25px !important;
+    padding-left: 10px;
+  }
+  .chat-bar-wrapper{
+    margin: 0px auto 20px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Header theme — same "chrome" treatment ported onto index.html/
+   about.html/services.html: a continuously-sweeping gradient
+   underline, a slow pulsing glow on the logo, and a per-letter wave
+   on nav-link hover. Scoped to body.page-agent, purely additive on
+   top of style.css's existing header.
+   ══════════════════════════════════════════════════════════════ */
+body.page-agent .main-header::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,127,255,0.95), rgba(168,85,247,0.5), transparent);
+  background-size: 60% 100%;
+  background-repeat: no-repeat;
+  animation: agentHeaderSweep 7s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.8;
+}
+@keyframes agentHeaderSweep {
+  0%   { background-position: -60% 0; }
+  50%  { background-position: 130% 0; }
+  100% { background-position: -60% 0; }
+}
+body.page-agent .main-header .logo img {
+  animation: agentLogoGlowPulse 4.5s ease-in-out infinite;
+}
+@keyframes agentLogoGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(168,85,247,0.4)); }
+  50%      { filter: drop-shadow(0 0 26px rgba(216,127,255,0.8)); }
+}
+body.page-agent .nav-center a .ltr {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), color 0.35s ease, text-shadow 0.35s ease;
+}
+body.page-agent .nav-center a:hover .ltr {
+  animation: agentNavLetterWave 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  animation-delay: calc(var(--i) * 28ms);
+}
+@keyframes agentNavLetterWave {
+  0%   { transform: translateY(0); color: #fff; text-shadow: none; }
+  45%  { transform: translateY(-7px); color: #a855f7; text-shadow: 0 0 10px rgba(168,85,247,0.8); }
+  100% { transform: translateY(0); color: #d87fff; text-shadow: 0 0 8px rgba(216,127,255,0.5); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Real background — the same skybox + near/far star-point fields as
+   index.html/about.html/services.html, rendered on a persistent
+   fixed canvas (#gl inside .stage) that sits behind everything,
+   including the video hero (video plays above it at full opacity,
+   so the starfield reads through only at the video's own edges/
+   letterboxing and behind the footer). See the script right after
+   <body> for the Three.js setup; this is just the layout/vignette CSS.
+   ══════════════════════════════════════════════════════════════ */
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+}
+canvas#gl {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(3,2,8,0) 35%, rgba(3,2,8,0.6) 100%),
+    linear-gradient(to bottom, rgba(3,2,8,0.4) 0%, rgba(3,2,8,0) 20%, rgba(3,2,8,0) 70%, rgba(3,2,8,0.55) 100%);
+  z-index: 5;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Page transition — a plain veil in the page's own background tone
+   that's already covering the screen on arrival and dissolves once
+   the hero is ready, and closes again before any internal link
+   navigates away — same pattern as about.html/services.html, so
+   moving between pages reads as a continuous scroll rather than a
+   hard page-load cut.
+   ══════════════════════════════════════════════════════════════ */
+/* Page transition (the cosmic particle overlay + layered content
+   fade) lives entirely in page-transition.js/.css now — it creates
+   and manages its own #page-transition overlay dynamically. */
+
+/* ══════════════════════════════════════════════════════════════
+   Lead-gen form popup — curtain-split reveal, ported verbatim from
+   services.html's REaaS/GEaaS "NEXT" panel open: two solid #04000a
+   panels close from the top and bottom edges to meet in the middle
+   (same 0.7s cubic-bezier(0.76,0,0.24,1) timing/color as services.html),
+   then the form content fades in just after they meet — replacing the
+   plain opacity/y fade this popup used before. #agent-form-container's
+   own background is handed off to the curtains so they read as the
+   real background instead of a flat rgba fade.
+   (Built with scaleY instead of services.html's translateY so the
+   curtains never leave #agent-form-container's own box — this
+   container scrolls its content on small screens, so anything
+   positioned outside its box would otherwise force an unwanted
+   scroll range.) ── */
+#agent-form-container {
+  background: transparent;
+}
+.agent-form-curtain {
+  position: absolute;
+  left: 0; right: 0;
+  height: 50%;
+  background: #04000a;
+  z-index: 1;
+  transition: transform 0.7s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: none;
+}
+.agent-form-curtain--top {
+  top: 0;
+  transform-origin: top;
+  transform: scaleY(0);
+}
+.agent-form-curtain--bottom {
+  bottom: 0;
+  transform-origin: bottom;
+  transform: scaleY(0);
+}
+#agent-form-container.active .agent-form-curtain--top,
+#agent-form-container.active .agent-form-curtain--bottom {
+  transform: scaleY(1);
+}
+.agent-form-inner {
+  /* opacity is GSAP-driven (see setupFormTransitions in the script
+     below), not a CSS transition — a transition-delay here would apply
+     symmetrically to both open and close, which is what caused the
+     form to hang on-screen after closing. */
+  z-index: 3;
+}
+</style>
+</head>
+<body class="page-agent">
+
+<div class="stage">
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Background + stars — the same skybox and near/far star-point
+   fields as index.html/about.html/services.html. Idle "camera
+   breathing" drift substitutes for a scroll-driven camera path
+   since this page has no chapter/gate system of its own.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('gl');
+  if (!canvas) return;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#000000');
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 700);
+  const CAM_BASE = { x: 0, y: 0, z: 40 };
+  camera.position.set(CAM_BASE.x, CAM_BASE.y, CAM_BASE.z);
+  camera.lookAt(0, 0, 24);
+
+  const fog = new THREE.FogExp2(new THREE.Color('#000000').getHex(), 0.0055);
+  scene.fog = fog;
+
+  function resizeGL() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resizeGL);
+  resizeGL();
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Galaxy skybox (ported verbatim from index.html) ---- */
+  const SKY_BASE = '#030208';
+  function skyLightFrom(hex, peak, whiten) {
+    const r = parseInt(hex.substr(1, 2), 16),
+          g = parseInt(hex.substr(3, 2), 16),
+          b = parseInt(hex.substr(5, 2), 16);
+    const k = peak / (Math.max(r, g, b) || 1);
+    const mix = (v) => Math.round(v * k + (255 - v * k) * whiten);
+    return mix(r) + ',' + mix(g) + ',' + mix(b);
+  }
+  const SKY_LIGHT = skyLightFrom(SKY_BASE, 170, 0.35);
+  const SKY_MONOCHROME = true;
+  const SKY_GLOW = 0.30;
+
+  function buildGalaxySkyTexture() {
+    const W = 1600, H = 800;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = SKY_MONOCHROME ? SKY_BASE : '#050208';
+    ctx.fillRect(0, 0, W, H);
+
+    const bandRGB = SKY_MONOCHROME ? SKY_LIGHT : '150,90,200';
+    const bandA = 0.045 * (SKY_MONOCHROME ? SKY_GLOW : 1);
+    const band = ctx.createLinearGradient(0, H * 0.28, 0, H * 0.72);
+    band.addColorStop(0, 'rgba(' + bandRGB + ',0)');
+    band.addColorStop(0.5, 'rgba(' + bandRGB + ',' + bandA + ')');
+    band.addColorStop(1, 'rgba(' + bandRGB + ',0)');
+    ctx.fillStyle = band;
+    ctx.fillRect(0, H * 0.26, W, H * 0.48);
+
+    const blobDefs = [
+      { x: 0.12, y: 0.40, r: 220, rgb: '200,90,220', a: 0.07 },
+      { x: 0.32, y: 0.60, r: 190, rgb: '110,90,235', a: 0.06 },
+      { x: 0.58, y: 0.34, r: 260, rgb: '150,80,255', a: 0.065 },
+      { x: 0.80, y: 0.56, r: 190, rgb: '230,110,200', a: 0.05 },
+      { x: 0.46, y: 0.20, r: 160, rgb: '180,150,255', a: 0.03 },
+      { x: 0.94, y: 0.30, r: 140, rgb: '90,110,255', a: 0.045 },
+    ];
+    const blobs = blobDefs.map(function (b) {
+      const rgb = SKY_MONOCHROME ? SKY_LIGHT : b.rgb;
+      const a = b.a * (SKY_MONOCHROME ? SKY_GLOW : 1);
+      return { x: b.x, y: b.y, r: b.r, c: 'rgba(' + rgb + ',' + a + ')' };
+    });
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(b => {
+      const g = ctx.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r);
+      g.addColorStop(0, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+
+    for (let i = 0; i < 1200; i++) {
+      const x = Math.random() * W, y = Math.random() * H;
+      const inBand = y > H * 0.28 && y < H * 0.72;
+      const r = Math.random() * (inBand ? 1.7 : 1.1) + 0.2;
+      const a = Math.random() * 0.8 + 0.2;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const skyGeo = new THREE.SphereGeometry(320, 40, 24);
+  const skyMat = new THREE.MeshBasicMaterial({ map: buildGalaxySkyTexture(), side: THREE.BackSide, fog: false });
+  const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+  scene.add(skyMesh);
+
+  /* ---- Star point-fields (ported verbatim from index.html) ---- */
+  function starTexture() {
+    const s = 128;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.12, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.12)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const STAR_TEX = starTexture();
+
+  function buildStars(count, radius, zSpan, size, opacity) {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * radius;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * radius * 0.6;
+      positions[i * 3 + 2] = 45 - Math.random() * zSpan;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size, map: STAR_TEX, color: 0xffffff, transparent: true, opacity,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return new THREE.Points(geo, mat);
+  }
+  function makeStarField(layers, countEach, radius, zSpan, size, baseOpacity) {
+    const group = new THREE.Group();
+    const list = [];
+    for (let i = 0; i < layers; i++) {
+      const mesh = buildStars(countEach, radius, zSpan, size, baseOpacity);
+      group.add(mesh);
+      list.push({ mesh, baseOpacity, phase: Math.random() * Math.PI * 2, speed: 0.5 + Math.random() * 0.9 });
+    }
+    scene.add(group);
+    return { group, layers: list };
+  }
+  const nearStarField = makeStarField(4, 163, 34, 150, 0.055, 0.85);
+  const farStarField  = makeStarField(3, 133, 130, 220, 0.045, 0.4);
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const elapsed = clock.getElapsedTime();
+    if (!reducedMotion) {
+      [...nearStarField.layers, ...farStarField.layers].forEach((l) => {
+        const twinkle = 0.78 + 0.22 * Math.sin(elapsed * l.speed + l.phase);
+        l.mesh.material.opacity = l.baseOpacity * twinkle;
+      });
+      nearStarField.group.rotation.z = elapsed * 0.003;
+      farStarField.group.rotation.z = -elapsed * 0.0015;
+      skyMesh.rotation.y = elapsed * 0.004;
+      camera.position.x = CAM_BASE.x + Math.sin(elapsed * 0.05) * 1.4;
+      camera.position.y = CAM_BASE.y + Math.sin(elapsed * 0.037) * 0.8;
+      camera.lookAt(0, 0, 24);
+    }
+    renderer.render(scene, camera);
+  })();
+})();
+</script>
+
+ <header class="main-header">
+    <div class="logo"><a href="index.html"><img src="media/logo-new.png" alt="Revacity" fetchpriority="high" /></a></div>
+
+    <nav class="nav-center">
+        <a href="index.html" data-text="The Collapse">The Collapse</a>
+        <a href="about.html" data-text="About Us">About Us</a>
+        <a href="before-judging-us.html" data-text="Before Judging">Before Judging</a>
+        <a href="compare.html" data-text="Compare">Compare</a>
+        <a href="blog.html" data-text="Blog">Blog</a>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+
+        <div class="header-buttons">
+            <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant">
+                <span>Start a Warrant</span>
+            </a>
+            <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward">
+                <span>$100k Reward</span>
+            </a>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</header>
+
+<div class="mobile-slide-menu" id="mobile-menu">
+    <div class="close-menu" id="close-menu">
+        <span></span>
+        <span></span>
+    </div>
+
+    <a href="index.html" class="menu-item" style="--i: 1;">The Collapse</a>
+    <a href="about.html" class="menu-item" style="--i: 2;">About Us</a>
+    <a href="before-judging-us.html" class="menu-item" style="--i: 3;">Before Judging</a>
+    <a href="compare.html" class="menu-item" style="--i: 4;">Compare</a>
+    <a href="blog.html" class="menu-item" style="--i: 5;">Blog</a>
+
+    <div class="mobile-menu-cta" style="--i: 6;">
+        <a href="start-a-warrent.html" class="btn-warrant" data-value="Start a Warrant"><span>Start a Warrant</span></a>
+        <a href="100K-Challenge.html" class="btn-reward" data-value="$100k Reward"><span>$100k Reward</span></a>
+    </div>
+</div>
+
+<div id="new-agent-section" class="main-agent-section">
+    <video id="agent-video" autoplay loop muted playsinline preload="auto" class="bg-video">
+        <source src="media/Media1.mp4" type="video/mp4">
+    </video>
+    <span class="agent-label" id="agent-label">The Agent</span>
+    <h2 class="agent-selection-title" id="agent-selection-title">Select your pain or wished gain</h2>
+    <div class="scatter-canvas" id="scatter-canvas"></div>
+    <div class="mobile-list" id="mobile-list"></div>
+    <div class="chat-bar-wrapper" id="chat-bar-wrapper">
+        <div class="chat-bar">
+            <input type="text" placeholder="Describe your revenue reality..." id="chat-input"/>
+            <button class="chat-send-btn" title="Send">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+        <div class="chat-pills chat-pills--desktop">
+            <span class="pill">WE SELL RETAIL PRODUCTS ONLINE</span>
+            <span class="pill">WE'RE A D2C BRAND</span>
+            <span class="pill">ECOMMERCE APPAREL</span>
+            <span class="pill">CONSUMER ELECTRONICS</span>
+        </div>
+    </div>
+    <div class="chat-pills chat-pills--mobile" id="chat-pills-mobile">
+        <span class="pill">WE SELL RETAIL PRODUCTS ONLINE</span>
+        <span class="pill">WE'RE A D2C BRAND</span>
+        <span class="pill">ECOMMERCE APPAREL</span>
+        <span class="pill">CONSUMER ELECTRONICS</span>
+    </div>
+    <div class="need-help-container">
+        <div class="need-help-link">
+            <span class="need-help-icon">?</span>
+            Need Help
+        </div>
+    </div>
+</div>
+
+<div class="agent-form-container" id="agent-form-container">
+    <div class="agent-form-curtain agent-form-curtain--top"></div>
+    <div class="agent-form-curtain agent-form-curtain--bottom"></div>
+    <div class="agent-form-inner">
+        <button class="form-close-btn" id="form-close-btn" aria-label="Close form">&times;</button>
+        <button class="form-back-btn" id="form-back-btn">← Back to Agent</button>
+        <h3 class="form-heading">We are on it, Fill the below details and you will hear from us in the next 48-72 hours</h3>
+        <form onsubmit="event.preventDefault(); alert('Form submitted!');">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" placeholder="Your name" required />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="you@company.com" required />
+                </div>
+                <div class="form-group">
+                    <label>Company</label>
+                    <input type="text" placeholder="Company name" required />
+                </div>
+                <div class="form-group submit-wrap">
+                    <button type="submit" class="form-submit-btn">SUBMIT</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="creative-footer-reveal-container" id="site-footer">
+  <footer class="creative-tech-footer">
+    <div class="footer-top-glow-line"></div>
+    <div class="footer-grid-inner">
+      <div class="footer-brand-column">
+        <img src="media/REVacity.png" alt="REVacity" style="width:180px;height:auto"/>
+        <p class="footer-brand-tagline">Observability platforms and autonomous orchestration frameworks for high-fidelity agentic systems.</p>
+      </div>
+      <div class="footer-links-grid">
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="index.html" class="footer-link-item"><span class="link-num">01 //</span> The Collapse</a>
+            <a href="about.html" class="footer-link-item"><span class="link-num">02 //</span> About Us</a>
+            <a href="our-architecture.html" class="footer-link-item"><span class="link-num">03 //</span> Our Architecture</a>
+            <a href="glossary.html" class="footer-link-item"><span class="link-num">04 //</span> Glossary</a>
+        </div>
+
+        <div class="footer-link-group">
+            <h4 class="group-title">STRUCTURE</h4>
+            <a href="before-judging-us.html" class="footer-link-item"><span class="link-num">05 //</span> Before Judging</a>
+            <a href="compare.html" class="footer-link-item"><span class="link-num">06 //</span> Compare</a>
+            <a href="blog.html" class="footer-link-item"><span class="link-num">07 //</span>Blog</a>
+        </div>
+      </div>
+      <div class="footer-actions-column">
+        <h4 class="group-title">SYSTEM INTERACTION</h4>
+        <div class="footer-subscribe-wrapper">
+          <input type="email" placeholder="Enter operator email..." class="footer-input-field"/>
+          <button type="button" class="footer-submit-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+          <div class="footer-meta-stamps">
+                     <div class="footer-socials-row">
+                    <a href="#" class="social-icon-btn" aria-label="LinkedIn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="X (Twitter)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                            <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Facebook">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon-btn" aria-label="Instagram">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                </div>
+                </div>
+      </div>
+    </div>
+    <div class="footer-bottom-bar">
+        <p class="copyright-text">&copy; 2026 REVACITY . ALL PROTOCOLS RESERVED.</p>
+        <div class="footer-legal-links">
+            <a href="privacy.html">PRIVACY DECREE</a>
+            <span class="divider">/</span>
+            <a href="terms.html">TERMINAL TERMS</a>
+            <span class="divider">/</span>
+            <a href="security-clearance.html">SECURITY CLEARANCE</a>
+        </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="page-transition.js"></script>
+<script>
+(function(){
+  const hamburger=document.getElementById('hamburger');
+  const mobileMenu=document.getElementById('mobile-menu');
+  const closeMenuBtn=document.getElementById('close-menu');
+  if(!hamburger||!mobileMenu||!closeMenuBtn)return;
+  hamburger.addEventListener('click',()=>{hamburger.classList.add('active');mobileMenu.classList.add('active')});
+  const closeMenu=()=>{hamburger.classList.remove('active');mobileMenu.classList.remove('active')};
+  closeMenuBtn.addEventListener('click',closeMenu);
+  mobileMenu.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeMenu));
+})();
+
+/* ── Option texts ── */
+const OPTIONS = [
+    { text: "Are you here because you are looking for someone do your work, or Generate for both of you more money?", cls: "w" },
+    { text: '"I can code a solution for your revenue problem in real-time right now. No devs needed. Just tell me the goal."', cls: "w" },
+    { text: "If i gave you 3 different customer profiles you know whose your right customer and whose not?", cls: "m" },
+    { text: "You are here because something is broken. Is it the traffic, the conversion, or the product? Be honest, I'm not a human.", cls: "w" },
+    { text: "Do you know why you have ROI Blindness?", cls: "m" },
+    { text: "If I could cut your acquisition cost by 20% but you had to fire your favorite agency, would you do it?", cls: "w" },
+    { text: "Do have the nerve and Audacity to do Now Situational Audit?", cls: "m" },
+    { text: '"If I could rewrite your homepage in 3 minutes to double conversion, would you let me? Or do you prefer the human touch?"', cls: "w" },
+    { text: "How effecient the huge likes and clicks you are getting?", cls: "m" },
+    { text: "Are you in Satisfaction or Stagnation or Surrendering Or Survival?", cls: "m" },
+    { text: "What you call it Business espionage or competitve intelligence?", cls: "w" },
+    { text: '"Let\'s play a game. You tell me your revenue goal, and I\'ll generate the roadmap to hit it. No charge for the map."', cls: "w" },
+    { text: "How well you know your work, seriously what is your value metrics", cls: "m" },
+    { text: 'The "Why" Challenge: You are satisfied because you compare yourself to your past. What if you compared yourself to your potential?', cls: "w" },
+    { text: "You need to know whose not buying from you?", cls: "m" },
+    { text: 'Currently you are "shouting" or "hosting"? Can you define Attention Arbitrage', cls: "m" },
+    { text: "What make's you happy about your brand and products performance, Ability to pay the bills, or Pure ignorance", cls: "w" },
+];
+const POSITIONS = [
+    [35,   2,  490],[68,   2,  490],[20,  11,  490],[52,  10,  490],[78,  12,  490],
+    [27,  21,  490],[70,  20,  490],[46,  30,  490],[74,  28,  490],[16,  32,  490],
+    [80,  38,  490],[54,  42,  490],[76,  52,  490],[20,  42,  490],[77,  60,  490],
+    [18,  57,  490],[48,  55,  490],
+];
+function buildScatter() {
+    const canvas = document.getElementById('scatter-canvas');
+    const mobileList = document.getElementById('mobile-list');
+    let maxTopVh = 0;
+    OPTIONS.forEach((opt, i) => {
+        const [cx, topVh, maxW] = POSITIONS[i] || [50, i * 8, 300];
+        const div = document.createElement('div');
+        div.className = `agent-text-block ${opt.cls}`;
+        div.textContent = opt.text;
+        div.style.left = cx + '%';
+        div.style.top = topVh + 'vh';
+        div.style.maxWidth = maxW + 'px';
+        div.style.textAlign = 'center';
+        div.style.transform = 'translateX(-50%) scale(0)';
+        canvas.appendChild(div);
+        const divM = document.createElement('div');
+        divM.className = `agent-text-block ${opt.cls}`;
+        divM.textContent = opt.text;
+        mobileList.appendChild(divM);
+        if (topVh > maxTopVh) maxTopVh = topVh;
+    });
+    canvas.style.height = (maxTopVh + 5) + 'vh';
+}
+function animatePop(elements) {
+    const order = elements.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+    }
+    order.forEach((idx, seq) => {
+        const el = elements[idx];
+        gsap.to(el, {
+            opacity: 1, scale: 1, duration: 0.38, delay: 0.9 + seq * 0.11,
+            ease: "back.out(2.4)", transformOrigin: "50% 50%",
+            onStart() { this.targets()[0].style.transform = 'translateX(-50%) scale(0)'; },
+            onUpdate() { el.style.transform = `translateX(-50%) scale(${gsap.getProperty(el,"scale")})`; },
+            onComplete() { el.style.transform = 'translateX(-50%) scale(1)'; }
+        });
+    });
+}
+function setupFormTransitions() {
+    const allQuestionBlocks = document.querySelectorAll('.agent-text-block');
+    const formContainer = document.getElementById('agent-form-container');
+    const backBtn = document.getElementById('form-back-btn');
+    const closeBtn = document.getElementById('form-close-btn');
+    const formInner = formContainer.querySelector('.agent-form-inner');
+    const mainUiElements = ['#agent-label','#agent-selection-title','#scatter-canvas','#mobile-list','#chat-bar-wrapper','#chat-pills-mobile','.need-help-container'];
+    if (formInner) gsap.set(formInner, { opacity: 0 });
+    allQuestionBlocks.forEach(block => {
+        block.addEventListener('click', () => {
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            gsap.to(mainUiElements, { opacity: 0, y: -20, duration: 0.4, stagger: 0.03, pointerEvents: 'none' });
+            /* curtain-split reveal — ported from services.html's REaaS/GEaaS
+               "NEXT" panel open (see <style>): the container itself no
+               longer fades, two solid #04000a curtains close from top/
+               bottom to meet in the middle and the form content fades in
+               just after, instead of the old plain opacity/y-rise fade.
+               The form content's fade is GSAP-driven (not a CSS transition)
+               so the open delay (content waits for the curtains to meet)
+               and the close speed can be tuned independently — a plain CSS
+               transition-delay applies symmetrically both ways, which is
+               what caused the form to hang on-screen for ~1s after closing
+               and overlap the hero UI fading back in underneath it. */
+            formContainer.style.pointerEvents = 'auto';
+            formContainer.style.opacity = '1';
+            formContainer.classList.add('active');
+            if (formInner) gsap.to(formInner, { opacity: 1, duration: 0.4, delay: 0.65, ease: 'power2.out', overwrite: true });
+        });
+    });
+    [backBtn, closeBtn].forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', () => {
+                document.documentElement.style.overflow = '';
+                document.body.style.overflow = '';
+                formContainer.classList.remove('active');
+                formContainer.style.pointerEvents = 'none';
+                if (formInner) gsap.to(formInner, { opacity: 0, duration: 0.25, ease: 'power2.in', overwrite: true });
+                /* wait for the curtains to finish retreating (0.7s) before
+                   fully hiding the container — the content itself is
+                   already gone well before that (0.25s, no delay). */
+                setTimeout(() => { formContainer.style.opacity = '0'; }, 750);
+                gsap.to(mainUiElements, { opacity: 1, y: 0, duration: 0.5, stagger: 0.03, pointerEvents: 'auto' });
+            });
+        }
+    });
+}
+const vid = document.getElementById('agent-video');
+if (vid) { vid.muted = true; vid.play().catch(() => {}); }
+window.addEventListener('load', () => {
+    gsap.fromTo('#new-agent-section', { filter: 'brightness(2.5) blur(6px)' }, { filter: 'brightness(1) blur(0px)', duration: 1, ease: 'power2.out' });
+    gsap.to('#agent-label', { opacity: 1, duration: 0.6, delay: 0.2 });
+    gsap.fromTo('#agent-selection-title', { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.4, ease: 'power2.out' });
+    gsap.to('#chat-bar-wrapper', { opacity: 1, duration: 0.6, delay: 1.2 });
+    gsap.to('#chat-pills-mobile', { opacity: 1, duration: 0.6, delay: 1.2 });
+    buildScatter();
+    const blocks = Array.from(document.querySelectorAll('#scatter-canvas .agent-text-block'));
+    animatePop(blocks);
+    setupFormTransitions();
+});
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Agent hero — cinematic depth layer. Purely additive on top of the
+   existing video/scatter hero: a drifting ambient-particle canvas
+   sits between the video and its dark gradient overlay (new
+   z-index:1.5 layer, pointer-events:none so it never blocks the
+   scatter questions/chat bar), and a subtle cursor-driven parallax
+   on the video itself turns the flat background plate into a
+   responsive 3D space, matching the "particle systems / responsive
+   visual motion" language used across index.html/about.html/
+   services.html. Every existing element (video, label, title,
+   scatter canvas, chat bar, form, footer) stays exactly as-is.
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+  const section = document.getElementById('new-agent-section');
+  const video = document.getElementById('agent-video');
+  if (!section || typeof THREE === 'undefined') return;
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- ambient particle motes ---- */
+  const canvas = document.createElement('canvas');
+  canvas.id = 'agent-particles';
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;';
+  video.insertAdjacentElement('afterend', canvas);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.set(0, 0, 20);
+
+  function moteTexture() {
+    const s = 64;
+    const c = document.createElement('canvas'); c.width = s; c.height = s;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.25, 'rgba(216,150,255,0.7)');
+    g.addColorStop(1, 'rgba(168,85,247,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  }
+  const MOTE_TEX = moteTexture();
+
+  const COUNT = 130;
+  const positions = new Float32Array(COUNT * 3);
+  const speeds = new Float32Array(COUNT);
+  for (let i = 0; i < COUNT; i++) {
+    positions[i * 3]     = (Math.random() - 0.5) * 40;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 26;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 16;
+    speeds[i] = 0.12 + Math.random() * 0.3;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.45, map: MOTE_TEX, color: 0xd8a7ff, transparent: true, opacity: 0.45,
+    depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
+  });
+  const motes = new THREE.Points(geo, mat);
+  scene.add(motes);
+
+  function resize() {
+    const w = section.clientWidth, h = section.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ---- cursor-driven parallax on the video (dolly/tilt feel) ----
+     Uses gsap.quickTo (not raw style.transform) so this composes
+     cleanly with the separate scroll-scrubbed scale/blur tween on the
+     same element (see "Scroll storytelling" section below) instead of
+     the two fighting over the inline transform each frame. ---- */
+  let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+  let videoParallaxX, videoParallaxY;
+  if (video) {
+    video.style.willChange = 'transform';
+    videoParallaxX = gsap.quickTo(video, 'x', { duration: 0.6, ease: 'power2.out' });
+    videoParallaxY = gsap.quickTo(video, 'y', { duration: 0.6, ease: 'power2.out' });
+  }
+  section.addEventListener('mousemove', (e) => {
+    const r = section.getBoundingClientRect();
+    mouseX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    mouseY = ((e.clientY - r.top) / r.height - 0.5) * 2;
+  });
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    if (!reducedMotion) {
+      const t = clock.getElapsedTime();
+      const pos = geo.attributes.position.array;
+      for (let i = 0; i < COUNT; i++) {
+        pos[i * 3 + 1] += speeds[i] * 0.012;
+        if (pos[i * 3 + 1] > 14) pos[i * 3 + 1] = -14;
+      }
+      geo.attributes.position.needsUpdate = true;
+      motes.rotation.y = t * 0.008;
+
+      targetX += (mouseX - targetX) * 0.04;
+      targetY += (mouseY - targetY) * 0.04;
+      camera.position.x = targetX * 1.4;
+      camera.position.y = -targetY * 0.9;
+      camera.lookAt(0, 0, 0);
+
+      if (video && videoParallaxX && videoParallaxY) {
+        videoParallaxX(targetX * -8);
+        videoParallaxY(targetY * -6);
+      }
+    }
+    renderer.render(scene, camera);
+  })();
+})();
+</script>
+
+<script>
+/* ── Header & Footer animations — ported from 100K-Challenge ── */
+(function () {
+  gsap.registerPlugin(ScrollTrigger);
+  /* html has overflow:hidden and body is the real scroll container
+     (see page-specific <style> at the top) — without this, ScrollTrigger's
+     default window-based scroll detection never fires because window
+     itself never scrolls here, only body does. */
+  ScrollTrigger.defaults({ scroller: document.body });
+
+  /* ── 1. Header entrance ── */
+  gsap.set('.main-header', { y: -80, autoAlpha: 0 });
+  gsap.to('.main-header', { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out', delay: 0.1 });
+
+  /* Page-transition entrance/exit now lives entirely in
+     page-transition.js (its own dynamically-created overlay). */
+
+  /* ── 2. Nav link hover — per-letter bounce+color wave (ported from
+     index.html/about.html/services.html), replacing the old plain
+     letter-spacing tween. Each letter is wrapped in its own span so
+     the agentNavLetterWave keyframes (defined in the page's own
+     <style>) can stagger by --i on hover. ── */
+  document.querySelectorAll('.nav-center a').forEach(link => {
+    const text = link.textContent;
+    link.innerHTML = text.split('').map((ch, i) =>
+      `<span class="ltr" style="--i:${i}">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('');
+  });
+
+  /* ── 3. Header button magnetic hover ── */
+  document.querySelectorAll('.btn-reward, .btn-warrant').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const dx = (e.clientX - rect.left - rect.width  / 2) * 0.25;
+      const dy = (e.clientY - rect.top  - rect.height / 2) * 0.25;
+      gsap.to(btn, { x: dx, y: dy, duration: 0.3, ease: 'power2.out' });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' });
+    });
+  });
+
+  /* ── 4. Footer scroll-reveal ── */
+  /* fromTo() (not from()) is deliberate: on pages arriving via the
+     cosmic menu transition, html.pt-incoming is still applied when
+     this script runs, which forces #site-footer's opacity to 0 via
+     !important. A plain gsap.from({opacity:0}) infers its end value
+     from the element's current computed opacity at creation time —
+     which would be that forced 0 — so the tween plays 0→0 and the
+     footer never becomes visible once scrolled into view. fromTo()
+     states the end value (opacity:1) explicitly, sidestepping the
+     bad capture regardless of pt-incoming's timing. */
+  gsap.fromTo('#site-footer',
+    { y: 80, opacity: 0 },
+    { y: 0, opacity: 1, duration: 1.2, ease: 'power3.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 92%' } }
+  );
+  gsap.fromTo('.footer-brand-column',
+    { x: -40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-link-group',
+    { y: 30, opacity: 0 },
+    { y: 0, opacity: 1, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 85%' } }
+  );
+  gsap.fromTo('.footer-actions-column',
+    { x: 40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-bottom-bar',
+    { y: 20, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' } }
+  );
+
+  /* ── 5. Social icon bounce on hover ── */
+  document.querySelectorAll('.social-icon-btn').forEach(icon => {
+    icon.addEventListener('mouseenter', () => {
+      gsap.to(icon, { scale: 1.3, rotation: 10, duration: 0.3, ease: 'back.out(2)' });
+    });
+    icon.addEventListener('mouseleave', () => {
+      gsap.to(icon, { scale: 1, rotation: 0, duration: 0.4, ease: 'elastic.out(1, 0.4)' });
+    });
+  });
+
+  /* ── 6. Input focus glow ── */
+  document.querySelectorAll('input[type="text"], input[type="email"]').forEach(input => {
+    input.addEventListener('focus', () => {
+      gsap.to(input, { boxShadow: '0 0 0 2px #a855f7, 0 4px 20px rgba(168,85,247,0.2)', duration: 0.3 });
+    });
+    input.addEventListener('blur', () => {
+      gsap.to(input, { boxShadow: 'none', duration: 0.3 });
+    });
+  });
+
+  /* ── 7. Scroll storytelling — the hero uses window-load reveals since
+     it's the first thing the visitor sees, but leaving it is now paced
+     by scroll instead of an instant cut: as the visitor scrolls #new-
+     agent-section out of frame, the video pushes in and dims, the
+     particle layer drifts faster, and the scattered questions/label
+     settle and fade — reading as one continuous camera move down into
+     the footer rather than a hard section boundary. ── */
+  const heroSection = document.getElementById('new-agent-section');
+  if (heroSection) {
+    /* explicit starting filter so GSAP interpolates brightness+blur
+       smoothly instead of snapping from an implicit "none" ── */
+    gsap.set('#agent-video', { filter: 'brightness(1) blur(0px)' });
+    gsap.timeline({
+      scrollTrigger: {
+        trigger: heroSection,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 0.6
+      }
+    })
+      .to('#agent-video', { scale: 1.18, filter: 'brightness(0.55) blur(2px)', ease: 'none' }, 0)
+      .to('#agent-particles', { opacity: 0.15, ease: 'none' }, 0)
+      .to(['#agent-label', '#agent-selection-title'], { y: -60, opacity: 0, ease: 'none' }, 0)
+      .to('#scatter-canvas', { y: -40, opacity: 0.15, ease: 'none' }, 0);
+    /* chat-bar-wrapper / chat-pills-mobile / need-help-container are
+       deliberately left out of this fade — the chat input is a live
+       control the visitor can type into, so it must stay fully visible
+       and usable no matter where they've scrolled, not dissolve away
+       with the rest of the hero's decorative content. */
+  }
+  ScrollTrigger.refresh();
+
+  /* ── sync --header-h to real header height ── */
+  function syncHeaderHeight() {
+    const h = document.querySelector('.main-header');
+    if (h) document.documentElement.style.setProperty('--header-h', h.offsetHeight + 'px');
+  }
+  syncHeaderHeight();
+  window.addEventListener('resize', syncHeaderHeight);
+})();
+</script>
+
+</body>
+</html>
