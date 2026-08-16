@@ -504,7 +504,7 @@ setTimeout(()=>{resize();draw();},150);
 <button class="wc-close" onclick="closeWarrent()">✕</button>
 <div class="wc-banner">
 <h2 class="wc-h1"><span class="line1">We don't sign contracts.</span><span class="line2">We sign revenue warrants.</span></h2>
-<div class="wc-stamp"><img style="width:60px" src="media/exclusive.jpg"/></div>
+<div class="wc-stamp"><img style="width:60px; margin-top: 25px;" src="media/exclusive.jpg"/></div>
 </div>
 <div class="wc-2col">
 <div class="wc-cell" data-reveal><p class="wc-cell-label">Our fee is tied to your outcome</p><p class="wc-cell-body">If the revenue doesn't materialize, we don't get paid. This isn't a gimmick — it's the only model that makes sense for reality engineering.</p></div>
@@ -563,7 +563,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWarrent();});
 <div class="cc-pink-ring" id="cc-pink-ring">
 <div class="cc-card-core">
 <button class="cc-close" onclick="closeChallenge()">✕</button>
-<h2 class="cc-title">How the Challange works</h2>
+<h2 class="cc-title">How the Challenge Works</h2>
 <div class="cc-step intro" data-creveal><span class="cc-step-label">Head To head comparision:</span><span class="cc-step-body">You share same brief, same scope and same kick-off</span></div>
 <div class="cc-step" data-creveal><span class="cc-step-label">Step 1 (Audit):</span><span class="cc-step-body">We complete the diagnostic and identify the revenue opportunity.</span></div>
 <div class="cc-step" data-creveal><span class="cc-step-label">Step 2 (Same status):</span><span class="cc-step-body">Specific dollar amount, timeline, specific measurement criteria.</span></div>
@@ -683,26 +683,40 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   /* Footer reveal */
-  gsap.from('#site-footer', {
-    y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
-  });
-  gsap.from('.footer-brand-column', {
-    x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
-  });
-  gsap.from('.footer-link-group', {
-    y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
-  });
-  gsap.from('.footer-actions-column', {
-    x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
-  });
-  gsap.from('.footer-bottom-bar', {
-    y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
-    scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
-  });
+  /* fromTo() (not from()) is deliberate: on pages arriving via the
+     cosmic menu transition, html.pt-incoming is still applied when
+     this script runs, which forces #site-footer's opacity to 0 via
+     !important. A plain gsap.from({opacity:0}) infers its end value
+     from the element's current computed opacity at creation time —
+     which would be that forced 0 — so the tween plays 0→0 and the
+     footer never becomes visible once scrolled into view. fromTo()
+     states the end value (opacity:1) explicitly, sidestepping the
+     bad capture regardless of pt-incoming's timing. */
+  gsap.fromTo('#site-footer',
+    { y: 80, opacity: 0 },
+    { y: 0, opacity: 1, duration: 1.2, ease: 'power3.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 92%' } }
+  );
+  gsap.fromTo('.footer-brand-column',
+    { x: -40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-link-group',
+    { y: 30, opacity: 0 },
+    { y: 0, opacity: 1, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 85%' } }
+  );
+  gsap.fromTo('.footer-actions-column',
+    { x: 40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-bottom-bar',
+    { y: 20, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' } }
+  );
 
   /* ── Hero entrance — staggered reveal ── */
   const heroTL = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.3 });

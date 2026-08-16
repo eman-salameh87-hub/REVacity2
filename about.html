@@ -19,20 +19,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════════════════════════
-   Base tone — ported from index.html's near-black #030208 (was the
-   site-wide #0a0315 purple-black). Scoped to this page only: this is
-   about2.html's own inline stylesheet, so it doesn't touch style.css
-   or any other page.
-   ══════════════════════════════════════════════════════════════ */
 body.page-about {
   background: #030208;
 }
-/* Hide the visible scrollbar track/thumb this page's long pinned-scrub +
-   vertical-section layout was showing as a persistent gray line down the
-   right edge — purely cosmetic, scrolling itself still works exactly the
-   same via touch, wheel, or keyboard. Unscoped html/body selectors are
-   safe here since this rule only lives in about.html's own stylesheet. */
 html, body {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
@@ -46,20 +35,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar,
 body.page-about .mobile-slide-menu {
   background: #030208;
 }
-/* The site-wide #bg-canvas rule (style.css) paints a solid #0a0315 fill —
-   override to transparent here so the foreground wave-terrain canvas lets
-   the #gl star/skybox canvas behind it show through in its gaps/sky. */
 body.page-about #bg-canvas {
   background-color: transparent;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   Header theme — ported from index.html's "chrome" header: a
-   continuously-sweeping gradient underline, a slow pulsing glow on
-   the logo, and a per-letter wave on nav-link hover. All additive on
-   top of style.css's existing header (same underline/lift/flare
-   hover it already had stays; this layers the extra motion in).
-   ══════════════════════════════════════════════════════════════ */
 body.page-about .main-header::after {
   content: '';
   position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;

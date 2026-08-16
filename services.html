@@ -1149,26 +1149,40 @@ ul.tick-list li::before{
   });
 
   /* ── Footer reveal ── */
-  gsap.from('#site-footer', {
-    y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
-  });
-  gsap.from('.footer-brand-column', {
-    x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
-  });
-  gsap.from('.footer-link-group', {
-    y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
-  });
-  gsap.from('.footer-actions-column', {
-    x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
-  });
-  gsap.from('.footer-bottom-bar', {
-    y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
-    scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
-  });
+  /* fromTo() (not from()) is deliberate: on pages arriving via the
+     cosmic menu transition, html.pt-incoming is still applied when
+     this script runs, which forces #site-footer's opacity to 0 via
+     !important. A plain gsap.from({opacity:0}) infers its end value
+     from the element's current computed opacity at creation time —
+     which would be that forced 0 — so the tween plays 0→0 and the
+     footer never becomes visible once scrolled into view. fromTo()
+     states the end value (opacity:1) explicitly, sidestepping the
+     bad capture regardless of pt-incoming's timing. */
+  gsap.fromTo('#site-footer',
+    { y: 80, opacity: 0 },
+    { y: 0, opacity: 1, duration: 1.2, ease: 'power3.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 92%' } }
+  );
+  gsap.fromTo('.footer-brand-column',
+    { x: -40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-link-group',
+    { y: 30, opacity: 0 },
+    { y: 0, opacity: 1, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 85%' } }
+  );
+  gsap.fromTo('.footer-actions-column',
+    { x: 40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-bottom-bar',
+    { y: 20, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' } }
+  );
 
   /* ── Hero headline — line-by-line reveal, then a literal strike-through
      draws itself across "NOT SLIDE DECKS." a beat after the words land,

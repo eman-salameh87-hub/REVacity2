@@ -5,12 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REVacity | Before Judging us</title>
 <link rel="icon" type="image/png" href="media/icon.png">
-<!-- Set the background before anything else so there's no white flash
-     while the render-blocking three.min.js script below is downloading —
-     without this, the browser can paint its default white background
-     before the page's own <style> block (further down) ever applies. -->
 <style>html{background:#000000}</style>
-<!-- If arriving via the cosmic page transition, hide real content synchronously (before body even parses) so page-transition.js can reveal it in layered order once it boots, instead of it popping in all at once first. See page-transition.css's html.pt-incoming rule. -->
 <script>try{if(sessionStorage.getItem('pt-transitioning')==='1')document.documentElement.classList.add('pt-incoming');}catch(e){}</script>
 <link rel="stylesheet" href="page-transition.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -20,29 +15,14 @@
 /* ── BEFORE JUDGING US — page-specific overrides ── */
 :root{--pink:#e63888;--purple:#9b5de5;--gold:#f4a135;--white:#ffffff;--dim:rgba(255,255,255,0.6);--bg:#0e0819}
 body{background:#030208;color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden}
-
-/* ══════════════════════════════════════════════════════════════
-   Real background — same skybox + near/far twinkling star-point
-   fields used on index.html/about.html/start-a-warrent.html, standard
-   #030208 tone. #hero and .judging-section below are made transparent
-   (their opaque #0e0819 fills removed) so the starfield shows through
-   continuously down the whole page, matching start-a-warrent.html.
-   ══════════════════════════════════════════════════════════════ */
 .stage{position:fixed;inset:0;overflow:hidden;width:100vw;height:100vh;height:100dvh;z-index:0;pointer-events:none}
 canvas#gl{position:absolute;inset:0;display:block;width:100%;height:100%}
 .vignette{position:absolute;inset:0;pointer-events:none;background:
   radial-gradient(ellipse at 50% 55%,rgba(3,2,8,0) 35%,rgba(3,2,8,0.6) 100%),
   linear-gradient(to bottom,rgba(3,2,8,0.4) 0%,rgba(3,2,8,0) 20%,rgba(3,2,8,0) 70%,rgba(3,2,8,0.55) 100%);
   z-index:5}
-
-/* Header sits directly over the starfield — match its tone so there's
-   no visible seam against the shared stylesheet's default purple-tinted
-   rgba(10,3,21,0.85). */
 .main-header{background:rgba(3,2,8,0.85)}
 
-/* .judging-section carries its own opaque #0e0819 fill in the shared
-   stylesheet (confirmed exclusive to this page) — override to transparent
-   here so the starfield shows through it too. */
 .judging-section{background-color:transparent}
 
 /* Hero */
@@ -723,27 +703,41 @@ try {
   /* Page-transition entrance/exit now lives entirely in
      page-transition.js (its own dynamically-created overlay). */
 
-  /* ── Footer reveal ── */
-  gsap.from('#site-footer', {
-    y: 80, opacity: 0, duration: 1.2, ease: 'power3.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 92%' }
-  });
-  gsap.from('.footer-brand-column', {
-    x: -40, opacity: 0, duration: 0.8, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
-  });
-  gsap.from('.footer-link-group', {
-    y: 30, opacity: 0, stagger: 0.12, duration: 0.6, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 85%' }
-  });
-  gsap.from('.footer-actions-column', {
-    x: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
-    scrollTrigger: { trigger: '#site-footer', start: 'top 88%' }
-  });
-  gsap.from('.footer-bottom-bar', {
-    y: 20, opacity: 0, duration: 0.6, ease: 'power2.out',
-    scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' }
-  });
+  /* ── Footer reveal ──
+     fromTo() (not from()) is deliberate: on pages arriving via the
+     cosmic menu transition, html.pt-incoming is still applied when
+     this script runs, which forces #site-footer's opacity to 0 via
+     !important. A plain gsap.from({opacity:0}) infers its end value
+     from the element's current computed opacity at creation time —
+     which would be that forced 0 — so the tween plays 0→0 and the
+     footer never becomes visible once scrolled into view. fromTo()
+     states the end value (opacity:1) explicitly, sidestepping the
+     bad capture regardless of pt-incoming's timing. */
+  gsap.fromTo('#site-footer',
+    { y: 80, opacity: 0 },
+    { y: 0, opacity: 1, duration: 1.2, ease: 'power3.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 92%' } }
+  );
+  gsap.fromTo('.footer-brand-column',
+    { x: -40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-link-group',
+    { y: 30, opacity: 0 },
+    { y: 0, opacity: 1, stagger: 0.12, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 85%' } }
+  );
+  gsap.fromTo('.footer-actions-column',
+    { x: 40, opacity: 0 },
+    { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '#site-footer', start: 'top 88%' } }
+  );
+  gsap.fromTo('.footer-bottom-bar',
+    { y: 20, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out',
+      scrollTrigger: { trigger: '.footer-bottom-bar', start: 'top 98%' } }
+  );
 
   /* ── Nav link hover underline ── */
   document.querySelectorAll('.nav-center a').forEach(link => {

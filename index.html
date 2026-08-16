@@ -22,7 +22,7 @@ if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.scrollTo(0, 0);
 </script>
 <title>REVacity | Home</title>
-<meta name="description" content="REVacity is a stateless outcome-engineering practice. A scroll-driven journey through why the industry is broken, what we replace, and how revenue topology works — not a funnel.">
+<meta name="description" content="">
 <link rel="icon" type="image/png" href="media/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@ window.scrollTo(0, 0);
   body:not(.is-loading) > *{ opacity:1; transition:opacity .8s ease; }
   ::selection{ background:rgba(238,240,255,0.25); }
 
-  .scroll-track{ width:100%; position:relative; }
+  .scroll-track{ width:100%; position:relative; pointer-events:none; }
 
   .stage{ position:fixed; inset:0; overflow:hidden; width:100vw; height:100vh; height:100dvh; }
   canvas#gl{ position:absolute; inset:0; display:block; width:100%; height:100%; }
@@ -736,6 +736,8 @@ window.scrollTo(0, 0);
   .form-input-group select option{ background-color:#0d0d0e; color:#ffffff; }
   @media (max-width:768px){
     .form-grid-row{ grid-template-columns:1fr; }
+    .diagnostic-intake-form input::placeholder,
+    .diagnostic-intake-form textarea::placeholder{ color:#7d7d7d; }
   }
 
   main.chapter-copy .eyebrow u,
@@ -1115,7 +1117,7 @@ text-transform: none;
 
 
   <main class="chapter-copy is-centered" id="copy">
-    <p class="eyebrow eyebrow--statement" id="eyebrow">&ldquo;Are you here to <u>Compete</u>, or to <u>Dominate</u>?&rdquo;</p>
+    <p class="eyebrow eyebrow--statement" id="eyebrow">&ldquo;Are you here to <a href="services.html"><u>Compete</u></a>, or to <a href="the-agent.html"><u>Dominate</u></a>?&rdquo;</p>
     <h1 id="heading">Are you Here for a <a class="u-word" href="services.html">Reason</a> or <a class="u-word" href="the-agent.html">Reasoning</a>?</h1>
     <p class="sub" id="sub"></p>
     <div class="chapter-rule" id="chapterRule"></div>
@@ -4682,25 +4684,9 @@ function scrollToChapter(idx){
       if(Math.abs(dx) > AXIS_LOCK_PX || Math.abs(dy) > AXIS_LOCK_PX){
         axisDecided = true;
         
-        
-        
-        
-        
         isHorizontal = Math.abs(dx) > Math.abs(dy);
       } else {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+   
         return;
       }
     }
@@ -4766,13 +4752,6 @@ els.enterBtn.addEventListener('click', () => {
   const next = Math.min(N_CHAPTERS-1, Math.round(scrollState.t*(N_CHAPTERS-1)) + 1);
   scrollToChapter(next);
 });
-
-
-
-
-
-
-
 
 if(els.diagGoBtn){
   els.diagGoBtn.addEventListener('click', () => {
@@ -5815,9 +5794,20 @@ function renderFrame(){
     revealStyle(els.dyingAgencyBadge, p);
   }
   if(modelItems.length){
+    /* On the mobile layout the cards form a horizontally swipeable row
+       instead of a simultaneously-visible grid, so gating each card's
+       reveal behind extra VERTICAL scroll progress (the mi*0.06 stagger
+       below) left cards 2/3 stuck half-blurred whenever someone swiped
+       to them before scrolling further down the page — swiping is
+       instant, this scroll-linked reveal isn't. Reveal every card
+       together on mobile; keep the stagger for the desktop grid, where
+       the cascade is a nice touch and every card is already on-screen
+       at once regardless. */
+    const modelsMobile = window.innerWidth <= 900;
     for(let mi=0; mi<modelItems.length; mi++){
       const card = modelItems[mi];
-      const a = HEADING_FADE_END + 0.08 + mi*0.06;
+      const staggerMi = modelsMobile ? 0 : mi;
+      const a = HEADING_FADE_END + 0.08 + staggerMi*0.06;
       const enter = THREE.MathUtils.smoothstep(localCf, a, a + 0.12);
       const exit = 1 - THREE.MathUtils.smoothstep(localCf, 0.86, 0.96);
       const p = enter * exit;
